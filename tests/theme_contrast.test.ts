@@ -248,56 +248,149 @@ test('connection labels stay readable in light mode without touching the stored 
   assert.equal(resolveConnectionLabelColor('not-a-colour', 'light'), 'not-a-colour');
 });
 
-test('tabulator value styling keeps its contrast in both themes', () => {
-  const css = readFileSync(resolve(process.cwd(), 'src/styles/tabulatorTheme.css'), 'utf-8');
-  const darkBlock = /html\.dark \.tabulator \{([\s\S]*?)\n\}/.exec(css)?.[1] ?? '';
-  const lightBlock = /html:not\(\.dark\) \.tabulator \{([\s\S]*?)\n\}/.exec(css)?.[1] ?? '';
+const GRID_THEME_CSS = 'src/styles/tabulatorTheme.css';
 
-  const readVar = (block: string, name: string) =>
-    new RegExp(`--${name}:\\s*([^;]+);`).exec(block)?.[1]?.trim() ?? '';
+function readGridTheme(): string {
+  return readFileSync(resolve(process.cwd(), GRID_THEME_CSS), 'utf-8');
+}
 
-  const darkBg = parseHexColor(readVar(darkBlock, 'sq-grid-bg'))!;
-  const darkHeader = parseHexColor(readVar(darkBlock, 'sq-grid-header-bg'))!;
-  const lightBg = parseHexColor(readVar(lightBlock, 'sq-grid-bg'))!;
-  const lightHeader = parseHexColor(readVar(lightBlock, 'sq-grid-header-bg'))!;
+function readGridBlock(css: string, mode: 'dark' | 'light'): string {
+  const selector = mode === 'dark' ? 'html\\.dark \\.tabulator' : 'html:not\\(\\.dark\\) \\.tabulator';
+  return new RegExp(`${selector} \\{([\\s\\S]*?)\\n\\}`).exec(css)?.[1] ?? '';
+}
 
-  for (const [label, fg, bg] of [
-    ['dark muted', readVar(darkBlock, 'sq-grid-muted'), darkBg],
-    ['dark null cell', readVar(darkBlock, 'sq-grid-muted'), darkBg],
-    ['dark bool true', readVar(darkBlock, 'sq-grid-bool-true-accent'), darkBg],
-    ['dark bool false', readVar(darkBlock, 'sq-grid-bool-false-accent'), darkBg],
-    ['dark binary', readVar(darkBlock, 'sq-grid-binary-accent'), darkBg],
-    ['light muted', readVar(lightBlock, 'sq-grid-muted'), lightBg],
-    ['light bool true', readVar(lightBlock, 'sq-grid-bool-true-accent'), lightBg],
-    ['light bool false', readVar(lightBlock, 'sq-grid-bool-false-accent'), lightBg],
-    ['light binary', readVar(lightBlock, 'sq-grid-binary-accent'), lightBg],
-  ] as const) {
-    const ratio = contrastRatio(parseHexColor(fg)!, bg);
-    assert.ok(ratio >= 4.5, `${label} is ${ratio.toFixed(2)}:1`);
+function readGridVar(block: string, name: string): string {
+  return new RegExp(`--${name}:\\s*([^;]+);`).exec(block)?.[1]?.trim() ?? '';
+}
+
+/**
+ * Grid backgrounds and text are declared as references to the app's semantic tokens
+ * (`rgb(var(--color-dark-800))`) so they follow the selected surface palette, so every grid
+ * contrast check has to resolve them against that palette first.
+ */
+function resolveGridColor(value: string, tokens: Record<string, string>): RgbColor {
+  const reference = /^rgb\(var\((--[a-z0-9-]+)\)\)$/.exec(value)?.[1];
+  if (!reference) return tokensToRgba(value);
+  const resolved = tokens[reference];
+  assert.ok(resolved, `grid colour "${value}" must resolve to a declared token`);
+  return tokensToRgba(resolved!);
+}
+
+test('tabulator surfaces are driven by the app colour tokens in both themes', () => {
+  const css = readGridTheme();
+
+  for (const mode of ['dark', 'light'] as const) {
+    const block = readGridBlock(css, mode);
+    assert.ok(block.length > 0, `the ${mode} grid block must exist`);
+
+    // The grid canvas, chrome and separators are the shell's surfaces, not a fixed zinc ramp, so
+    // changing the surface palette re-tones the grid together with the rest of the app.
+    assert.match(block, /--sq-grid-bg: rgb\(var\(--color-dark-900\)\)/, `${mode} grid canvas`);
+    assert.match(block, /--sq-grid-header-bg: rgb\(var\(--color-dark-850\)\)/, `${mode} header`);
+    assert.match(
+      block,
+      /--sq-grid-header-hover: rgb\(var\(--color-dark-800\)\)/,
+      `${mode} header hover`
+    );
+    assert.match(block, /--sq-grid-border: rgb\(var\(--color-dark-700\)\)/, `${mode} border`);
+    assert.match(block, /--sq-grid-line: rgb\(var\(--color-dark-800\)\)/, `${mode} row separator`);
+    assert.match(block, /--sq-grid-row-hover: rgb\(var\(--color-dark-800\)\)/, `${mode} row hover`);
+
+    // Text resolves through the ramp the token suite already proves at >= 4.5:1.
+    assert.match(block, /--sq-grid-fg: rgb\(var\(--color-dark-300\)\)/, `${mode} body text`);
+    assert.match(block, /--sq-grid-muted: rgb\(var\(--color-dark-500\)\)/, `${mode} muted text`);
+    assert.match(
+      block,
+      /--sq-grid-header-text: rgb\(var\(--color-dark-500\)\)/,
+      `${mode} header text`
+    );
+
+    // Zebra striping is a real surface in both modes; the dark theme used to opt out of it.
+    assert.match(
+      block,
+      /--sq-grid-row-stripe: rgb\(var\(--color-dark-850\)\)/,
+      `${mode} zebra stripe`
+    );
+    assert.doesNotMatch(
+      block,
+      /--sq-grid-row-stripe:\s*transparent/,
+      `${mode} zebra stripe must paint a surface`
+    );
+  }
+});
+
+test('tabulator value styling keeps its contrast on every surface palette', () => {
+  const css = readGridTheme();
+  const amber = parseHexColor('#f59e0b')!;
+
+  for (const surface of SURFACES) {
+    for (const mode of ['dark', 'light'] as const) {
+      const block = readGridBlock(css, mode);
+      const tokens = buildThemeTokens(surface, mode);
+      const gridColor = (name: string) => resolveGridColor(readGridVar(block, name), tokens);
+      const label = `${surface}/${mode}`;
+
+      const bg = gridColor('sq-grid-bg');
+      const header = gridColor('sq-grid-header-bg');
+      const hover = gridColor('sq-grid-row-hover');
+      const stripe = gridColor('sq-grid-row-stripe');
+
+      // The value-dependent accents stay literal colours, so they are the part the token ramp
+      // cannot vouch for. They are painted on the canvas and - since the zebra stripe landed - on
+      // every second row as well.
+      for (const [name, value] of [
+        ['bool true', gridColor('sq-grid-bool-true-accent')],
+        ['bool false', gridColor('sq-grid-bool-false-accent')],
+        ['binary', gridColor('sq-grid-binary-accent')],
+      ] as const) {
+        for (const [backgroundName, background] of [
+          ['canvas', bg],
+          ['stripe', stripe],
+        ] as const) {
+          const ratio = contrastRatio(value, background);
+          assert.ok(
+            ratio >= 4.5,
+            `${label}: ${name} on the ${backgroundName} is ${ratio.toFixed(2)}:1`
+          );
+        }
+      }
+
+      // The sort arrow is a non-text affordance sitting on the header surface.
+      const sortArrow = contrastRatio(gridColor('sq-grid-sort-icon'), header);
+      assert.ok(sortArrow >= 3, `${label}: sort arrow on the header is ${sortArrow.toFixed(2)}:1`);
+
+      // The modified-cell tint is translucent, so measure the composed colour over every row
+      // surface the cell can sit on (rgba(245,158,11,0.15) composited over the row colour).
+      const modifiedText = gridColor('sq-grid-modified-text');
+      for (const [surfaceName, background] of [
+        ['canvas', bg],
+        ['stripe', stripe],
+        ['hover', hover],
+      ] as const) {
+        const ratio = contrastRatio(modifiedText, mixRgb(background, amber, 0.15));
+        assert.ok(
+          ratio >= 4.5,
+          `${label}: modified text on the ${surfaceName} is ${ratio.toFixed(2)}:1`
+        );
+      }
+
+      // The zebra stripe has to be perceptible without turning into a high-contrast band, and a
+      // hovered even row still has to read as hovered.
+      const stripeOnCanvas = contrastRatio(stripe, bg);
+      assert.ok(
+        stripeOnCanvas >= 1.04 && stripeOnCanvas <= 1.6,
+        `${label}: the zebra stripe is ${stripeOnCanvas.toFixed(3)}:1 against the canvas`
+      );
+      const hoverOnStripe = contrastRatio(hover, stripe);
+      assert.ok(
+        hoverOnStripe >= 1.04,
+        `${label}: the row hover is ${hoverOnStripe.toFixed(3)}:1 against the stripe`
+      );
+    }
   }
 
-  for (const [label, icon, background] of [
-    ['dark sort arrow', readVar(darkBlock, 'sq-grid-sort-icon'), darkHeader],
-    ['light sort arrow', readVar(lightBlock, 'sq-grid-sort-icon'), lightHeader],
-  ] as const) {
-    const ratio = contrastRatio(parseHexColor(icon)!, background);
-    assert.ok(ratio >= 3, `${label} is ${ratio.toFixed(2)}:1`);
-  }
-
-  // The modified-cell tint is translucent, so measure the composed colour, not the raw text value.
-  // rgba(245,158,11,0.15) composited over the row surface.
-  const darkTint = mixRgb(darkBg, parseHexColor('#f59e0b')!, 0.15);
-  const lightTint = mixRgb(lightBg, parseHexColor('#f59e0b')!, 0.15);
-  assert.ok(
-    contrastRatio(parseHexColor(readVar(darkBlock, 'sq-grid-modified-text'))!, darkTint) >= 4.5,
-    'dark modified cells lost their readability'
-  );
-  assert.ok(
-    contrastRatio(parseHexColor(readVar(lightBlock, 'sq-grid-modified-text'))!, lightTint) >= 4.5,
-    'light modified cells lost their readability'
-  );
-
-  const sortOpacity = /\[aria-sort='none'\][\s\S]*?\.tabulator-col-sorter \{([\s\S]*?)\n\}/.exec(css)?.[1] ?? '';
+  const sortOpacity =
+    /\[aria-sort='none'\][\s\S]*?\.tabulator-col-sorter \{([\s\S]*?)\n\}/.exec(css)?.[1] ?? '';
   assert.doesNotMatch(
     sortOpacity,
     /opacity/,

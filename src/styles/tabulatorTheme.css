@@ -5,25 +5,31 @@
  * are keyed off the global `html.dark` class set by `services/themeManager.ts`, which keeps the
  * grid in sync with the rest of the app without any per-component theme object.
  *
+ * Grid surfaces and text resolve through the app's semantic `--color-dark-*` / `--color-raised`
+ * tokens instead of fixed hex values, so the grid follows every colour mode *and* every surface
+ * palette (`settingsStore.surfaceColor`) exactly like the surrounding shell does. The value-dependent
+ * accents below stay literal on purpose: they are contrast-verified role colours, not surfaces.
+ *
  * The configurable grid font arrives through the `--sqlight-grid-font` custom property that the
  * three grid components bind from `settingsStore.gridFontFamily`.
  */
 
 html.dark .tabulator {
-  --sq-grid-bg: #18181b;
-  --sq-grid-header-bg: #202024;
-  --sq-grid-header-hover: #27272a;
-  --sq-grid-header-text: #a1a1aa;
-  --sq-grid-fg: #e4e4e7;
-  /* Muted grid text must clear 4.5:1 on the 18181b/202024 surfaces. */
-  --sq-grid-muted: #a1a1aa;
+  --sq-grid-bg: rgb(var(--color-dark-900)); /* Canvas: rows and the results surface */
+  --sq-grid-header-bg: rgb(var(--color-dark-850)); /* Chrome: the header strip */
+  --sq-grid-header-hover: rgb(var(--color-dark-800)); /* Panel: a hovered header cell */
+  --sq-grid-header-text: rgb(var(--color-dark-500));
+  --sq-grid-fg: rgb(var(--color-dark-300));
+  /* Muted grid text must clear 4.5:1 on the canvas and on the hover surface. */
+  --sq-grid-muted: rgb(var(--color-dark-500));
   /* `--sq-grid-border` frames the header and the frozen edge; `--sq-grid-line` draws the softer
      row / cell separators. */
-  --sq-grid-border: #2e2e33;
-  --sq-grid-line: #2e2e33;
-  --sq-grid-row-hover: #27272a;
-  /* Zebra striping stays off on dark; set a surface colour to switch it on. */
-  --sq-grid-row-stripe: transparent;
+  --sq-grid-border: rgb(var(--color-dark-700));
+  --sq-grid-line: rgb(var(--color-dark-800));
+  --sq-grid-row-hover: rgb(var(--color-dark-800));
+  /* Zebra striping mirrors the light theme: a half step between the canvas and the hover row, so a
+     hovered even row still reads as hovered. */
+  --sq-grid-row-stripe: rgb(var(--color-dark-850));
   --sq-grid-sort-icon: #a1a1aa;
   --sq-grid-sort-icon-hover: #e4e4e7;
   --sq-grid-sort-icon-active: #0284c7;
@@ -44,24 +50,23 @@ html.dark .tabulator {
   --sq-grid-range-border-width: 1.5px;
   --sq-grid-range-handle: #3b82f6;
   --sq-grid-range-text: #ffffff;
-  --sq-grid-editor-bg: #0f0f12;
 }
 
 html:not(.dark) .tabulator {
-  /* Light mode sits on the same soft grey canvas as the rest of the app instead of white, so
-     every grey here is one notch deeper than before to keep the hierarchy readable. */
-  --sq-grid-bg: #f1f5f9;
-  --sq-grid-header-bg: #e9eef4;
-  --sq-grid-header-hover: #e2e8f0;
-  --sq-grid-header-text: #475569;
-  --sq-grid-fg: #1e293b;
-  /* Muted grid text must clear 4.5:1 on the #f1f5f9 canvas and on the #e2e8f0 hover surface. */
-  --sq-grid-muted: #475569;
+  /* Light mode runs the same token names, which resolve to the soft grey ramp the shell uses
+     instead of white, so the hierarchy stays readable and matches every surface palette. */
+  --sq-grid-bg: rgb(var(--color-dark-900));
+  --sq-grid-header-bg: rgb(var(--color-dark-850));
+  --sq-grid-header-hover: rgb(var(--color-dark-800));
+  --sq-grid-header-text: rgb(var(--color-dark-500));
+  --sq-grid-fg: rgb(var(--color-dark-300));
+  /* Muted grid text must clear 4.5:1 on the canvas and on the hover / stripe surfaces. */
+  --sq-grid-muted: rgb(var(--color-dark-500));
   /* The header keeps the stronger line that anchors it; rows and cells stay softly separated. */
-  --sq-grid-border: #cbd5e1;
-  --sq-grid-line: #e2e8f0;
-  --sq-grid-row-hover: #e2e8f0;
-  --sq-grid-row-stripe: #e9eef4;
+  --sq-grid-border: rgb(var(--color-dark-700));
+  --sq-grid-line: rgb(var(--color-dark-800));
+  --sq-grid-row-hover: rgb(var(--color-dark-800));
+  --sq-grid-row-stripe: rgb(var(--color-dark-850));
   --sq-grid-sort-icon: #64748b;
   --sq-grid-sort-icon-hover: #1e293b;
   --sq-grid-sort-icon-active: #2563eb;
@@ -84,7 +89,6 @@ html:not(.dark) .tabulator {
   --sq-grid-range-handle: #2563eb;
   /* White would be unreadable on a light tint, so the light theme keeps the normal text colour. */
   --sq-grid-range-text: var(--sq-grid-fg);
-  --sq-grid-editor-bg: #f8fafc;
 }
 
 /* --------------------------------------------------------------------------
@@ -92,6 +96,8 @@ html:not(.dark) .tabulator {
    -------------------------------------------------------------------------- */
 
 .tabulator {
+  /* An edit cell is a raised input in both themes, so one token covers both modes. */
+  --sq-grid-editor-bg: rgb(var(--color-raised));
   border: none;
   background-color: var(--sq-grid-bg);
   color: var(--sq-grid-fg);

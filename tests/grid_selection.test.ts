@@ -278,13 +278,13 @@ test('light theme palette keeps the header anchored and the accents readable', (
   const css = readTheme();
   const lightBlock = themeBlock(css, 'html:not\\(\\.dark\\) \\.tabulator');
 
-  // Header: a distinct surface, slate text, readable sort arrows and a stronger bottom line.
-  assert.match(lightBlock, /--sq-grid-header-bg: #e9eef4/);
-  assert.match(lightBlock, /--sq-grid-header-text: #475569/);
+  // Header: the chrome surface, muted text, readable sort arrows and a stronger bottom line.
+  assert.match(lightBlock, /--sq-grid-header-bg: rgb\(var\(--color-dark-850\)\)/);
+  assert.match(lightBlock, /--sq-grid-header-text: rgb\(var\(--color-dark-500\)\)/);
   // The sort arrow is the only sort affordance, so it must clear 3:1 on the light header.
   assert.match(lightBlock, /--sq-grid-sort-icon: #64748b/);
   assert.match(lightBlock, /--sq-grid-sort-icon-hover: #1e293b/);
-  assert.match(lightBlock, /--sq-grid-border: #cbd5e1/);
+  assert.match(lightBlock, /--sq-grid-border: rgb\(var\(--color-dark-700\)\)/);
   assert.match(
     css,
     /\.tabulator \.tabulator-header,\s*\n\.tabulator \.tabulator-footer \{\s*\n\s*border-color: var\(--sq-grid-border\)/,
@@ -292,10 +292,12 @@ test('light theme palette keeps the header anchored and the accents readable', (
   );
 
   // Rows: the soft grey canvas surface, soft separators, a hover tint and softer-than-black text.
-  assert.match(lightBlock, /--sq-grid-bg: #f1f5f9/);
-  assert.match(lightBlock, /--sq-grid-fg: #1e293b/);
-  assert.match(lightBlock, /--sq-grid-line: #e2e8f0/);
-  assert.match(lightBlock, /--sq-grid-row-hover: #e2e8f0/);
+  // These resolve through the shell's tokens, so the grid keeps following the surface palette.
+  assert.match(lightBlock, /--sq-grid-bg: rgb\(var\(--color-dark-900\)\)/);
+  assert.match(lightBlock, /--sq-grid-fg: rgb\(var\(--color-dark-300\)\)/);
+  assert.match(lightBlock, /--sq-grid-line: rgb\(var\(--color-dark-800\)\)/);
+  assert.match(lightBlock, /--sq-grid-row-hover: rgb\(var\(--color-dark-800\)\)/);
+  assert.match(lightBlock, /--sq-grid-row-stripe: rgb\(var\(--color-dark-850\)\)/);
   assert.match(css, /\.tabulator-row:hover \{\s*\n\s*background-color: var\(--sq-grid-row-hover\)/);
 
   // Selection: a barely-there wash with a bright focus border and handle.
