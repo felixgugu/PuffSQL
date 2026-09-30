@@ -182,7 +182,10 @@
       v-model:visible="isPromptDialogVisible"
       :header="editingPromptId ? '修改快捷提問選項' : '新增快捷提問選項'"
       modal
+      :class="dialogWindow.marker"
       :style="{ width: '520px' }"
+      @show="dialogWindow.onShow"
+      @hide="dialogWindow.onHide"
     >
       <div class="space-y-4 pt-2">
         <div class="space-y-1">
@@ -237,9 +240,11 @@ import Dialog from 'primevue/dialog';
 import { useAiChatStore } from '@/stores/aiChatStore';
 import { curlAiService } from '@/services/ai/curlAiService';
 import { aiLoggerService } from '@/services/aiLoggerService';
+import { useDialogWindow } from '@/composables/useDialogWindow';
 import type { AiQuickPrompt } from '@/types/ai';
 
 const aiChatStore = useAiChatStore();
+const dialogWindow = useDialogWindow();
 
 const showApiKey = ref(false);
 const isTesting = ref(false);

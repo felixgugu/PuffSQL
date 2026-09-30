@@ -24,7 +24,7 @@
 ### 維度一：頂部工具列（Header）資訊分流與職責收納
 
 #### 1. 痛點定位與分析
-* **組件檔案**：[`AppHeader.vue`](file:///G:/SQLight/src/components/layout/AppHeader.vue)
+* **組件檔案**：[`AppHeader.vue`](../src/components/layout/AppHeader.vue)
 * **問題**：頂部 Header 橫向集成了 20 多個控制項目（連線選單、資料庫選單、執行、全部執行、剪下、複製、貼上、展開、摺疊、格式化、開啟檔案、儲存檔案、新分頁、快搜、SQL 範本、AI 助手、DBA 工具箱、IO 統計開關、預估計畫開關、實際計畫開關、Limit 限制器、側邊欄開關、底部面板開關、系統設定、視窗控制項）。
 * **UX 衝擊**：
   * 在 1366px 或常見筆電 1080p 解析度下，右側按鈕會直接超出可見邊界並被截斷（`overflow-hidden`）。
@@ -48,9 +48,9 @@
 
 #### 1. 痛點定位與分析
 * **組件檔案**：
-  * 主工作區：[`AppMain.vue`](file:///G:/SQLight/src/components/layout/AppMain.vue)
-  * 底部面板：[`AppBottomPanel.vue`](file:///G:/SQLight/src/components/layout/AppBottomPanel.vue)
-  * 結果集：[`ResultGrid.vue`](file:///G:/SQLight/src/components/layout/ResultGrid.vue)
+  * 主工作區：[`AppMain.vue`](../src/components/layout/AppMain.vue)
+  * 底部面板：[`AppBottomPanel.vue`](../src/components/layout/AppBottomPanel.vue)
+  * 結果集：[`ResultGrid.vue`](../src/components/results/ResultGrid.vue)
 * **問題**：SQLight 同時具備 4 層不同的 Tab：
   * **Level 1**：主工作區檔案分頁（SQL 查詢 1, 2, Table Data, ER 圖...）
   * **Level 2**：底部面板功能分頁（Results, Messages, Query History, Execution Stats）
@@ -74,7 +74,7 @@
 ### 維度三：長查詢與非同步作業的「回饋感知」（Progress Perception）
 
 #### 1. 痛點定位與分析
-* **組件檔案**：[`AppBottomPanel.vue`](file:///G:/SQLight/src/components/layout/AppBottomPanel.vue)、[`ResultGrid.vue`](file:///G:/SQLight/src/components/layout/ResultGrid.vue)、[`AppStatusBar.vue`](file:///G:/SQLight/src/components/layout/AppStatusBar.vue)
+* **組件檔案**：[`AppBottomPanel.vue`](../src/components/layout/AppBottomPanel.vue)、[`ResultGrid.vue`](../src/components/results/ResultGrid.vue)、[`AppStatusBar.vue`](../src/components/layout/AppStatusBar.vue)
 * **問題**：
   * 點擊執行後，只有 Header 的 Run 按鈕變為紅色 Stop 且狀態列顯示計時數字。
   * 中央編輯器與底部網格區域處於完全靜態狀態，使用者視線聚焦在中央或表格時，無法即刻確認「後端是否真的在運作」。
@@ -95,7 +95,7 @@
 ### 維度四：資料網格（Result Grid）人體工學升級
 
 #### 1. 痛點定位與分析
-* **組件檔案**：[`ResultGridItem.vue`](file:///G:/SQLight/src/components/results/ResultGridItem.vue)、[`tabulatorGrid.ts`](file:///G:/SQLight/src/utils/tabulatorGrid.ts)
+* **組件檔案**：[`ResultGridItem.vue`](../src/components/results/ResultGridItem.vue)、[`tabulatorGrid.ts`](../src/utils/tabulatorGrid.ts)
 * **問題**：
   * `NULL` 值、空字串 `""` 與數字 `0` 的視覺區隔度不夠顯著，DBA 難以一眼看出資料本質。
   * 缺少多格反白時的即時數值統計功能（常見於 Excel / DataGrip / DBeaver）。
@@ -115,7 +115,7 @@
 ### 維度五：AI 助手佈局模式（Floating vs Docked Drawer）
 
 #### 1. 痛點定位與分析
-* **組件檔案**：[`AiSqlChatModal.vue`](file:///G:/SQLight/src/components/modals/AiSqlChatModal.vue)
+* **組件檔案**：[`AiSqlChatModal.vue`](../src/components/modals/AiSqlChatModal.vue)
 * **問題**：AI 對話視窗目前為獨立懸浮窗（Fixed Teleport），雖然支援自由拖曳與縮小為膠囊，但在筆電或單螢幕環境下，懸浮窗會直接擋住 Monaco 編輯器或查詢結果，使用者必須頻繁拖拉移動視窗。
 
 #### 2. 解決方案與改造設計
@@ -129,7 +129,7 @@
 ### 維度六：微排版、無障礙規範與視覺精緻度
 
 #### 1. 痛點定位與分析
-* **樣式檔案**：[`main.css`](file:///G:/SQLight/src/assets/main.css)、各佈局組件
+* **樣式檔案**：[`main.css`](../src/assets/main.css)、各佈局組件
 * **問題**：
   * 專案中普遍使用 `!text-[9px]`、`!text-[10px]` 等極小字級，在中文字體渲染時筆畫容易擠成一團。
   * 連線環境標籤（PROD, DEV）目前以圓點顏色區分，在某些色弱情境或快速操作下容易忽略環境風險。

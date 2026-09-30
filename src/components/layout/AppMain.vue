@@ -12,7 +12,7 @@
       <div
         ref="queryTabsBarRef"
         @wheel="handleTabsWheel"
-        class="query-tabs-scroll flex-1 flex items-center overflow-x-auto overflow-y-hidden select-none h-full"
+        class="query-tabs-scroll flex-1 flex items-end overflow-x-auto overflow-y-hidden select-none h-full"
       >
         <!-- Tabs List -->
         <div
@@ -24,12 +24,13 @@
           @dragover.stop.prevent="handleTabItemDragOver($event, tab)"
           @dragleave.stop="handleTabItemDragLeave($event, tab)"
           @drop.stop.prevent="handleTabItemDrop($event, tab)"
+          :data-flip-key="tab.id"
           :class="[
             'query-tab-item h-7 px-2.5 flex items-center space-x-2 text-xs border cursor-grab active:cursor-grabbing transition-all duration-100 group max-w-[280px] select-none touch-none flex-shrink-0 relative',
             workspaceStore.activeTabId === tab.id ? 'font-medium shadow-sm active-tab' : 'inactive-tab shadow-xs',
             isPointerDragging && dragSourceIndex === idx ? 'opacity-35 border-dashed border-brand-400 scale-95' : '',
-            dropHoverIndex === idx && isPointerDragging && dropHoverIndex !== dragSourceIndex ? 'border-brand-400 bg-brand-500/25 ring-1 ring-brand-400 scale-102' : '',
-            dragOverTabId === tab.id ? 'border-brand-400 bg-brand-500/30 ring-1 ring-brand-400 scale-102 shadow-md' : ''
+            dropHoverIndex === idx && isPointerDragging && dropHoverIndex !== dragSourceIndex ? 'border-brand-400 bg-brand-500/25 ring-1 ring-brand-400 scale-105' : '',
+            dragOverTabId === tab.id ? 'border-brand-400 bg-brand-500/30 ring-1 ring-brand-400 scale-105 shadow-md' : ''
           ]"
           :style="getTabItemStyle(tab, idx)"
           :title="getTabTooltip(tab)"
@@ -203,6 +204,7 @@ import { sqlFolderService } from '@/services/sqlFolderService';
 import { getTabThemeStyle } from '@/utils/tabTheme';
 import { detectDangerousSqlStatements } from '@/utils/sqlGuard';
 import { dispatchClearGridSelection } from '@/utils/tabulatorGrid';
+import { cancelFlip, captureFlipRects, playFlip } from '@/composables/useFlip';
 import type { SqlEditorToolbarAction } from '@/types/editor';
 import type { SqlEditorTab, TableDataTab, TableStructureTab, ExecutionPlanTab, ErDiagramTab, WorkspaceTab } from '@/types/workspace';
 
@@ -224,6 +226,8 @@ const isPointerDragging = ref<boolean>(false);
 
 let startPointerX = 0;
 let hasMovedBeyondThreshold = false;
+// A drag ends with a click event; that one click must not also activate the tab it landed on.
+let suppressClick = false;
 
 function onTabPointerDown(e: PointerEvent, index: number) {
   if (e.button !== 0) return;
@@ -233,6 +237,9 @@ function onTabPointerDown(e: PointerEvent, index: number) {
     return;
   }
 
+  suppressClick = false;
+  // A previous reorder may still be settling; take over from the laid-out position.
+  cancelFlip(queryTabsBarRef.value, '.query-tab-item');
   dragSourceIndex.value = index;
   dropHoverIndex.value = index;
   startPointerX = e.clientX;
@@ -286,7 +293,7 @@ function onDocumentPointerMove(e: PointerEvent) {
   }
 }
 
-function onDocumentPointerUp() {
+async function onDocumentPointerUp() {
   window.removeEventListener('pointermove', onDocumentPointerMove);
   window.removeEventListener('pointerup', onDocumentPointerUp);
   window.removeEventListener('pointercancel', onDocumentPointerUp);
@@ -294,25 +301,31 @@ function onDocumentPointerUp() {
   document.body.style.cursor = '';
   document.body.style.userSelect = '';
 
-  if (
-    isPointerDragging.value &&
-    dragSourceIndex.value !== null &&
-    dropHoverIndex.value !== null &&
-    dragSourceIndex.value !== dropHoverIndex.value
-  ) {
-    workspaceStore.reorderTabs(dragSourceIndex.value, dropHoverIndex.value);
-  }
+  const from = dragSourceIndex.value;
+  const to = dropHoverIndex.value;
+  const wasDragging = isPointerDragging.value;
 
+  // Clear the drag state first so the source tab drops its dragging classes before the FLIP
+  // pass measures the settled layout.
   dragSourceIndex.value = null;
   dropHoverIndex.value = null;
+  isPointerDragging.value = false;
+  hasMovedBeyondThreshold = false;
+  suppressClick = wasDragging;
 
-  setTimeout(() => {
-    isPointerDragging.value = false;
-    hasMovedBeyondThreshold = false;
-  }, 50);
+  if (!wasDragging || from === null || to === null || from === to) return;
+
+  const before = captureFlipRects(queryTabsBarRef.value, '.query-tab-item');
+  workspaceStore.reorderTabs(from, to);
+  await nextTick();
+  playFlip(before, queryTabsBarRef.value, '.query-tab-item', 'x');
 }
 
 function handleTabClick(tabId: string) {
+  if (suppressClick) {
+    suppressClick = false;
+    return;
+  }
   if (hasMovedBeyondThreshold || isPointerDragging.value) {
     return;
   }

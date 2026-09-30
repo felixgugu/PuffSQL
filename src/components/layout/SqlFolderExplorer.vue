@@ -194,7 +194,10 @@
       v-model:visible="isRenameModalOpen"
       modal
       :header="targetNode?.isDir ? $t('sidebar.renameFolder') : $t('sidebar.renameFile')"
+      :class="renameDialogWindow.marker"
       class="w-full max-w-md font-sans"
+      @show="renameDialogWindow.onShow"
+      @hide="renameDialogWindow.onHide"
     >
       <div class="space-y-3 text-xs py-1">
         <p class="text-dark-300 leading-relaxed">
@@ -245,7 +248,10 @@
       v-model:visible="isManualPathModalOpen"
       modal
       :header="$t('sidebar.addFolderTitle')"
+      :class="pathDialogWindow.marker"
       class="w-full max-w-md font-sans"
+      @show="pathDialogWindow.onShow"
+      @hide="pathDialogWindow.onHide"
     >
       <div class="space-y-3 text-xs py-1">
         <p class="text-dark-300 leading-relaxed">
@@ -305,8 +311,13 @@ import {
   X,
 } from 'lucide-vue-next';
 import { useSqlFolderStore } from '@/stores/sqlFolderStore';
+import { useDialogWindow } from '@/composables/useDialogWindow';
 import type { MonitoredFolder, SqlFileNode } from '@/types/sqlFolder';
 import SqlFileTreeNode from './SqlFileTreeNode.vue';
+
+// Two dialogs live in this component; each needs its own instance.
+const renameDialogWindow = useDialogWindow();
+const pathDialogWindow = useDialogWindow();
 
 interface ContextMenuTarget {
   name: string;

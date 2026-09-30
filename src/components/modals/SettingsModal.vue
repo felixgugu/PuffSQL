@@ -4,8 +4,11 @@
     modal
     :dismissable-mask="true"
     :closable="true"
+    :class="dialogWindow.marker"
     class="w-[860px] h-[80vh] max-w-[95vw] max-h-[92vh] font-sans"
     content-class="!p-0 flex flex-col overflow-hidden h-full"
+    @show="dialogWindow.onShow"
+    @hide="dialogWindow.onHide"
     @update:visible="val => !val && $emit('close')"
   >
     <template #header>
@@ -588,6 +591,7 @@ import InputText from 'primevue/inputtext';
 import Tag from 'primevue/tag';
 import { usePrimeVue } from 'primevue/config';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { useDialogWindow } from '@/composables/useDialogWindow';
 import { SUPPORTED_LOCALES, type SupportedLocale } from '@/i18n';
 import {
   GLOBAL_FONT_OPTIONS,
@@ -619,6 +623,7 @@ defineEmits<{
 const { t } = useI18n();
 const primevue = usePrimeVue();
 const settingsStore = useSettingsStore();
+const dialogWindow = useDialogWindow();
 const activeTab = ref<'theme' | 'editor' | 'results' | 'table_filter' | 'ai' | 'about'>('theme');
 
 const tabs = computed(() => [

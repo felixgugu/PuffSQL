@@ -4,7 +4,10 @@
     modal
     :closable="true"
     :dismissable-mask="true"
+    :class="dialogWindow.marker"
     class="w-full max-w-lg font-sans"
+    @show="dialogWindow.onShow"
+    @hide="dialogWindow.onHide"
     @update:visible="val => !val && $emit('cancel')"
   >
     <template #header>
@@ -129,6 +132,9 @@
 import Dialog from 'primevue/dialog';
 import Button from 'primevue/button';
 import Tag from 'primevue/tag';
+import { useDialogWindow } from '@/composables/useDialogWindow';
+
+const dialogWindow = useDialogWindow();
 
 defineProps<{
   isOpen: boolean;

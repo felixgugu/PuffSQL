@@ -2,11 +2,15 @@
   <Teleport to="body">
     <div
       v-if="dataViewStore.isOpen && dataViewStore.isMinimized"
-      class="fixed right-6 z-[9998] animate-fade-in select-none transition-[bottom] duration-200 ease-out"
-      :class="isAiPillVisible ? 'bottom-20' : 'bottom-6'"
+      class="fixed bottom-6 right-6 z-[9998] select-none transition-transform duration-200 ease-out will-change-transform motion-reduce:transition-none"
+      :class="isAiPillVisible ? '-translate-y-14' : 'translate-y-0'"
     >
+      <!--
+        The entrance animation lives on the inner surface: the outer element owns the stacking
+        offset, so the two never animate the same `transform`.
+      -->
       <div
-        class="flex items-center space-x-2.5 px-3.5 py-2 rounded-full shadow-2xl border border-sky-500/40 bg-dark-850 text-dark-100 hover:border-sky-400 transition-all duration-200 cursor-pointer group"
+        class="animate-fade-in flex items-center space-x-2.5 px-3.5 py-2 rounded-full shadow-2xl border border-sky-500/40 bg-dark-850 text-dark-100 hover:border-sky-400 transition-all duration-200 cursor-pointer group"
         @click="dataViewStore.restore()"
       >
         <!-- Icon -->

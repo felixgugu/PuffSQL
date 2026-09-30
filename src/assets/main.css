@@ -89,6 +89,8 @@
     user-select: none;
     -webkit-user-select: none;
     font-family: var(--app-font-sans);
+    /* Let variable fonts pick the optical size for the rendered size instead of a single cut. */
+    font-optical-sizing: auto;
   }
 
   html.dark, body.dark, html.dark body {
@@ -577,12 +579,113 @@ html.dark .context-view .monaco-action-bar.vertical .action-item:hover .keybindi
 }
 
 /* ==========================================================================
-   PrimeVue Dialog Theme-Aware Border Radius Unification
-   All dialogs respect the active theme preset tokens (Aura, Lara, Nora, Material)
+   Dialog Surface Unification
+
+   Every dialog in the app — the PrimeVue ones, the hand-rolled TSV wizard and the floating tool
+   windows — shares one frame: the same 1px border, radius, hairline ring and shadow. Individual
+   dialogs still pick their own background, because several are deliberately layered (a header
+   strip over a body), but nothing paints a border of its own any more. Radii still respect the
+   active theme preset tokens (Aura, Lara, Nora, Material).
+
+   The semantic accents (.sq-dialog-accent-danger / -warn) are part of the same system, so the one
+   dialog that has to shout about an irreversible write still fits the shared frame.
    ========================================================================== */
-.p-dialog:not(.p-dialog-maximized) {
+.p-dialog:not(.p-dialog-maximized),
+.sq-dialog-surface {
   border-radius: var(--p-dialog-border-radius, var(--p-overlay-modal-border-radius, var(--p-content-border-radius, 0.5rem))) !important;
+  border: 1px solid rgb(var(--color-dark-700)) !important;
+  box-shadow: 0 24px 48px -12px rgb(0 0 0 / 0.18), 0 6px 16px -8px rgb(0 0 0 / 0.12) !important;
   overflow: hidden !important;
+}
+
+html.dark .p-dialog:not(.p-dialog-maximized),
+html.dark .sq-dialog-surface {
+  box-shadow: 0 24px 48px -12px rgb(0 0 0 / 0.62), 0 6px 16px -8px rgb(0 0 0 / 0.45) !important;
+}
+
+.p-dialog:not(.p-dialog-maximized).sq-dialog-accent-danger,
+.sq-dialog-surface.sq-dialog-accent-danger {
+  border-color: rgb(var(--color-danger)) !important;
+  box-shadow: 0 24px 48px -12px rgb(159 18 57 / 0.4), 0 6px 16px -8px rgb(0 0 0 / 0.4) !important;
+}
+
+.p-dialog:not(.p-dialog-maximized).sq-dialog-accent-warn,
+.sq-dialog-surface.sq-dialog-accent-warn {
+  border-color: rgb(var(--color-warn)) !important;
+  box-shadow: 0 24px 48px -12px rgb(146 64 14 / 0.35), 0 6px 16px -8px rgb(0 0 0 / 0.4) !important;
+}
+
+/* The header is the drag surface, so it carries the move cursor. */
+.sq-dialog-window .p-dialog-header,
+.sq-dialog-drag-handle {
+  cursor: move;
+}
+
+/*
+ * Drag / resize grab zones, injected into the dialog root by useDialogWindow. They sit inside the
+ * border so `overflow: hidden` cannot clip them; the cursor carries the affordance.
+ */
+.sq-dialog-resize-handle {
+  position: absolute;
+  z-index: 30;
+  touch-action: none;
+}
+
+.sq-dialog-resize-tl,
+.sq-dialog-resize-tr,
+.sq-dialog-resize-bl,
+.sq-dialog-resize-br {
+  width: 14px;
+  height: 14px;
+}
+
+.sq-dialog-resize-tl {
+  top: 0;
+  left: 0;
+  cursor: nwse-resize;
+}
+.sq-dialog-resize-tr {
+  top: 0;
+  right: 0;
+  cursor: nesw-resize;
+}
+.sq-dialog-resize-bl {
+  bottom: 0;
+  left: 0;
+  cursor: nesw-resize;
+}
+.sq-dialog-resize-br {
+  bottom: 0;
+  right: 0;
+  cursor: nwse-resize;
+}
+
+.sq-dialog-resize-t,
+.sq-dialog-resize-b {
+  left: 14px;
+  right: 14px;
+  height: 6px;
+  cursor: ns-resize;
+}
+.sq-dialog-resize-t {
+  top: 0;
+}
+.sq-dialog-resize-b {
+  bottom: 0;
+}
+
+.sq-dialog-resize-l,
+.sq-dialog-resize-r {
+  top: 14px;
+  bottom: 14px;
+  width: 6px;
+  cursor: ew-resize;
+}
+.sq-dialog-resize-l {
+  left: 0;
+}
+.sq-dialog-resize-r {
+  right: 0;
 }
 
 .p-dialog:not(.p-dialog-maximized) .p-dialog-header {
@@ -792,30 +895,6 @@ html:not(.dark) .p-tooltip-bottom .p-tooltip-arrow {
   font-size: 0.6875rem !important; /* 11px */
   width: 0.6875rem !important;
   height: 0.6875rem !important;
-}
-
-/* ==========================================================================
-   AI SQL Chat Non-modal Floating Dialog: Solid Opaque Background & Resizable
-   ========================================================================== */
-.ai-sql-chat-dialog {
-  background-color: rgb(var(--color-dark-850)) !important;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6) !important;
-}
-
-.ai-sql-chat-dialog:not(.p-dialog-maximized) {
-  resize: both;
-  overflow: hidden;
-}
-
-.ai-sql-chat-dialog .p-dialog-header {
-  background-color: rgb(var(--color-dark-850)) !important;
-  border-bottom: 1px solid rgb(var(--color-dark-700)) !important;
-  user-select: none;
-}
-
-.ai-sql-chat-dialog .p-dialog-content {
-  background-color: rgb(var(--color-dark-900)) !important;
-  background-image: none !important;
 }
 
 /* ==========================================================================
@@ -1030,4 +1109,138 @@ html:not(.dark) .ai-markdown-table th {
   background-position: right bottom;
   pointer-events: none;
   user-select: none;
+}
+
+/* ==========================================================================
+   Motion & Accessibility
+
+   The app follows Apple's "Designing Fluid Interfaces" model: anything a pointer can drag is
+   driven from `utils/spring.ts` so it starts at the value already on screen, inherits the
+   gesture's velocity and can be grabbed mid-flight. That means the rules below are mostly about
+   *removing* prescribed motion — the loops, the fixed-duration slides and the pieces that keep
+   moving when the user asked them not to.
+   ========================================================================== */
+
+/*
+ * Indeterminate progress hairline. A query in flight has to be visible from the results area,
+ * not only from the toolbar button and the status bar — feedback must be continuous *during*
+ * the wait, not just at the end of it. 2px, opacity-only, no layout impact.
+ */
+.sq-progress-line {
+  position: relative;
+  height: 2px;
+  flex-shrink: 0;
+  overflow: hidden;
+  background-color: rgb(var(--color-dark-750));
+}
+
+.sq-progress-line::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 35%;
+  border-radius: 9999px;
+  background-color: rgb(var(--color-accent));
+  animation: sqProgressSlide 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes sqProgressSlide {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(286%);
+  }
+}
+
+/*
+ * Press feedback belongs on pointer-down, not on release, and it must not be animated: waiting
+ * for the click to show anything is what makes a control feel dead. `transform` only, so no
+ * layout is touched.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .p-button:not(:disabled):not(.p-disabled):active {
+    transform: scale(0.96);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /*
+   * Reduced motion is a gentler equivalent, not the absence of feedback. Looping and travelling
+   * motion is dropped; colour, opacity and status changes are kept because they carry meaning.
+   */
+  .animate-pulse,
+  .animate-ping,
+  .animate-bounce,
+  .animate-fadein,
+  .animate-fade-in,
+  .sq-menu-in {
+    animation: none !important;
+  }
+
+  /* A spinner reports "still working", so it keeps turning — just calmly. */
+  .animate-spin {
+    animation-duration: 2s !important;
+  }
+
+  /* The progress hairline stops sliding but keeps reporting: a static accent segment instead
+     of a travelling one. */
+  .sq-progress-line::after {
+    animation: none !important;
+  }
+
+  /*
+   * PrimeVue overlays scale and slide. Collapse them to a short cross-fade so the dialog still
+   * announces itself without any travel across the screen.
+   */
+  .p-dialog-enter-active,
+  .p-dialog-leave-active,
+  .p-overlay-enter-active,
+  .p-overlay-leave-active,
+  .p-connected-overlay-enter-active,
+  .p-connected-overlay-leave-active,
+  .p-select-overlay-enter-active,
+  .p-select-overlay-leave-active,
+  .p-contextmenu-enter-active,
+  .p-contextmenu-leave-active,
+  .p-menu-enter-active,
+  .p-menu-leave-active,
+  .p-toast-message-enter-active,
+  .p-toast-message-leave-active {
+    transition-property: opacity !important;
+    transition-duration: 120ms !important;
+    transform: none !important;
+  }
+
+  /* Programmatic scrolls (e.g. locating a table in Explorer) jump instead of gliding. */
+  html {
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  /*
+   * Frostier, not thinner. Every blurred surface in this app already paints a >= 90% opaque
+   * token background or is a scrim, so dropping the blur keeps the contrast without leaving
+   * anything see-through.
+   */
+  [class*='backdrop-blur'] {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :focus-visible {
+    outline: 2px solid rgb(var(--color-accent)) !important;
+    outline-offset: 1px;
+  }
+
+  /* Hairline dividers become real structure when the user asks for more contrast. */
+  .border-dark-700,
+  .border-dark-750 {
+    border-color: rgb(var(--color-dark-500)) !important;
+  }
 }

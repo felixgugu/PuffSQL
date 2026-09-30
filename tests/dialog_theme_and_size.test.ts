@@ -10,9 +10,11 @@ function readSource(relPath: string): string {
 describe('Dialog theme styling and dimension consistency', () => {
   test('main.css enforces theme-aware border radius on all non-maximized Dialogs', () => {
     const css = readSource('src/assets/main.css');
+    // The canonical frame is shared by PrimeVue dialogs and the hand-rolled surfaces, so the
+    // selector list names both.
     assert.match(
       css,
-      /\.p-dialog:not\(\.p-dialog-maximized\)\s*\{\s*border-radius:\s*var\(--p-dialog-border-radius/,
+      /\.p-dialog:not\(\.p-dialog-maximized\),\s*\n\.sq-dialog-surface\s*\{\s*border-radius:\s*var\(--p-dialog-border-radius/,
       'main.css must enforce theme-aware border radius for .p-dialog'
     );
     assert.match(

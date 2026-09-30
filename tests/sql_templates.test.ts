@@ -132,7 +132,7 @@ test('sqlTemplateStore: custom template file CRUD operations and persistence', a
 
   let savedTemplates: any[] = [];
   templateService.loadCustomTemplates = async () => ({
-    filePath: 'G:\\SQLight\\sql_custom_templates.json',
+    filePath: 'G:\\PuffSQL\\sql_custom_templates.json',
     templates: [
       {
         id: 'external-custom-1',
@@ -149,12 +149,12 @@ test('sqlTemplateStore: custom template file CRUD operations and persistence', a
 
   templateService.saveCustomTemplates = async (templates) => {
     savedTemplates = templates;
-    return 'G:\\SQLight\\sql_custom_templates.json';
+    return 'G:\\PuffSQL\\sql_custom_templates.json';
   };
 
   // 1. Initial load
   await store.loadTemplates(true);
-  assert.equal(store.customFilePath, 'G:\\SQLight\\sql_custom_templates.json');
+  assert.equal(store.customFilePath, 'G:\\PuffSQL\\sql_custom_templates.json');
   assert.equal(store.customTemplates.length, 1);
   assert.equal(store.allTemplates.length, BUILTIN_SQL_TEMPLATES.length + 1);
 

@@ -4,8 +4,11 @@
     modal
     :closable="step !== 'running'"
     :dismissable-mask="step !== 'running'"
+    :class="dialogWindow.marker"
     class="w-full max-w-xl h-[80vh] font-sans flex flex-col"
     content-class="flex-1 overflow-y-auto"
+    @show="dialogWindow.onShow"
+    @hide="dialogWindow.onHide"
     @update:visible="val => !val && handleClose()"
   >
     <template #header>
@@ -412,6 +415,7 @@ import Dialog from 'primevue/dialog';
 import Button from 'primevue/button';
 import { queryService } from '@/services/queryService';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
+import { useDialogWindow } from '@/composables/useDialogWindow';
 import {
   getTablesAndColumnsSql,
   getIndexesAndKeysSql,
@@ -432,6 +436,7 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+const dialogWindow = useDialogWindow();
 const emit = defineEmits<{
   (e: 'close'): void;
 }>();

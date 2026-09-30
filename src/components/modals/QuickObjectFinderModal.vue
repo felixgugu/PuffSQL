@@ -6,11 +6,14 @@
     :closable="false"
     :dismissableMask="true"
     :showHeader="false"
-    class="w-full max-w-2xl h-[80vh] !bg-dark-850 !border !border-dark-700 shadow-2xl overflow-hidden ring-1 ring-black/5 dark:ring-white/10 flex flex-col"
+    :class="dialogWindow.marker"
+    class="w-full max-w-2xl h-[80vh] !bg-dark-850 overflow-hidden flex flex-col"
     contentClass="!p-0 !bg-dark-850 h-full flex flex-col overflow-hidden"
+    @show="dialogWindow.onShow"
+    @hide="dialogWindow.onHide"
   >
     <!-- Search Header Bar -->
-    <div class="p-3 border-b border-dark-700 bg-dark-900/60 flex flex-col space-y-2.5 flex-shrink-0">
+    <div class="sq-dialog-drag-handle p-3 border-b border-dark-700 bg-dark-900/60 flex flex-col space-y-2.5 flex-shrink-0">
       <div class="flex items-center space-x-2">
         <IconField class="flex-1">
           <InputIcon class="pi pi-search text-accent" />
@@ -348,6 +351,7 @@ import { useConnectionStore } from '@/stores/connectionStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useSchemaStore } from '@/stores/schemaStore';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { useDialogWindow } from '@/composables/useDialogWindow';
 import {
   filterAndRankQuickObjects,
   highlightMatchedChunks,
@@ -368,6 +372,7 @@ const connectionStore = useConnectionStore();
 const workspaceStore = useWorkspaceStore();
 const schemaStore = useSchemaStore();
 const settingsStore = useSettingsStore();
+const dialogWindow = useDialogWindow();
 
 const searchQuery = ref('');
 const activeIndex = ref(0);

@@ -4,13 +4,17 @@
     modal
     :dismissable-mask="true"
     :closable="true"
-    class="w-full max-w-xl h-[80vh] font-sans !border !border-dark-700/80 !shadow-2xl !bg-dark-900 overflow-hidden flex flex-col"
+    :class="dialogWindow.marker"
+    class="w-full max-w-xl h-[80vh] font-sans !bg-dark-900 overflow-hidden flex flex-col"
     :pt="{
-      root: { class: '!bg-dark-900 !border-dark-700/80 flex flex-col' },
+      // The frame itself comes from the shared dialog surface; only the fill is local.
+      root: { class: '!bg-dark-900 flex flex-col' },
       header: { class: '!bg-dark-850/90 !border-b !border-dark-750 !px-5 !py-3.5 flex-shrink-0' },
       content: { class: '!bg-dark-900 !px-5 !py-4 flex-1 overflow-y-auto' },
       footer: { class: '!bg-dark-850/80 !border-t !border-dark-750 !px-5 !py-3 flex-shrink-0' }
     }"
+    @show="dialogWindow.onShow"
+    @hide="dialogWindow.onHide"
     @update:visible="val => !val && close()"
   >
     <!-- Custom Modern Header -->
@@ -353,6 +357,7 @@
 <script setup lang="ts">
 import { reactive, ref, watch, computed } from 'vue';
 import Dialog from 'primevue/dialog';
+import { useDialogWindow } from '@/composables/useDialogWindow';
 import InputText from 'primevue/inputtext';
 import InputNumber from 'primevue/inputnumber';
 import Password from 'primevue/password';
@@ -377,6 +382,7 @@ const emit = defineEmits<{
   (e: 'saved', profile: ConnectionProfile): void;
 }>();
 
+const dialogWindow = useDialogWindow();
 const connectionStore = useConnectionStore();
 const settingsStore = useSettingsStore();
 

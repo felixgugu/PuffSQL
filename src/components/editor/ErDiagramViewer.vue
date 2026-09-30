@@ -229,8 +229,12 @@
       <!-- Edge Property Context Menu Popover -->
       <div
         v-if="edgeMenu.visible"
-        :style="{ top: `${edgeMenu.y}px`, left: `${edgeMenu.x}px` }"
-        class="fixed z-50 backdrop-blur border rounded-lg shadow-2xl py-1.5 w-64 text-xs font-sans select-none animate-in fade-in zoom-in-95 duration-100"
+        :style="{
+          top: `${edgeMenu.y}px`,
+          left: `${edgeMenu.x}px`,
+          transformOrigin: `${edgeMenu.originX}px ${edgeMenu.originY}px`
+        }"
+        class="sq-menu-in fixed z-50 backdrop-blur border rounded-lg shadow-2xl py-1.5 w-64 text-xs font-sans select-none"
         :class="isLightTheme ? 'bg-slate-50/95 border-slate-200 text-slate-700 shadow-slate-300/60' : 'bg-dark-850/95 border-dark-700 text-dark-200'"
         @click.stop
       >
@@ -525,6 +529,11 @@ const edgeMenu = reactive({
   visible: false,
   x: 0,
   y: 0,
+  // Where the menu was opened from, relative to the panel itself. The entrance scales out of
+  // that point so the menu reads as coming from the relation the user right-clicked, not from
+  // the middle of nowhere.
+  originX: 0,
+  originY: 0,
   edge: null as any,
   sourceTable: '',
   sourceColumn: '',
@@ -805,6 +814,8 @@ function initGraph() {
     edgeMenu.visible = true;
     edgeMenu.x = Math.min(e.clientX, window.innerWidth - 270);
     edgeMenu.y = Math.min(e.clientY, window.innerHeight - 300);
+    edgeMenu.originX = e.clientX - edgeMenu.x;
+    edgeMenu.originY = e.clientY - edgeMenu.y;
     edgeMenu.edge = edge;
     edgeMenu.sourceTable = sourceData ? sourceData.table : 'Source';
     edgeMenu.sourceColumn = sourcePortId.replace(/-(in|out)$/, '');
@@ -2030,3 +2041,26 @@ function restoreFromInitialData(data: any, silent = false) {
   }
 }
 </script>
+
+<style scoped>
+/*
+ * The edge menu materialises out of the relation that was right-clicked (transform-origin is
+ * bound to the click point above). Scaling from that origin makes the spatial relationship
+ * obvious. The entrance classes this replaced came from the tailwindcss-animate plugin, which
+ * this project does not install, so the menu used to appear with no animation at all.
+ */
+.sq-menu-in {
+  animation: sqMenuIn 160ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes sqMenuIn {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+</style>

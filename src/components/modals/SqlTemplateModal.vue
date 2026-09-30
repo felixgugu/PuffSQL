@@ -7,11 +7,14 @@
     :closable="false"
     :dismissableMask="true"
     :showHeader="false"
-    class="w-full max-w-5xl h-[80vh] !bg-dark-850 !border !border-dark-700 shadow-2xl overflow-hidden ring-1 ring-black/5 dark:ring-white/10"
+    :class="dialogWindow.marker"
+    class="w-full max-w-5xl h-[80vh] !bg-dark-850 overflow-hidden"
     contentClass="!p-0 !bg-dark-850 h-full flex flex-col"
+    @show="dialogWindow.onShow"
+    @hide="dialogWindow.onHide"
   >
     <!-- Top Header & Search Area -->
-    <div class="p-3.5 border-b border-dark-700 bg-dark-900/80 flex flex-col space-y-2.5 flex-shrink-0">
+    <div class="sq-dialog-drag-handle p-3.5 border-b border-dark-700 bg-dark-900/80 flex flex-col space-y-2.5 flex-shrink-0">
       <div class="flex items-center space-x-2.5">
         <i class="pi pi-book text-warn text-base flex-shrink-0"></i>
         <span class="text-sm font-semibold text-dark-100 flex items-center space-x-2">
@@ -389,7 +392,10 @@
     v-model:visible="isCustomFormOpen"
     modal
     :header="editingTemplateId ? $t('sqlTemplates.editModalTitle') : $t('sqlTemplates.addModalTitle')"
-    class="w-full max-w-xl !bg-dark-850 !border-dark-700"
+    :class="formDialogWindow.marker"
+    class="w-full max-w-xl !bg-dark-850"
+    @show="formDialogWindow.onShow"
+    @hide="formDialogWindow.onHide"
   >
     <form @submit.prevent="saveCustomTemplateForm" class="p-2 space-y-3 text-xs font-sans">
       <!-- Title Field -->
@@ -494,6 +500,7 @@ import Select from 'primevue/select';
 import Tag from 'primevue/tag';
 import { useSqlTemplateStore } from '@/stores/sqlTemplateStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
+import { useDialogWindow } from '@/composables/useDialogWindow';
 import type { SqlTemplate, SqlTemplateCategory } from '@/types/sqlTemplate';
 
 const props = defineProps<{
@@ -506,6 +513,10 @@ const emit = defineEmits<{
   (e: 'open-in-new-tab', template: SqlTemplate): void;
 }>();
 
+// Two dialogs live in this component; each needs its own instance so their drag handles and
+// resize zones never collide.
+const dialogWindow = useDialogWindow();
+const formDialogWindow = useDialogWindow();
 const { t } = useI18n();
 const templateStore = useSqlTemplateStore();
 const workspaceStore = useWorkspaceStore();

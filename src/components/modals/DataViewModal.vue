@@ -7,8 +7,8 @@
       class="fixed z-[9995] flex flex-col font-sans overflow-hidden animate-fade-in"
       :class="[
         dataViewStore.isMaximized
-          ? 'inset-0 w-screen h-screen rounded-none border-0 shadow-none'
-          : 'border border-dark-700 shadow-2xl bg-dark-850 text-dark-100',
+          ? 'inset-0 w-screen h-screen rounded-none'
+          : 'sq-dialog-surface bg-dark-850 text-dark-100',
       ]"
       :style="
         dataViewStore.isMaximized
@@ -372,6 +372,8 @@ import Button from 'primevue/button';
 import Tag from 'primevue/tag';
 import { useDataViewStore } from '@/stores/dataViewStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
+import { useFloatingWindowDrag } from '@/composables/useFloatingWindowDrag';
+import { useWindowResize } from '@/composables/useWindowResize';
 import type { DataViewFieldItem } from '@/types/dataView';
 
 const dataViewStore = useDataViewStore();
@@ -414,112 +416,24 @@ watch(
 );
 
 // ========================
-// 視窗拖曳移動邏輯 (Drag Move)
+// 視窗拖曳移動邏輯 (Drag Move) — rubber-banded edges, spring settle, interruptible
 // ========================
-let isDraggingMove = false;
-let moveStartX = 0;
-let moveStartY = 0;
-let initialLeft = 0;
-let initialTop = 0;
-
-function handleTitlePointerDown(e: PointerEvent) {
-  if (dataViewStore.isMaximized || e.button !== 0) return;
-  isDraggingMove = true;
-  moveStartX = e.clientX;
-  moveStartY = e.clientY;
-  initialLeft = pos.left;
-  initialTop = pos.top;
-
-  window.addEventListener('pointermove', onPointerMoveDrag);
-  window.addEventListener('pointerup', onPointerUpDrag);
-  window.addEventListener('pointercancel', onPointerUpDrag);
-}
-
-function onPointerMoveDrag(e: PointerEvent) {
-  if (!isDraggingMove) return;
-  const dx = e.clientX - moveStartX;
-  const dy = e.clientY - moveStartY;
-
-  const maxLeft = window.innerWidth - 100;
-  const maxTop = window.innerHeight - 60;
-  pos.left = Math.min(Math.max(-size.width + 100, initialLeft + dx), maxLeft);
-  pos.top = Math.min(Math.max(0, initialTop + dy), maxTop);
-}
-
-function onPointerUpDrag() {
-  isDraggingMove = false;
-  window.removeEventListener('pointermove', onPointerMoveDrag);
-  window.removeEventListener('pointerup', onPointerUpDrag);
-  window.removeEventListener('pointercancel', onPointerUpDrag);
-}
+const { startDrag: handleTitlePointerDown, endDrag: stopWindowDrag } = useFloatingWindowDrag({
+  pos,
+  size,
+  isLocked: () => dataViewStore.isMaximized,
+});
 
 // ========================
 // 8 向邊緣與角落流暢拉伸 (Resize)
 // ========================
-type ResizeHandle = 'tl' | 'tr' | 'bl' | 'br' | 't' | 'b' | 'l' | 'r';
-let currentHandle: ResizeHandle | null = null;
-let resizeStartX = 0;
-let resizeStartY = 0;
-let resizeStartW = 0;
-let resizeStartH = 0;
-let resizeStartLeft = 0;
-let resizeStartTop = 0;
-
-function startResize(e: PointerEvent, handle: ResizeHandle) {
-  if (dataViewStore.isMaximized || e.button !== 0) return;
-  currentHandle = handle;
-  resizeStartX = e.clientX;
-  resizeStartY = e.clientY;
-  resizeStartW = size.width;
-  resizeStartH = size.height;
-  resizeStartLeft = pos.left;
-  resizeStartTop = pos.top;
-
-  window.addEventListener('pointermove', onPointerMoveResize);
-  window.addEventListener('pointerup', onPointerUpResize);
-  window.addEventListener('pointercancel', onPointerUpResize);
-}
-
-function onPointerMoveResize(e: PointerEvent) {
-  if (!currentHandle) return;
-  const dx = e.clientX - resizeStartX;
-  const dy = e.clientY - resizeStartY;
-
-  const minW = 520;
-  const minH = 320;
-  const maxW = window.innerWidth;
-  const maxH = window.innerHeight;
-
-  // 右 / 下
-  if (currentHandle.includes('r')) {
-    size.width = Math.min(maxW, Math.max(minW, resizeStartW + dx));
-  }
-  if (currentHandle.includes('b')) {
-    size.height = Math.min(maxH, Math.max(minH, resizeStartH + dy));
-  }
-  // 左 / 上
-  if (currentHandle.includes('l')) {
-    const candidateW = resizeStartW - dx;
-    if (candidateW >= minW && candidateW <= maxW) {
-      size.width = candidateW;
-      pos.left = resizeStartLeft + dx;
-    }
-  }
-  if (currentHandle.includes('t')) {
-    const candidateH = resizeStartH - dy;
-    if (candidateH >= minH && candidateH <= maxH) {
-      size.height = candidateH;
-      pos.top = resizeStartTop + dy;
-    }
-  }
-}
-
-function onPointerUpResize() {
-  currentHandle = null;
-  window.removeEventListener('pointermove', onPointerMoveResize);
-  window.removeEventListener('pointerup', onPointerUpResize);
-  window.removeEventListener('pointercancel', onPointerUpResize);
-}
+const { startResize, endResize: onPointerUpResize } = useWindowResize({
+  pos,
+  size,
+  isLocked: () => dataViewStore.isMaximized,
+  minWidth: 520,
+  minHeight: 320,
+});
 
 function onFilterInput(event: Event) {
   const target = event.target as HTMLInputElement;
@@ -604,7 +518,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   window.removeEventListener('resize', initPosition);
   window.removeEventListener('keydown', handleKeyDown);
-  onPointerUpDrag();
+  stopWindowDrag();
   onPointerUpResize();
 });
 </script>

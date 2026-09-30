@@ -1,5 +1,17 @@
 <template>
   <div class="h-full bg-dark-850 flex flex-col overflow-hidden select-none border-t border-dark-700">
+    <!--
+      Indeterminate progress hairline. While a query runs, the toolbar button and the status bar
+      are not where the user is looking — the results area is. This keeps the wait visible from
+      the panel itself. Reduced motion swaps the slide for a static segment (see main.css).
+    -->
+    <div
+      v-if="queryStore.isExecuting"
+      class="sq-progress-line"
+      role="progressbar"
+      :aria-label="$t('common.running')"
+    />
+
     <!-- Combined Bottom Panel Header Tabs Bar: Left (SQL Result Tabs) + Auto Space + Right (Messages | History | Stats) + Minimize -->
     <div class="h-9 bg-dark-850 border-b border-dark-750 flex items-center justify-between px-1.5 select-none flex-shrink-0 overflow-hidden">
       <!-- Left: SQL Result Tabs Bar (with horizontal scroll) -->
@@ -15,13 +27,14 @@
           @pointerdown="onTabPointerDown($event, idx)"
           @click="handleTabClick(rtab.id)"
           @contextmenu.prevent="openTabContextMenu($event, rtab)"
+          :data-flip-key="rtab.id"
           :class="[
             'result-tab-item h-7 px-2 flex items-center space-x-1.5 text-xxs cursor-grab active:cursor-grabbing transition-all duration-100 group max-w-[220px] border flex-shrink-0 select-none touch-none relative',
             queryStore.activeResultTabId === rtab.id
               ? 'font-medium shadow-sm border-primary active-tab'
               : 'bg-dark-850/60 border-dark-750/70 hover:border-dark-600 hover:bg-dark-800/90',
             isPointerDragging && dragSourceIndex === idx ? 'opacity-35 border-dashed border-brand-400 scale-95' : '',
-            dropHoverIndex === idx && isPointerDragging && dropHoverIndex !== dragSourceIndex ? 'border-brand-400 bg-brand-500/25 ring-1 ring-brand-400 scale-102' : ''
+            dropHoverIndex === idx && isPointerDragging && dropHoverIndex !== dragSourceIndex ? 'border-brand-400 bg-brand-500/25 ring-1 ring-brand-400 scale-105' : ''
           ]"
           :style="getResultTabStyle(rtab)"
           :title="`${rtab.title}\n執行時間: ${rtab.executedAt} (${rtab.durationMs}ms)\n筆數: ${rtab.rowCount} rows\n\nSQL 語句:\n${rtab.sql}`"
@@ -184,6 +197,7 @@ import ResultGrid from '@/components/results/ResultGrid.vue';
 import ResultMessages from '@/components/results/ResultMessages.vue';
 import QueryHistory from '@/components/results/QueryHistory.vue';
 import ExecutionStatsViewer from '@/components/results/ExecutionStatsViewer.vue';
+import { cancelFlip, captureFlipRects, playFlip } from '@/composables/useFlip';
 import type { BottomPanelTab } from '@/types/workspace';
 import type { QueryResultTab } from '@/types/query';
 
@@ -213,6 +227,8 @@ const isPointerDragging = ref<boolean>(false);
 
 let startPointerX = 0;
 let hasMovedBeyondThreshold = false;
+// A drag ends with a click event; that one click must not also activate the result tab it landed on.
+let suppressClick = false;
 
 function onTabPointerDown(e: PointerEvent, index: number) {
   // Only respond to left mouse button
@@ -224,6 +240,9 @@ function onTabPointerDown(e: PointerEvent, index: number) {
     return;
   }
 
+  suppressClick = false;
+  // A previous reorder may still be settling; take over from the laid-out position.
+  cancelFlip(resultsTabsBarRef.value, '.result-tab-item');
   dragSourceIndex.value = index;
   dropHoverIndex.value = index;
   startPointerX = e.clientX;
@@ -278,7 +297,7 @@ function onDocumentPointerMove(e: PointerEvent) {
   }
 }
 
-function onDocumentPointerUp() {
+async function onDocumentPointerUp() {
   window.removeEventListener('pointermove', onDocumentPointerMove);
   window.removeEventListener('pointerup', onDocumentPointerUp);
   window.removeEventListener('pointercancel', onDocumentPointerUp);
@@ -286,25 +305,31 @@ function onDocumentPointerUp() {
   document.body.style.cursor = '';
   document.body.style.userSelect = '';
 
-  if (
-    isPointerDragging.value &&
-    dragSourceIndex.value !== null &&
-    dropHoverIndex.value !== null &&
-    dragSourceIndex.value !== dropHoverIndex.value
-  ) {
-    queryStore.reorderResultTabs(dragSourceIndex.value, dropHoverIndex.value);
-  }
+  const from = dragSourceIndex.value;
+  const to = dropHoverIndex.value;
+  const wasDragging = isPointerDragging.value;
 
+  // Clear the drag state first so the source tab drops its dragging classes before the FLIP
+  // pass measures the settled layout.
   dragSourceIndex.value = null;
   dropHoverIndex.value = null;
+  isPointerDragging.value = false;
+  hasMovedBeyondThreshold = false;
+  suppressClick = wasDragging;
 
-  setTimeout(() => {
-    isPointerDragging.value = false;
-    hasMovedBeyondThreshold = false;
-  }, 50);
+  if (!wasDragging || from === null || to === null || from === to) return;
+
+  const before = captureFlipRects(resultsTabsBarRef.value, '.result-tab-item');
+  queryStore.reorderResultTabs(from, to);
+  await nextTick();
+  playFlip(before, resultsTabsBarRef.value, '.result-tab-item', 'x');
 }
 
 function handleTabClick(tabId: string) {
+  if (suppressClick) {
+    suppressClick = false;
+    return;
+  }
   if (hasMovedBeyondThreshold || isPointerDragging.value) {
     return;
   }

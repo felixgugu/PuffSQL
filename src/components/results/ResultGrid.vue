@@ -85,6 +85,8 @@ import { Inbox } from 'lucide-vue-next';
 import ResizableSplitter from '@/components/common/ResizableSplitter.vue';
 import ResultGridItem from '@/components/results/ResultGridItem.vue';
 import { useGridLayoutStore } from '@/stores/gridLayoutStore';
+import { rubberbandClamp, SPRING_PRESETS } from '@/utils/spring';
+import { runSpring } from '@/composables/useMotion';
 import type { ResultSet } from '@/types/query';
 
 const props = defineProps<{
@@ -130,6 +132,8 @@ function itemKey(setIndex: number | null | undefined): string {
 // Pixel heights for each stacked pane
 const paneHeights = ref<number[]>([]);
 const draggingSplitterIndex = ref<number | null>(null);
+/** Set while a released splitter is springing back, so the observer does not fight the spring. */
+const settlingSplitterIndex = ref<number | null>(null);
 
 function toggleMaximize(index: number) {
   if (maximizedIndex.value === index) {
@@ -201,14 +205,63 @@ watch(
 );
 
 // Splitter Dragging Logic
+//
+// The two panes trade height with each other, so the pair's total is what stays constant while
+// the pointer moves. Past either end the splitter resists progressively instead of stopping
+// dead, and releasing hands the pointer's velocity to a spring so the panes settle back onto
+// the nearest limit without a seam.
 let startDragY = 0;
 let startTopH = 0;
 let startBottomH = 0;
 let activeSplitterIdx = -1;
+let dragSamples: Array<{ y: number; time: number }> = [];
+let cancelSplitterSettle: (() => void) | null = null;
+
+/** Panes never settle below this; they may dip past it only while the pointer is resisting. */
+const MIN_PANE_HEIGHT = 60;
+/** Only the last few pointer samples count when measuring the release velocity. */
+const VELOCITY_SAMPLE_WINDOW_MS = 120;
+/** Ceiling for the handed-off velocity, so a fast flick cannot launch the panes. */
+const MAX_RELEASE_VELOCITY = 800;
+/** A rubber band has already absorbed most of the energy. */
+const RELEASE_VELOCITY_SCALE = 0.35;
+const RUBBER_BAND_CONSTANT = 0.35;
+
+function splitterNow(): number {
+  return typeof performance !== 'undefined' ? performance.now() : Date.now();
+}
+
+function samplePanePointer(y: number) {
+  dragSamples.push({ y, time: splitterNow() });
+  const cutoff = splitterNow() - VELOCITY_SAMPLE_WINDOW_MS;
+  while (dragSamples.length > 2 && dragSamples[0]!.time < cutoff) {
+    dragSamples.shift();
+  }
+}
+
+/** Release velocity in px/s, measured over the last ~120ms rather than the whole gesture. */
+function paneReleaseVelocity(): number {
+  if (dragSamples.length < 2) return 0;
+  const first = dragSamples[0]!;
+  const last = dragSamples[dragSamples.length - 1]!;
+  const elapsed = (last.time - first.time) / 1000;
+  if (elapsed <= 0) return 0;
+  const velocity = (last.y - first.y) / elapsed;
+  return Math.max(Math.min(velocity, MAX_RELEASE_VELOCITY), -MAX_RELEASE_VELOCITY);
+}
+
+function stopSplitterSettle() {
+  cancelSplitterSettle?.();
+  cancelSplitterSettle = null;
+  settlingSplitterIndex.value = null;
+}
 
 function onSplitterPointerDown(splitterIndex: number, event: PointerEvent) {
   if (event.button !== 0) return;
   event.preventDefault();
+
+  // Grabbing a splitter that is still settling takes over from the height on screen.
+  stopSplitterSettle();
 
   activeSplitterIdx = splitterIndex;
   draggingSplitterIndex.value = splitterIndex;
@@ -221,6 +274,18 @@ function onSplitterPointerDown(splitterIndex: number, event: PointerEvent) {
 
   startTopH = paneHeights.value[splitterIndex] || 100;
   startBottomH = paneHeights.value[splitterIndex + 1] || 100;
+  dragSamples = [];
+  samplePanePointer(event.clientY);
+
+  // Keep receiving move/up events once the pointer leaves the splitter.
+  const handle = event.currentTarget as HTMLElement | null;
+  if (handle && typeof handle.setPointerCapture === 'function' && typeof event.pointerId === 'number') {
+    try {
+      handle.setPointerCapture(event.pointerId);
+    } catch {
+      // Capture is a nicety; the document listeners below still track the drag.
+    }
+  }
 
   if (typeof document !== 'undefined') {
     document.addEventListener('pointermove', onPointerMove);
@@ -235,25 +300,28 @@ function onPointerMove(event: PointerEvent) {
   if (draggingSplitterIndex.value === null || activeSplitterIdx < 0) return;
 
   const deltaY = event.clientY - startDragY;
-  const minH = 60;
+  samplePanePointer(event.clientY);
+
   const totalCombined = startTopH + startBottomH;
 
-  let newTopH = startTopH + deltaY;
-  let newBottomH = startBottomH - deltaY;
-
-  if (newTopH < minH) {
-    newTopH = minH;
-    newBottomH = totalCombined - minH;
-  } else if (newBottomH < minH) {
-    newBottomH = minH;
-    newTopH = totalCombined - minH;
-  }
+  // Past either end the pane keeps following the pointer, but with progressive resistance
+  // instead of stopping dead at the edge.
+  const newTopH = rubberbandClamp(
+    startTopH + deltaY,
+    MIN_PANE_HEIGHT,
+    totalCombined - MIN_PANE_HEIGHT,
+    totalCombined,
+    RUBBER_BAND_CONSTANT
+  );
 
   paneHeights.value[activeSplitterIdx] = Math.round(newTopH);
-  paneHeights.value[activeSplitterIdx + 1] = Math.round(newBottomH);
+  paneHeights.value[activeSplitterIdx + 1] = Math.round(totalCombined - newTopH);
 }
 
 function onPointerUp() {
+  const idx = activeSplitterIdx;
+  const wasDragging = draggingSplitterIndex.value !== null;
+
   draggingSplitterIndex.value = null;
   activeSplitterIdx = -1;
 
@@ -264,6 +332,42 @@ function onPointerUp() {
     document.body.style.userSelect = '';
     document.body.style.cursor = '';
   }
+
+  if (!wasDragging || idx < 0) return;
+
+  const velocity = paneReleaseVelocity();
+  dragSamples = [];
+
+  const startTop = paneHeights.value[idx] ?? 0;
+  const totalCombined = startTop + (paneHeights.value[idx + 1] ?? 0);
+  const restingTop = Math.round(
+    Math.min(Math.max(startTop, MIN_PANE_HEIGHT), totalCombined - MIN_PANE_HEIGHT)
+  );
+
+  // Inside the limits there is no snap target: the panes stay where they were dropped.
+  if (Math.abs(restingTop - startTop) < 0.5) return;
+
+  settlingSplitterIndex.value = idx;
+
+  cancelSplitterSettle = runSpring({
+    from: startTop,
+    to: restingTop,
+    velocity: velocity * RELEASE_VELOCITY_SCALE,
+    // The gesture carried momentum, so the snap back is allowed a little life.
+    config: SPRING_PRESETS.momentum,
+    onFrame: (value) => {
+      const next = Math.round(value);
+      paneHeights.value[idx] = next;
+      // Derive the partner from the same total so the pair never drifts apart.
+      paneHeights.value[idx + 1] = totalCombined - next;
+    },
+    onComplete: () => {
+      paneHeights.value[idx] = restingTop;
+      paneHeights.value[idx + 1] = totalCombined - restingTop;
+      settlingSplitterIndex.value = null;
+      cancelSplitterSettle = null;
+    },
+  });
 }
 
 let resizeObserver: ResizeObserver | null = null;
@@ -271,7 +375,7 @@ let resizeObserver: ResizeObserver | null = null;
 onMounted(() => {
   if (containerRef.value && typeof ResizeObserver !== 'undefined') {
     resizeObserver = new ResizeObserver(() => {
-      if (draggingSplitterIndex.value === null) {
+      if (draggingSplitterIndex.value === null && settlingSplitterIndex.value === null) {
         recalculateHeights();
       }
     });
@@ -287,6 +391,7 @@ onBeforeUnmount(() => {
     resizeObserver.disconnect();
     resizeObserver = null;
   }
+  stopSplitterSettle();
   onPointerUp();
 });
 </script>
