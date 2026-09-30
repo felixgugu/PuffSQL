@@ -302,6 +302,23 @@ html:not(.dark) .tabulator {
   font-size: 0.6875rem;
 }
 
+/* NULL is rendered as a labelled token by `createDataCellFormatter`, so it can never be mistaken
+   for the literal string "NULL" or for an empty string. The tint is derived from the brightest
+   text tone of the active palette at low alpha, which stays subtle in both colour modes. */
+.sqlight-null-badge {
+  display: inline-block;
+  vertical-align: middle;
+  padding: 0 5px;
+  border-radius: 4px;
+  border: 1px solid rgb(var(--color-dark-100) / 0.14);
+  background-color: rgb(var(--color-dark-100) / 0.06);
+  color: var(--sq-grid-muted);
+  font-size: 0.6875rem;
+  font-style: italic;
+  line-height: 15px;
+  letter-spacing: 0.03em;
+}
+
 .tabulator-row .tabulator-cell.sqlight-cell-bool-true {
   color: var(--sq-grid-bool-true-accent);
   font-weight: 600;

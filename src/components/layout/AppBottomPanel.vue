@@ -103,35 +103,58 @@
       <!-- PrimeVue Result Tab Context Menu -->
       <ContextMenu ref="tabContextMenuRef" :model="tabContextMenuItems" />
 
-      <!-- Right: Grid Actions + Text-style Tabs (Messages | History | Stats) + Panel Minimize Control -->
+      <!-- Right: Grid Actions + Panel View Switcher + Panel Minimize Control -->
       <div class="flex items-center space-x-1 pl-2 flex-shrink-0 text-xs">
         <!-- Grid Actions (only when in results tab and has active result sets) -->
         <template v-if="workspaceStore.bottomPanelTab === 'results' && activeResultSetsCount > 0">
-          <!-- 顯示工具列 / 隱藏工具列 -->
-          <button
+          <!-- Toolbar visibility for every grid pane in this result tab -->
+          <Button
             type="button"
+            :icon="isToolbarHidden ? 'pi pi-eye-slash' : 'pi pi-eye'"
+            size="small"
+            rounded
+            text
+            :severity="isToolbarHidden ? 'primary' : 'secondary'"
             @click="toggleToolbarVisibility"
-            class="h-6 px-1.5 py-0.5 rounded text-xs transition-colors cursor-pointer select-none text-dark-400 hover:text-dark-200 hover:bg-dark-800"
-            :title="isToolbarHidden ? $t('results.showToolbarsTooltip') : $t('results.hideToolbarsTooltip')"
-          >
-            <span>{{ isToolbarHidden ? $t('results.showToolbars') : $t('results.hideToolbars') }}</span>
-          </button>
+            :aria-label="isToolbarHidden ? $t('results.showToolbars') : $t('results.hideToolbars')"
+            :v-tooltip.bottom="isToolbarHidden ? $t('results.showToolbarsTooltip') : $t('results.hideToolbarsTooltip')"
+            class="!w-6 !h-6 !p-0"
+          />
 
           <div class="h-3.5 w-px bg-dark-750 mx-1 flex-shrink-0"></div>
         </template>
 
-        <!-- Panel Tabs: 訊息 | 歷程 | 統計 -->
-        <button
-          v-for="tab in panelTabs"
-          :key="tab.id"
-          type="button"
-          @click="workspaceStore.setBottomPanelTab(tab.id)"
-          class="panel-sub-tab h-6 px-2 py-0.5 rounded text-xs transition-all cursor-pointer select-none border border-transparent"
-          :class="workspaceStore.bottomPanelTab === tab.id ? '!font-medium' : '!font-normal'"
-          :style="workspaceStore.bottomPanelTab === tab.id ? { color: 'var(--p-primary-color, #3b82f6)' } : {}"
+        <!--
+          Level 2 of the tab hierarchy: a segmented control, not document tabs. The results grid,
+          the message log, the query history and the IO stats are four *views of one panel*, so
+          they read as one control — unlike the query result chips on the left, which are separate
+          objects the user switches between.
+        -->
+        <div
+          class="sq-view-switch"
+          role="tablist"
+          :aria-label="$t('results.panelViews')"
+          @keydown="onPanelTabKeydown($event)"
         >
-          <span :class="workspaceStore.bottomPanelTab === tab.id ? 'text-primary' : 'text-dark-400 hover:text-dark-200'">{{ tab.label }}</span>
-        </button>
+          <button
+            v-for="(tab, index) in panelTabs"
+            :key="tab.id"
+            type="button"
+            role="tab"
+            :id="panelTabId(tab.id)"
+            :aria-controls="panelViewId(tab.id)"
+            :aria-selected="workspaceStore.bottomPanelTab === tab.id"
+            :tabindex="workspaceStore.bottomPanelTab === tab.id ? 0 : -1"
+            :title="tab.title"
+            :data-panel-index="index"
+            @click="workspaceStore.setBottomPanelTab(tab.id)"
+            class="sq-view-tab"
+            :class="{ 'is-active': workspaceStore.bottomPanelTab === tab.id }"
+          >
+            <span>{{ tab.label }}</span>
+            <span v-if="tab.badge > 0" class="sq-view-count">{{ tab.badge }}</span>
+          </button>
+        </div>
 
         <div class="h-3.5 w-px bg-dark-750 mx-1 flex-shrink-0"></div>
 
@@ -151,7 +174,14 @@
     <!-- Panel Body -->
     <div class="flex-1 overflow-hidden bg-dark-900">
       <!-- Tab 1: Results Grid -->
-      <div v-if="workspaceStore.bottomPanelTab === 'results'" class="w-full h-full flex flex-col min-h-0 overflow-hidden">
+      <div
+        v-if="workspaceStore.bottomPanelTab === 'results'"
+        :id="panelViewId('results')"
+        role="tabpanel"
+        :aria-labelledby="panelTabId('results')"
+        tabindex="0"
+        class="w-full h-full flex flex-col min-h-0 overflow-hidden focus:outline-none"
+      >
         <ResultGrid
           :result-sets="queryStore.activeResult?.resultSets ?? []"
           :tab-id="queryStore.activeResultTabId"
@@ -162,6 +192,9 @@
       <!-- Tab 2: Messages -->
       <ResultMessages
         v-else-if="workspaceStore.bottomPanelTab === 'messages'"
+        :id="panelViewId('messages')"
+        role="tabpanel"
+        :aria-labelledby="panelTabId('messages')"
         :messages="queryStore.sessionMessages"
         @clear="queryStore.clearMessages()"
       />
@@ -169,6 +202,9 @@
       <!-- Tab 3: History -->
       <QueryHistory
         v-else-if="workspaceStore.bottomPanelTab === 'history'"
+        :id="panelViewId('history')"
+        role="tabpanel"
+        :aria-labelledby="panelTabId('history')"
         :history="queryStore.history"
         @select="onSelectHistory"
         @clear="queryStore.clearHistory()"
@@ -177,6 +213,9 @@
       <!-- Tab 4: Execution Stats & IO Analyzer -->
       <ExecutionStatsViewer
         v-else-if="workspaceStore.bottomPanelTab === 'stats'"
+        :id="panelViewId('stats')"
+        role="tabpanel"
+        :aria-labelledby="panelTabId('stats')"
       />
     </div>
   </div>
@@ -456,20 +495,82 @@ onBeforeUnmount(() => {
 });
 
 
-const panelTabs = computed<{ id: BottomPanelTab; label: string }[]>(() => [
+/**
+ * Only messages that need attention earn a badge; the routine "1 row affected" info lines would
+ * light the counter up on every statement and teach users to ignore it.
+ */
+const messageIssueCount = computed(
+  () =>
+    queryStore.sessionMessages.filter((m) => m.level === 'error' || m.level === 'warning').length
+);
+
+const panelTabs = computed<{ id: BottomPanelTab; label: string; badge: number; title: string }[]>(() => [
+  {
+    id: 'results',
+    label: t('results.tabResults'),
+    badge: 0,
+    title: t('results.tabResults'),
+  },
   {
     id: 'messages',
     label: t('results.tabMessages'),
+    badge: messageIssueCount.value,
+    title: t('results.messagesInSession', { count: queryStore.sessionMessages.length }),
   },
   {
     id: 'history',
     label: t('results.tabHistory'),
+    badge: 0,
+    title: t('results.tabHistory'),
   },
   {
     id: 'stats',
     label: t('results.tabStats'),
+    badge: 0,
+    title: t('results.tabStats'),
   },
 ]);
+
+/** Stable ids so each tab button and its panel can reference each other. */
+function panelTabId(id: BottomPanelTab): string {
+  return `bottom-panel-tab-${id}`;
+}
+
+function panelViewId(id: BottomPanelTab): string {
+  return `bottom-panel-view-${id}`;
+}
+
+/**
+ * Roving focus for the view switcher: only the selected tab is in the tab order, and the arrow
+ * keys move between views the way a native tab strip does.
+ */
+function onPanelTabKeydown(event: KeyboardEvent) {
+  const keys = ['ArrowRight', 'ArrowLeft', 'Home', 'End'];
+  if (!keys.includes(event.key)) return;
+
+  const tabs = panelTabs.value;
+  const count = tabs.length;
+  if (count === 0) return;
+
+  const currentIndex = Math.max(
+    0,
+    tabs.findIndex((tab) => tab.id === workspaceStore.bottomPanelTab)
+  );
+  let nextIndex = currentIndex;
+  if (event.key === 'ArrowRight') nextIndex = (currentIndex + 1) % count;
+  if (event.key === 'ArrowLeft') nextIndex = (currentIndex - 1 + count) % count;
+  if (event.key === 'Home') nextIndex = 0;
+  if (event.key === 'End') nextIndex = count - 1;
+
+  const next = tabs[nextIndex];
+  if (!next) return;
+
+  event.preventDefault();
+  workspaceStore.setBottomPanelTab(next.id);
+  nextTick(() => {
+    document.getElementById(panelTabId(next.id))?.focus();
+  });
+}
 
 function handleResultTabsWheel(e: WheelEvent) {
   const container = e.currentTarget as HTMLElement;
@@ -584,13 +685,60 @@ function getResultTabStyle(rtab: QueryResultTab): Record<string, string> {
   display: none;
 }
 
-.panel-sub-tab.\!font-medium {
-  background-color: rgba(var(--color-dark-750), 0.9);
-  border-color: rgba(var(--p-primary-color), 0.35);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+/* Level 2 view switcher: one recessed track, one raised pill for the active view.
+   The step direction flips between modes (dark chrome is lightened by panels, light chrome is
+   darkened by them), so each mode names its own track tone instead of pretending one token
+   describes both. The active pill always uses the single surface-above-everything token. */
+.sq-view-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 7px;
+  background-color: rgb(var(--color-dark-900) / 0.65);
+  border: 1px solid rgb(var(--color-dark-750));
 }
 
-.panel-sub-tab.\!font-normal:hover {
-  background-color: rgba(var(--color-dark-800), 0.8);
+html:not(.dark) .sq-view-switch {
+  background-color: rgb(var(--color-dark-800));
+}
+
+.sq-view-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 5px;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: rgb(var(--color-dark-400));
+  cursor: pointer;
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.sq-view-tab:hover {
+  color: rgb(var(--color-dark-200));
+  background-color: rgb(var(--color-dark-800) / 0.7);
+}
+
+.sq-view-tab.is-active {
+  background-color: rgb(var(--color-raised, 39 39 42));
+  color: rgb(var(--p-primary-color, #3b82f6));
+  font-weight: 500;
+  cursor: default;
+  box-shadow: 0 1px 2px rgb(var(--color-dark-950) / 0.12), inset 0 0 0 1px rgb(var(--color-dark-700) / 0.7);
+}
+
+.sq-view-count {
+  min-width: 14px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background-color: rgb(var(--color-danger) / 0.16);
+  color: rgb(var(--color-danger));
+  font-size: 0.6875rem;
+  line-height: 14px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
 }
 </style>

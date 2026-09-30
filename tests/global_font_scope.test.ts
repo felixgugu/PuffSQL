@@ -126,7 +126,7 @@ const GRID_TOOLBARS = [
   {
     path: 'src/components/results/ResultGridItem.vue',
     start: '<!-- Subheader Toolbar',
-    end: '<!-- Empty State -->',
+    end: '<!-- Empty State:',
   },
   {
     path: 'src/components/editor/TableDataViewer.vue',

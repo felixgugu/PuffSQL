@@ -105,6 +105,12 @@ export function createDataCellFormatter(
       );
     }
 
+    // NULL reads as a labelled token rather than bare italic text, so it can never be mistaken for
+    // the seven-character string "NULL" or for an empty string in a text column.
+    if (value === null || value === undefined) {
+      return buildBadge('NULL', 'sqlight-null-badge');
+    }
+
     return document.createTextNode(formatValueForDisplay(value));
   };
 }

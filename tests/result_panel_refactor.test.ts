@@ -34,18 +34,43 @@ describe('Query Result Panel Consolidation and Status Bar Enhancement', () => {
       'Left section must have horizontal scrolling for SQL result tabs'
     );
 
-    // 4. Right section contains text-only tabs without Badge component
-    assert.doesNotMatch(
+    // 4. The right side is one segmented control, so the four views of the panel are visually
+    //    distinct from the query result chips on the left.
+    assert.match(
       bottomPanelSource,
-      /<Badge[\s\S]*?tab\.badge/,
-      'Right panel tabs must not display badge counts'
+      /class="sq-view-switch"[\s\S]{0,80}?role="tablist"/,
+      'The panel views must be grouped in a single segmented control'
+    );
+    assert.match(
+      bottomPanelSource,
+      /role="tab"[\s\S]{0,400}?:aria-selected="workspaceStore\.bottomPanelTab === tab\.id"/,
+      'Each panel view must expose its selected state to assistive technology'
+    );
+    // Roving focus: only the selected view is in the tab order, and the arrow keys move between
+    // views, so the switcher behaves like the tab strip it claims to be.
+    assert.match(
+      bottomPanelSource,
+      /:tabindex="workspaceStore\.bottomPanelTab === tab\.id \? 0 : -1"/,
+      'Only the selected panel view may be tabbable'
+    );
+    assert.match(bottomPanelSource, /@keydown="onPanelTabKeydown\(\$event\)"/);
+    assert.match(
+      bottomPanelSource,
+      /if \(event\.key === 'ArrowRight'\) nextIndex = \(currentIndex \+ 1\) % count;/,
+      'Arrow keys must move between panel views'
+    );
+    assert.equal(
+      (bottomPanelSource.match(/role="tabpanel"/g) ?? []).length,
+      4,
+      'Every panel view must be exposed as the tabpanel of its tab'
     );
 
-    // 5. Right tabs list only contains messages, history, and stats (results tab is integrated on the left)
-    assert.doesNotMatch(
+    // 5. Every view is listed at all times — including results — so the active view is always
+    //    indicated, even before the first query has run.
+    assert.match(
       bottomPanelSource,
       /id:\s*'results'[\s\S]*?id:\s*'messages'/,
-      'Right panelTabs must not contain results tab'
+      'The view switcher must list results before messages'
     );
     assert.match(
       bottomPanelSource,
@@ -62,6 +87,8 @@ describe('Query Result Panel Consolidation and Status Bar Enhancement', () => {
       /id:\s*'stats'/,
       'Right panelTabs must contain stats'
     );
+    // Counts are rendered as plain text so the Aura badge theme cannot leak in.
+    assert.doesNotMatch(bottomPanelSource, /<Badge/, 'Panel view counts must not use PrimeVue Badge');
   });
 
   test('ResultGridItem moves duration to status bar and removes selection tip', () => {

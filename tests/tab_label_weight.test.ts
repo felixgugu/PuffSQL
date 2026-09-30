@@ -45,17 +45,25 @@ test('the connection alias tag drops to the regular weight on inactive tabs', ()
   );
 });
 
-test('bottom panel tabs are only bold while selected', () => {
+test('bottom panel view tabs are only emphasised while selected', () => {
   const source = readSource('src/components/layout/AppBottomPanel.vue');
+
+  // The switcher is a segmented control: the state lives in one class hook, and the weight lives
+  // in the stylesheet rather than in a per-tab utility string.
   assert.match(
     source,
-    /:class="workspaceStore\.bottomPanelTab === tab\.id \? '!font-medium' : '!font-normal'"/,
-    'the bottom panel tab weight must follow the selected tab'
+    /class="sq-view-tab"\s*\n\s*:class="\{ 'is-active': workspaceStore\.bottomPanelTab === tab\.id \}"/,
+    'the bottom panel view tab must switch a single is-active hook'
   );
-  assert.doesNotMatch(
+  assert.match(
     source,
-    /class="!h-6 !px-2 !py-0 !text-xs !font-medium"/,
-    'the panel tab button must not force font-medium on every tab'
+    /\.sq-view-tab\s*\{[\s\S]*?font-weight:\s*400/,
+    'the default view tab weight must stay regular'
+  );
+  assert.match(
+    source,
+    /\.sq-view-tab\.is-active\s*\{[\s\S]*?font-weight:\s*500/,
+    'only the selected view tab may take extra weight'
   );
 });
 

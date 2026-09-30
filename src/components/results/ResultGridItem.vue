@@ -88,7 +88,7 @@
             <Button
               type="button"
               icon="pi pi-check"
-              :label="`提交 ${modifiedCount > 0 ? '(' + modifiedCount + ')' : ''}`"
+              :label="modifiedCount > 0 ? $t('results.commitWithCount', { count: modifiedCount }) : $t('common.commit')"
               size="small"
               :severity="modifiedCount > 0 ? 'success' : 'secondary'"
               :disabled="modifiedCount === 0 || !hasRows"
@@ -199,14 +199,12 @@
       </div>
     </div>
 
-    <!-- Empty State -->
-    <div
+    <!-- Empty State: idle (nothing run yet) vs a statement that matched zero rows -->
+    <ResultsEmptyState
       v-if="!resultSet || resultSet.rows.length === 0"
-      class="flex-1 flex flex-col items-center justify-center text-dark-500 space-y-1"
-    >
-      <Inbox class="w-6 h-6 stroke-1" />
-      <span>No rows returned</span>
-    </div>
+      :variant="resultSetColumnCount > 0 ? 'no-rows' : 'idle'"
+      :column-count="resultSetColumnCount"
+    />
 
     <!-- Tabulator grid -->
     <div
@@ -607,7 +605,6 @@ import InputIcon from 'primevue/inputicon';
 import Tag from 'primevue/tag';
 import Dialog from 'primevue/dialog';
 import {
-  Inbox,
   Copy,
   FileText,
   PlusCircle,
@@ -638,6 +635,7 @@ import { queryService } from '@/services/queryService';
 import { checkTableEditability } from '@/utils/tableEditability';
 import { generateBatchUpdateScript, type RowModification } from '@/utils/batchUpdateGenerator';
 import SqlCodeViewer from '@/components/common/SqlCodeViewer.vue';
+import ResultsEmptyState from '@/components/results/ResultsEmptyState.vue';
 import {
   calculateColumnWidth,
   formatCellForExport,
@@ -948,6 +946,12 @@ interface CellModification {
 const modifiedCells = ref<Record<string, CellModification>>({});
 const modifiedCount = computed(() => Object.keys(modifiedCells.value).length);
 const hasRows = computed(() => (props.resultSet?.rows?.length ?? 0) > 0);
+/**
+ * Separates "this tab has never run anything" from "the statement matched zero rows". A query
+ * that returns no rows still ships its column metadata, so an empty grid with columns is a
+ * finished statement, not an untouched one.
+ */
+const resultSetColumnCount = computed(() => props.resultSet?.columns?.length ?? 0);
 
 const pkColumnIndices = computed<number[]>(() => {
   if (!props.resultSet || editability.value.pkColumns.length === 0) return [];

@@ -1,13 +1,10 @@
 <template>
   <div ref="containerRef" class="w-full h-full flex flex-col bg-dark-900 overflow-hidden font-sans text-xs select-none relative">
     <!-- Empty State (only when no query tab is active and no result sets) -->
-    <div
+    <ResultsEmptyState
       v-if="!tabId && (!resultSets || resultSets.length === 0)"
-      class="flex-1 flex flex-col items-center justify-center text-dark-500 space-y-1"
-    >
-      <Inbox class="w-6 h-6 stroke-1" />
-      <span>No rows returned</span>
-    </div>
+      variant="idle"
+    />
 
     <!-- Single Result Set (100% Height, No Splitters) -->
     <ResultGridItem
@@ -81,9 +78,9 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
-import { Inbox } from 'lucide-vue-next';
 import ResizableSplitter from '@/components/common/ResizableSplitter.vue';
 import ResultGridItem from '@/components/results/ResultGridItem.vue';
+import ResultsEmptyState from '@/components/results/ResultsEmptyState.vue';
 import { useGridLayoutStore } from '@/stores/gridLayoutStore';
 import { rubberbandClamp, SPRING_PRESETS } from '@/utils/spring';
 import { runSpring } from '@/composables/useMotion';

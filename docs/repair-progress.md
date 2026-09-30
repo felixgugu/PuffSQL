@@ -341,6 +341,56 @@ failed to read plugin permissions: failed to read file
 - `npm run typecheck`、`npm run build`：通過；已確認建置產物實際輸出 `motion-reduce:transition-none`、`-inset-x-0.5`、`scale-105`、`will-change-transform`、`translate-y-14` 與四個 media query。
 - Tauri 實機：HMR 套用上述編輯無錯誤；拖曳手感（分隔線回彈、分頁重排 FLIP、對話框邊緣橡皮筋）仍待人工確認。
 
+## 已實作（2026-09-30）：結果面板檢視分層、可操作空狀態與 NULL 語意
+
+### 緣起
+
+把預設畫面（尚未執行任何查詢）與查詢後的畫面並排檢視後，三個問題最明顯：
+
+1. **「結果」不是面板分頁的一員**。底部面板右側只有「訊息｜歷程｜統計」三個文字按鈕，結果區只能靠左側的結果分頁抵達。乾淨啟動時面板本體顯示結果區，卻沒有任何分頁處於選中狀態；更嚴重的是查詢失敗時 `queryStore` 會把面板切到「訊息」，若該次沒有任何結果集，畫面上就**沒有任何控制項能回到結果區**——這是一條實際走不回去的死路。
+2. **空狀態沒有資訊**。只有一行置中的 “No rows returned”，既沒有說明這是「還沒執行」還是「執行了但沒有資料」，也沒有下一步可以做什麼。
+3. **NULL 無法與資料區分**。資料格的 NULL 只是淡色斜體文字，與使用者資料中真正的字串 `NULL`、空字串在視覺上完全同形。
+
+### 已實作
+
+**1. 檢視分層：Level 2 改為分段控制器（Segmented Control）**
+
+- 底部面板右側改為單一膠囊容器（`.sq-view-switch`），內含 **結果｜訊息｜歷程｜統計** 四個真實分頁；四種「同一個面板的不同檢視」外觀一致，與左側「不同的查詢結果」分頁卡在形態上明確區隔（對應 `docs/UI_UX_IMPROVEMENT_PROPOSALS.md` 維度二的 Level 2／Level 3-4 分層）。
+- 選中的檢視永遠有指示，包含尚未執行任何查詢的預設狀態，也讓查詢失敗後能一鍵回到結果區。
+- 容器色階分深淺兩態陳述：深色 chrome 由面板色**提亮**，淺色 chrome 由面板色**加深**，選中的藥丸一律使用 `--color-raised`（全 app 唯一「高於畫布」的表面 token），因此兩種模式都讀得出「凹槽 + 浮起的選中項」。
+- 「顯示工具列」由文字按鈕改為圖示切換（`pi-eye` / `pi-eye-slash`，`severity=primary` 代表目前隱藏），與其他圖示切換一致；`aria-label` 與 tooltip 仍提供完整語意。
+- 「訊息」只在有 error／warning 時顯示數量（`1 row affected` 這類 info 不計），避免每次執行都亮紅點而失去意義。
+
+**2. 無障礙：真正的 tab 語意與鍵盤操作**
+
+- 分段控制器為 `role="tablist"` + `role="tab"` / `aria-selected` / `aria-controls`，四個面板本體為 `role="tabpanel"` / `aria-labelledby`，id 由 `panelTabId()`／`panelViewId()` 產生。
+- Roving tabindex（只有選中的分頁在 Tab 順序內）加上 `←` `→` `Home` `End` 鍵移動，符合原生分頁列的鍵盤預期。
+
+**3. 可操作的空狀態**（新增共用元件 `src/components/results/ResultsEmptyState.vue`）
+
+- 兩種語意不同的空狀態，不再共用一句話：
+  - `idle`（尚未執行）：圖示 + 標題 + 說明 + 四組快捷鍵提示（`Ctrl/⌘ + Enter`、`Ctrl/⌘ + Shift + Enter`、`Ctrl/⌘ + P`、`Ctrl/⌘ + I`），且**只列出實際有接線的快捷鍵**。
+  - `no-rows`（查詢成功但 0 列）：以「結果集有欄位」作為判準，文案帶出欄位數（`語句已順利執行（7 個欄位）…`），這是「語句沒問題、條件沒中」而不是「還沒開始」。
+- 標題／說明原本已有 `results.emptyTitle` / `results.emptyDesc` 但從未被使用，文字改為不重複快捷鍵內容；新增 `emptyNoRowsTitle` / `emptyNoRowsDesc` / `emptyHint*` / `panelViews`（中英同步）。
+- `ResultGrid`、`ResultGridItem` 兩處原本各自複製的裸空狀態改為共用此元件（`ResultGridItem` 以 `resultSetColumnCount` 判斷語意）。
+- 版面用 `m-auto` 而非 `justify-center`：面板高度不足時內容不會被置中裁掉而無法捲動。
+- 快捷鍵修飾鍵由新純函式 `src/utils/shortcutKeys.ts` 決定（`⌘` / `Ctrl`），macOS 使用者不會再被指示去按 Ctrl。
+
+**4. 資料格 NULL 語意化**
+
+- `createDataCellFormatter` 對 `null` / `undefined` 回傳 `.sqlight-null-badge`（斜體、淡色等寬、1px 細框、6% 底色），與 TRUE/FALSE 藥丸、與真正的字串 “NULL” 都能區分；仍保留 `.sqlight-cell-null` 這個由對比測試守護的 cell class，顏色沿用已驗證的 `--sq-grid-muted`。
+
+**5. 順手修掉：提交按鈕的硬編碼中文**
+
+- `ResultGridItem` 的 `提交 (n)` 改走 `results.commitWithCount` / `common.commit`，切換到英文介面時不再殘留中文。
+
+### 驗證
+
+- `npm test`：508 通過（新增 `tests/results_empty_state.test.ts` 8 項：修飾鍵標籤、空狀態雙語意與共用化、快捷鍵提示必須與 `App.vue` 實際接線一致、NULL 徽章與對比 token、提交標籤 i18n；`tests/result_panel_refactor.test.ts` 改為記錄新契約：四個檢視一律存在、分段控制器、`aria-selected`／roving tabindex／方向鍵、四個 `role="tabpanel"`；`tests/tab_label_weight.test.ts` 的字重契約改看 `.sq-view-tab.is-active`；`tests/global_font_scope.test.ts` 的空狀態錨點更新）。
+- `npm run typecheck`、`npm run build`：通過；已確認建置產物實際輸出 `sq-view-switch`、`html:not(.dark) .sq-view-switch`、`sqlight-null-badge`、`sq-empty-kbd` 與新文案。
+- 瀏覽器（Vite dev server + headless Chrome）實測 1600×1000、1366×768、1024×720 與深淺兩態截圖；以 `ArrowRight` 從「結果」切到「訊息」時，選中項、焦點與 `role="tabpanel"` 的 id／labelledby 皆同步。受測的「0 列」與「訊息紅點」是暫時改動 mock 後截圖確認，已還原（`git status` 中 `src/services/api.ts` 無差異）。
+- **待人工確認**：Tauri 實機（含自繪標題列與視窗控制項）在 1024–1280 寬度下的面板比例與工具列溢出情形——本次未動 header，溢出為既有議題。
+
 ## 待完成與待審核
 
 1. **DML 來源可靠性**：目前仍由 SQL 文字猜測來源；JOIN、別名／運算式、跨庫、跨 server、多結果集的來源應以可驗證 metadata 解析，不能僅依第一個表名。表格與結果面板應共用來源／DML 邏輯。確認 computed、rowversion 等不可寫欄位。
@@ -357,6 +407,7 @@ failed to read plugin permissions: failed to read file
 
 ## 驗證紀錄
 
+- （2026-09-30）`npm test`：508 個通過（新增 `tests/results_empty_state.test.ts`；`result_panel_refactor`、`tab_label_weight`、`global_font_scope` 三支改為記錄結果面板分段控制器、可操作空狀態與 NULL 徽章的新契約）。`npm run typecheck`、`npm run build`：通過。
 - （2026-09-30）`npm test`：499 個通過（拖曳行為統一至 `src/composables/windowDrag.ts`；`tests/motion_accessibility.test.ts` 改為「共用核心必須有橡皮筋／彈簧／速度交接」與「兩個轉接層不得自行實作」三條契約）。`npm run typecheck`、`npm run build`：通過。
 - （2026-09-30）`npm test`：498 個通過（`tests/window_geometry.test.ts` 新增停留範圍 3 項、`tests/motion_accessibility.test.ts` 新增浮動視窗橡皮筋／彈簧與對話框硬夾兩項契約）。`npm run typecheck`：通過。
 - （2026-09-30）`npm test`：494 個通過（新增 `tests/window_geometry.test.ts` 8 項視窗邊界與縮放夾制；更新 `tests/dialog_window.test.ts` 與 `tests/motion_accessibility.test.ts` 以反映視窗改為硬邊界、彈簧僅保留於分隔線）。`npm run typecheck`：通過。
