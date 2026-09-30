@@ -1,23 +1,18 @@
 <template>
   <div
     v-if="aiChatStore.isChatOpen && aiChatStore.isMinimized"
-    class="fixed bottom-8 right-8 z-[9999] animate-fadein select-none"
+    class="fixed bottom-6 right-6 z-[9999] animate-fadein select-none"
   >
     <div
-      class="flex items-center space-x-2.5 px-4 py-2.5 rounded-full shadow-2xl border transition-all duration-200 cursor-pointer backdrop-blur-md"
-      :style="{
-        backgroundColor: 'var(--p-surface-card)',
-        borderColor: aiChatStore.isGenerating ? 'var(--p-primary-color)' : 'var(--p-surface-border)',
-        color: 'var(--p-text-color)',
-      }"
+      class="flex items-center space-x-2.5 px-4 py-2.5 rounded-full shadow-2xl border bg-dark-850 text-dark-100 transition-all duration-200 cursor-pointer"
+      :class="aiChatStore.isGenerating ? 'border-primary' : 'border-dark-700'"
       @click="aiChatStore.restoreWindow()"
     >
       <!-- 動畫指示圖示 -->
       <div class="relative flex items-center justify-center">
         <i
-          class="pi pi-sparkles text-sm transition-transform"
-          :class="aiChatStore.isGenerating ? 'animate-spin text-primary' : 'text-primary'"
-          :style="{ color: 'var(--p-primary-color)' }"
+          class="pi pi-sparkles text-sm text-primary transition-transform"
+          :class="{ 'animate-spin': aiChatStore.isGenerating }"
         />
         <span
           v-if="aiChatStore.isGenerating"
@@ -46,7 +41,7 @@
       </div>
 
       <!-- 快速動作按鈕 -->
-      <div class="flex items-center space-x-1 pl-1 border-l border-surface-border" @click.stop>
+      <div class="flex items-center space-x-1 pl-1 border-l border-dark-700" @click.stop>
         <Button
           v-if="aiChatStore.isGenerating"
           icon="pi pi-stop-circle"

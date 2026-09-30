@@ -2,10 +2,11 @@
   <Teleport to="body">
     <div
       v-if="dataViewStore.isOpen && dataViewStore.isMinimized"
-      class="fixed bottom-6 right-6 z-[9998] animate-fade-in select-none"
+      class="fixed right-6 z-[9998] animate-fade-in select-none transition-[bottom] duration-200 ease-out"
+      :class="isAiPillVisible ? 'bottom-20' : 'bottom-6'"
     >
       <div
-        class="flex items-center space-x-2.5 px-3.5 py-2 rounded-full shadow-2xl border border-sky-500/40 bg-dark-850 text-dark-100 hover:border-sky-400 transition-all duration-200 cursor-pointer backdrop-blur-md group"
+        class="flex items-center space-x-2.5 px-3.5 py-2 rounded-full shadow-2xl border border-sky-500/40 bg-dark-850 text-dark-100 hover:border-sky-400 transition-all duration-200 cursor-pointer group"
         @click="dataViewStore.restore()"
       >
         <!-- Icon -->
@@ -58,12 +59,18 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { Eye } from 'lucide-vue-next';
 import Button from 'primevue/button';
 import Tag from 'primevue/tag';
 import { useDataViewStore } from '@/stores/dataViewStore';
+import { useAiChatStore } from '@/stores/aiChatStore';
 
 const dataViewStore = useDataViewStore();
+const aiChatStore = useAiChatStore();
+
+// AI 助手最小化膠囊同時顯示時，資料檢視膠囊向上堆疊避免重疊
+const isAiPillVisible = computed(() => aiChatStore.isChatOpen && aiChatStore.isMinimized);
 </script>
 
 <style scoped>

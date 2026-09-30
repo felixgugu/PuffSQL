@@ -238,9 +238,15 @@ test('refresh resets sorting and filtering instead of restoring them', () => {
 
   // …and drops sorting, filtering and the quick-filter input while keeping column widths.
   const resetBody = sliceBetween(item, 'function resetGridState()', 'async function handleRefresh()');
-  assert.match(resetBody, /quickFilterInput\.value = ''/);
+  assert.match(resetBody, /clearQuickFilter\(\)/);
   assert.match(resetBody, /table\.clearSort\(\)/);
   assert.match(resetBody, /table\.clearFilter\(\)/);
+
+  // The shared helper (also driven by the input's clear icon) empties both the visible input and
+  // the debounced filter value.
+  const clearBody = sliceBetween(item, 'function clearQuickFilter()', 'function resetGridState()');
+  assert.match(clearBody, /quickFilterInput\.value = ''/);
+  assert.match(clearBody, /quickFilter\.value = ''/);
   assert.match(
     resetBody,
     /gridLayoutStore\.capture\(layoutKey\.value, table\)/,

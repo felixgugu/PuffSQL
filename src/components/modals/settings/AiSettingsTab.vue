@@ -2,16 +2,12 @@
   <div class="space-y-5">
     <!-- 提示卡片 -->
     <div
-      class="p-3.5 rounded-lg border flex items-start space-x-3 text-xs"
-      :style="{
-        backgroundColor: 'var(--p-surface-ground)',
-        borderColor: 'var(--p-surface-border)',
-      }"
+      class="p-3.5 rounded-lg border border-dark-700 bg-dark-850 flex items-start space-x-3 text-xs"
     >
       <i class="pi pi-sparkles text-base mt-0.5 text-plan" />
       <div class="space-y-1">
         <div class="font-semibold text-dark-100">AI SQL 助手自訂請求設定 (通用 cURL 範本)</div>
-        <p class="text-surface-400 leading-relaxed text-xxs">
+        <p class="text-dark-400 leading-relaxed text-xxs">
           您可以直接貼上任何 AI 廠商提供的標準 <code>curl</code> 請求範本。系統會自動替換 <code>&lt;token&gt;</code> 為您的 API Key，並在送出時將 <code>&lt;content&gt;</code> 自動替換與多輪追加至 <code>messages</code> 陣列中。
         </p>
       </div>

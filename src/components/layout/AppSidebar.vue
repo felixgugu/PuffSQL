@@ -345,6 +345,8 @@
                         @dragstart="handleTableDragStart($event, conn.id, db, table.schema, table.name)"
                         @click="toggleTable(conn.id, db, table.schema, table.name)"
                         @contextmenu.prevent="openContextMenu($event, conn.id, db, table.schema, table.name, 'TABLE')"
+                        @mouseenter="setHovered(table.name)"
+                        @mouseleave="clearHovered"
                         :class="[
                           'flex items-center space-x-1 px-1.5 py-0.5 rounded cursor-pointer select-none group transition-all duration-150',
                           activeLocatedKey === tableKey(conn.id, db, table.schema, table.name)
@@ -393,6 +395,9 @@
                           v-for="col in getTableColumns(conn.id, db, table.schema, table.name)"
                           :key="col.name"
                           @dblclick.stop="handleColumnDoubleClick(col)"
+                          @contextmenu.prevent="openColumnContextMenu($event, col)"
+                          @mouseenter="setHovered(col.name)"
+                          @mouseleave="clearHovered"
                           class="flex items-center space-x-1.5 px-1.5 py-0.5 text-xxs rounded cursor-pointer select-none transition-colors group"
                           :class="[
                             isPendingColumn(col.name)
@@ -464,6 +469,8 @@
                         @dragstart="handleTableDragStart($event, conn.id, db, view.schema, view.name)"
                         @click="toggleTable(conn.id, db, view.schema, view.name)"
                         @contextmenu.prevent="openContextMenu($event, conn.id, db, view.schema, view.name, 'VIEW')"
+                        @mouseenter="setHovered(view.name)"
+                        @mouseleave="clearHovered"
                         :class="[
                           'flex items-center space-x-1 px-1.5 py-0.5 rounded cursor-pointer select-none group transition-all duration-150',
                           activeLocatedKey === tableKey(conn.id, db, view.schema, view.name)
@@ -512,6 +519,9 @@
                           v-for="col in getTableColumns(conn.id, db, view.schema, view.name)"
                           :key="col.name"
                           @dblclick.stop="handleColumnDoubleClick(col)"
+                          @contextmenu.prevent="openColumnContextMenu($event, col)"
+                          @mouseenter="setHovered(col.name)"
+                          @mouseleave="clearHovered"
                           class="flex items-center space-x-1.5 px-1.5 py-0.5 text-xxs rounded cursor-pointer select-none transition-colors group"
                           :class="[
                             isPendingColumn(col.name)
@@ -569,6 +579,8 @@
                       :key="`${conn.id}:${db}:${proc.schema}.${proc.name}`"
                       :id="`tree-node-${tableKey(conn.id, db, proc.schema, proc.name)}`"
                       @contextmenu.prevent="openContextMenu($event, conn.id, db, proc.schema, proc.name, 'PROCEDURE')"
+                      @mouseenter="setHovered(proc.name)"
+                      @mouseleave="clearHovered"
                       @dblclick="handleViewDefinition(conn.id, db, proc.schema, proc.name)"
                       :class="[
                         'flex items-center space-x-1 px-1.5 py-0.5 rounded cursor-pointer group transition-all duration-150',
@@ -627,6 +639,8 @@
                       :key="`${conn.id}:${db}:${func.schema}.${func.name}`"
                       :id="`tree-node-${tableKey(conn.id, db, func.schema, func.name)}`"
                       @contextmenu.prevent="openContextMenu($event, conn.id, db, func.schema, func.name, 'FUNCTION')"
+                      @mouseenter="setHovered(func.name)"
+                      @mouseleave="clearHovered"
                       @dblclick="handleViewDefinition(conn.id, db, func.schema, func.name)"
                       :class="[
                         'flex items-center space-x-1 px-1.5 py-0.5 rounded cursor-pointer group transition-all duration-150',
@@ -673,6 +687,7 @@
     <ContextMenu ref="objectMenuRef" :model="objectMenuItems" />
     <ContextMenu ref="connMenuRef" :model="connMenuItems" />
     <ContextMenu ref="dbMenuRef" :model="dbMenuItems" />
+    <ContextMenu ref="columnMenuRef" :model="columnMenuItems" />
 
     <!-- Export Schema CSV Modal -->
     <ExportSchemaModal
@@ -741,6 +756,7 @@ import { wrapIdentifierIfNeeded } from '@/utils/sqlParser';
 import { resolveConnectionLabelColor } from '@/utils/connectionColor';
 import { generateCreateTableDdl } from '@/utils/ddlGenerator';
 import { collapseAllTreeNodes } from '@/utils/explorerTreeState';
+import { useExplorerNodeCopy } from '@/composables/useExplorerNodeCopy';
 import {
   loadFilterHistory,
   saveFilterHistory,
@@ -764,6 +780,9 @@ const workspaceStore = useWorkspaceStore();
 const tsvImportStore = useTsvImportStore();
 const schemaStore = useSchemaStore();
 const settingsStore = useSettingsStore();
+
+// Explorer 節點複製名稱（hover + Ctrl/Cmd + C）
+const { setHovered, clearHovered, copyName } = useExplorerNodeCopy();
 
 const sidebarRootRef = ref<HTMLElement | null>(null);
 
@@ -1313,6 +1332,7 @@ function getTableColumns(connId: string, db: string, schema: string, tableName: 
 const objectMenuRef = ref();
 const connMenuRef = ref();
 const dbMenuRef = ref();
+const columnMenuRef = ref();
 
 const objectMenuItems = computed(() => {
   const isTable = contextMenu.objectType === 'TABLE';
@@ -1320,7 +1340,14 @@ const objectMenuItems = computed(() => {
   const isProc = contextMenu.objectType === 'PROCEDURE';
   const isFunc = contextMenu.objectType === 'FUNCTION';
 
-  const items: any[] = [];
+  const items: any[] = [
+    {
+      label: t('sidebar.copyName'),
+      icon: 'pi pi-copy',
+      command: () => copyName(contextMenu.tableName),
+    },
+    { separator: true },
+  ];
   if (isTable || isView) {
     items.push({
       label: isTable ? t('sidebar.openData') : t('sidebar.openViewData'),
@@ -1505,6 +1532,24 @@ const dbMenuItems = computed(() => {
 
   return items;
 });
+
+// Column Context Menu (複製名稱)
+const columnContextMenu = reactive<{ columnName: string }>({
+  columnName: '',
+});
+
+const columnMenuItems = computed(() => [
+  {
+    label: t('sidebar.copyName'),
+    icon: 'pi pi-copy',
+    command: () => copyName(columnContextMenu.columnName),
+  },
+]);
+
+function openColumnContextMenu(event: MouseEvent, col: ColumnItem) {
+  columnContextMenu.columnName = col.name;
+  columnMenuRef.value?.show(event);
+}
 
 function openContextMenu(
   event: MouseEvent,

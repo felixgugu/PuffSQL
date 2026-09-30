@@ -19,7 +19,7 @@
           </template>
         </Tag>
 
-        <!-- Quick Filter Input -->
+        <!-- Quick Filter Input (PrimeVue InputText has no built-in clear, so the icon is overlaid) -->
         <IconField class="w-44 sm:w-56">
           <InputIcon class="pi pi-search text-dark-500 text-xs" />
           <InputText
@@ -30,6 +30,15 @@
             size="small"
             class="w-full !bg-dark-900 !border-dark-700 !py-0.5 !pl-7 !pr-6 !text-xs disabled:opacity-50 disabled:cursor-not-allowed"
           />
+          <button
+            v-if="quickFilterInput"
+            type="button"
+            class="absolute right-1.5 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center text-dark-500 hover:text-dark-100 transition-colors"
+            :title="$t('results.clearFilter')"
+            @click="clearQuickFilter"
+          >
+            <X class="w-3 h-3" />
+          </button>
         </IconField>
 
         <!-- Truncation Warning Badge (when max rows limit reached) -->
@@ -602,6 +611,7 @@ import {
   Undo2,
   Eye,
   Heading,
+  X,
 } from 'lucide-vue-next';
 import type {
   TabulatorCellComponent,
@@ -708,6 +718,19 @@ watch(quickFilterInput, (value) => {
   }, QUICK_FILTER_DEBOUNCE_MS);
 });
 
+/**
+ * Clear the quick filter immediately, bypassing the debounce so the grid resets without a lag
+ * even on large result sets.
+ */
+function clearQuickFilter() {
+  quickFilterInput.value = '';
+  quickFilter.value = '';
+  if (quickFilterTimer) {
+    clearTimeout(quickFilterTimer);
+    quickFilterTimer = null;
+  }
+}
+
 const gridContainerRef = ref<HTMLDivElement | null>(null);
 
 // Tabulator must not hold a Vue reactive proxy for the row data: with wide result sets the proxy
@@ -789,12 +812,7 @@ const isRefreshing = ref(false);
  * shows the raw data again. Column widths/order (the remembered layout) are deliberately kept.
  */
 function resetGridState() {
-  quickFilterInput.value = '';
-  quickFilter.value = '';
-  if (quickFilterTimer) {
-    clearTimeout(quickFilterTimer);
-    quickFilterTimer = null;
-  }
+  clearQuickFilter();
 
   const table = grid.table.value;
   if (table) {
