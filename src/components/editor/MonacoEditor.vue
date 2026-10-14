@@ -22,6 +22,7 @@
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
 import { monaco } from '@/utils/monaco';
 import { setupSqlCompletionProvider } from '@/utils/sqlCompletionProvider';
+import { transientHighlightColors } from '@/utils/highlightColor';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { extractStatementAtCursor, type ExtractedStatement } from '@/utils/sqlStatementExtractor';
@@ -78,19 +79,6 @@ const backgroundImageStyle = computed<Record<string, string>>(() => ({
   backgroundSize: `auto ${settingsStore.editorBackgroundImageSize}%`,
 }));
 
-function hexToRgba(hex: string, alpha: number): string {
-  let cleanHex = hex.replace('#', '');
-  if (cleanHex.length === 3) {
-    cleanHex = cleanHex.split('').map((c) => c + c).join('');
-  }
-  const num = parseInt(cleanHex, 16);
-  if (isNaN(num)) return `rgba(254, 255, 224, ${alpha})`;
-  const r = (num >> 16) & 255;
-  const g = (num >> 8) & 255;
-  const b = num & 255;
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-}
-
 function updateHighlightStyle() {
   const styleId = 'sqlight-editor-highlight-style';
   let styleEl = document.getElementById(styleId) as HTMLStyleElement | null;
@@ -100,8 +88,7 @@ function updateHighlightStyle() {
     document.head.appendChild(styleEl);
   }
   const color = settingsStore.editorHighlightColor || '#feffe0';
-  const bg = hexToRgba(color, 0.22);
-  const border = hexToRgba(color, 0.85);
+  const { background: bg, border } = transientHighlightColors(color);
   styleEl.textContent = `
     .sqlight-custom-highlight {
       background-color: ${bg} !important;

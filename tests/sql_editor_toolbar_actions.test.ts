@@ -73,7 +73,7 @@ describe('SQL editor toolbar actions', () => {
     const source = readSource('src/components/editor/MonacoEditor.vue');
     const commandMap = source.slice(
       source.indexOf('const SQL_EDITOR_ACTION_COMMANDS'),
-      source.indexOf('function hexToRgba')
+      source.indexOf('function updateHighlightStyle')
     );
 
     assert.match(commandMap, /cut: 'editor\.action\.clipboardCutAction'/);

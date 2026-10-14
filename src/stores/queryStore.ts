@@ -485,6 +485,7 @@ export const useQueryStore = defineStore('query', () => {
 
       // Add messages to sessionMessages (accumulate without persistence, newest in front)
       if (result.messages && result.messages.length > 0) {
+        const arrivedAt = Date.now();
         const newItems: SessionMessageItem[] = result.messages.map((m) => {
           sessionMessageSeq++;
           return {
@@ -496,6 +497,8 @@ export const useQueryStore = defineStore('query', () => {
             lineNumber: m.lineNumber,
             timestamp: m.timestamp || new Date().toISOString(),
             sql: m.sql || sql,
+            // Lets the message log flash what just ran, even if its panel mounts afterwards.
+            freshAt: arrivedAt,
           };
         });
         sessionMessages.value.unshift(...newItems.reverse());
@@ -559,6 +562,7 @@ export const useQueryStore = defineStore('query', () => {
           level: cancelMessage.level,
           message: cancelMessage.message,
           timestamp: cancelMessage.timestamp,
+          freshAt: Date.now(),
         });
 
         try {
@@ -604,6 +608,7 @@ export const useQueryStore = defineStore('query', () => {
         message: msg,
         timestamp: new Date().toISOString(),
         sql,
+        freshAt: Date.now(),
       });
 
       historySeq++;

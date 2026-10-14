@@ -55,6 +55,12 @@ export interface SessionMessageItem {
   lineNumber?: number;
   timestamp: string;
   sql?: string;
+  /**
+   * Client clock time (ms) at which this message entered the session log. UI only, never
+   * persisted: the message list uses it to flash statements that just ran, including when the
+   * panel only mounts after the message already arrived.
+   */
+  freshAt?: number;
 }
 
 export interface QueryResultTab {

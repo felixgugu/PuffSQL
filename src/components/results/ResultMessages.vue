@@ -59,7 +59,7 @@
     </div>
 
     <!-- Messages List (Newest at the top) -->
-    <div v-else class="flex-1 overflow-auto p-3 space-y-2 select-text">
+    <div v-else class="flex-1 overflow-auto p-3 space-y-2 select-text" :style="flashVars">
       <div
         v-for="(msg, idx) in messages"
         :key="getMsgKey(msg, idx)"
@@ -69,7 +69,8 @@
             ? 'bg-rose-50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-900/60 text-danger'
             : msg.level === 'warning'
             ? 'bg-amber-500/15 border-amber-500/30 text-warn'
-            : 'bg-dark-850/60 border-dark-750 text-dark-200'
+            : 'bg-dark-850/60 border-dark-750 text-dark-200',
+          { 'sq-message-flash': isFlashing(getMsgKey(msg, idx)) }
         ]"
       >
         <!-- Line 1: [序號][時間] 資訊與右上角操作按鈕 -->
@@ -149,7 +150,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch, onBeforeUnmount } from 'vue';
 import Button from 'primevue/button';
 import Tag from 'primevue/tag';
 import type { SessionMessageItem, QueryMessage } from '@/types/query';
@@ -158,6 +159,8 @@ import { queryService } from '@/services/queryService';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useAiChatStore } from '@/stores/aiChatStore';
 import { useQueryStore } from '@/stores/queryStore';
+import { useSettingsStore } from '@/stores/settingsStore';
+import { transientHighlightColors } from '@/utils/highlightColor';
 
 const props = defineProps<{
   messages: (SessionMessageItem | QueryMessage)[];
@@ -170,6 +173,7 @@ defineEmits<{
 const workspaceStore = useWorkspaceStore();
 const aiChatStore = useAiChatStore();
 const queryStore = useQueryStore();
+const settingsStore = useSettingsStore();
 
 const hasErrorMessages = computed(() => {
   return props.messages.some((m) => m.level === 'error');
@@ -221,6 +225,80 @@ const expandedKeys = ref<Set<string | number>>(new Set());
 function getMsgKey(msg: SessionMessageItem | QueryMessage, idx: number): string | number {
   return (msg as SessionMessageItem).id ?? msg.seq ?? idx;
 }
+
+/*
+ * Messages that just arrived flash with the configured transient highlight colour, so a statement
+ * that only produces messages (UPDATE / INSERT / DDL have no result grid) is as easy to spot as
+ * an executed statement in the editor. Arrival is judged from the message's own stamp, so the
+ * flash still happens when this panel is mounted only after the run switched the view here.
+ */
+/** A message may still flash while it arrived within this window. */
+const FLASH_ARRIVAL_WINDOW_MS = 4000;
+/** How long the wash itself stays on screen. */
+const FLASH_DURATION_MS = 3000;
+const flashingKeys = ref<Set<string | number>>(new Set());
+/** Keys that already flashed (or arrived too long ago to flash): never flash twice. */
+const flashedKeys = new Set<string | number>();
+const flashTimers = new Map<string | number, ReturnType<typeof setTimeout>>();
+
+/** Colour variables live on the list, so every flashed card inherits the same wash. */
+const flashVars = computed(() => {
+  const { background, border } = transientHighlightColors(
+    settingsStore.editorHighlightColor || '#feffe0'
+  );
+  return { '--sq-flash-bg': background, '--sq-flash-border': border };
+});
+
+function isFlashing(key: string | number): boolean {
+  return flashingKeys.value.has(key);
+}
+
+/** Keys of messages that arrived moments ago and have not flashed yet. */
+function collectArrivals(): Array<string | number> {
+  const now = Date.now();
+  const keys: Array<string | number> = [];
+  props.messages.forEach((msg, idx) => {
+    const key = getMsgKey(msg, idx);
+    if (flashedKeys.has(key)) return;
+    const arrivedAt = (msg as SessionMessageItem).freshAt;
+    if (typeof arrivedAt !== 'number' || now - arrivedAt > FLASH_ARRIVAL_WINDOW_MS) return;
+    keys.push(key);
+  });
+  return keys;
+}
+
+function flashArrivals(): void {
+  const keys = collectArrivals();
+  if (keys.length === 0) return;
+
+  const next = new Set(flashingKeys.value);
+  for (const key of keys) {
+    flashedKeys.add(key);
+    next.add(key);
+    const pending = flashTimers.get(key);
+    if (pending) clearTimeout(pending);
+    flashTimers.set(
+      key,
+      setTimeout(() => {
+        flashTimers.delete(key);
+        const current = new Set(flashingKeys.value);
+        current.delete(key);
+        flashingKeys.value = current;
+      }, FLASH_DURATION_MS)
+    );
+  }
+  flashingKeys.value = next;
+}
+
+// Messages that landed just before this list was mounted flash too; the watcher covers the ones
+// that arrive while it stays open.
+flashArrivals();
+watch(() => props.messages.length, flashArrivals);
+
+onBeforeUnmount(() => {
+  flashTimers.forEach((timer) => clearTimeout(timer));
+  flashTimers.clear();
+});
 
 function isExpanded(key: string | number): boolean {
   return expandedKeys.value.has(key);
@@ -277,3 +355,46 @@ function formatTime(isoOrTime: string) {
   }
 }
 </script>
+
+<style scoped>
+/*
+ * The wash is painted by a pseudo-element behind the text, like the editor's line decoration, so
+ * the card's own background and border keep their transcript colours untouched. It holds briefly,
+ * then fades; the class itself is removed afterwards.
+ */
+.sq-message-flash {
+  position: relative;
+  isolation: isolate;
+}
+
+.sq-message-flash::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background-color: var(--sq-flash-bg);
+  box-shadow: inset 2px 0 0 var(--sq-flash-border);
+  animation: sqMessageFlash 2600ms ease-out forwards;
+}
+
+@keyframes sqMessageFlash {
+  0% {
+    opacity: 1;
+  }
+  35% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Without the fade the wash simply stays until the class is dropped, then disappears. */
+@media (prefers-reduced-motion: reduce) {
+  .sq-message-flash::after {
+    animation: none;
+  }
+}
+</style>
