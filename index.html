@@ -1,23 +1,24 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PuffSQL</title>
     <script>
-      // Apply the persisted colour mode before first paint so a light-mode user never sees a
-      // dark flash while the Vue app boots and calls themeManager.initTheme().
+      // Apply the persisted colour mode before first paint so a dark-mode user never sees a light
+      // flash while the Vue app boots and calls themeManager.initTheme(). Light is the default:
+      // the minimal design is light-first.
       (function () {
-        var mode = 'dark';
+        var mode = 'light';
         try {
           var raw = localStorage.getItem('sqlight_app_settings');
           if (raw) {
             var parsed = JSON.parse(raw);
-            if (parsed && parsed.colorMode === 'light') mode = 'light';
+            if (parsed && parsed.colorMode === 'dark') mode = 'dark';
           }
         } catch (e) {
-          /* ignore unreadable settings and keep the dark default */
+          /* ignore unreadable settings and keep the light default */
         }
         var root = document.documentElement;
         root.classList.toggle('dark', mode === 'dark');

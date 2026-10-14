@@ -65,7 +65,8 @@ function clampNumber(value: unknown, min: number, max: number, fallback: number)
 }
 
 const DEFAULT_SETTINGS: AppSettings = {
-  colorMode: 'dark',
+  // The minimal design is light-first: white canvas, light grey chrome. Dark is the paired variant.
+  colorMode: 'light',
   themePreset: 'Aura',
   primaryColor: 'blue',
   surfaceColor: 'slate',

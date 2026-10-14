@@ -22,7 +22,9 @@ export interface ThemeColorOption {
 }
 
 export const PRIMARY_COLOR_OPTIONS: ThemeColorOption[] = [
-  { name: 'blue', label: '科技藍 (Blue)', color: '#3b82f6', token: '{blue}' },
+  // The default option carries the minimal spec's steel blue so an out-of-the-box install shows
+  // one accent colour across both our own tokens and PrimeVue's components.
+  { name: 'blue', label: '鋼藍 (Steel Blue)', color: '#2a6791', token: '{blue}' },
   { name: 'emerald', label: '翡翠綠 (Emerald)', color: '#10b981', token: '{emerald}' },
   { name: 'green', label: '自然綠 (Green)', color: '#22c55e', token: '{green}' },
   { name: 'teal', label: '藍綠色 (Teal)', color: '#14b8a6', token: '{teal}' },
@@ -115,14 +117,17 @@ export type SurfacePalette = Record<SurfaceShade, string>;
  * so both themes keep the same perceived intent.
  */
 export const THEME_ROLE_COLORS: Record<string, { dark: string; light: string }> = {
-  accent: { dark: '#60a5fa', light: '#1d4ed8' },
-  ok: { dark: '#34d399', light: '#065f46' },
-  danger: { dark: '#fb7185', light: '#9f1239' },
-  warn: { dark: '#fbbf24', light: '#92400e' },
-  info: { dark: '#38bdf8', light: '#075985' },
-  plan: { dark: '#c084fc', light: '#6d28d9' },
-  er: { dark: '#22d3ee', light: '#155e75' },
-  structure: { dark: '#a5b4fc', light: '#4338ca' },
+  // Light values are the steel-blue family from the minimal spec: every one of them clears 4.5:1
+  // on the white canvas *and* on its own 15-25% status-chip tint. `accent` and `info` are the same
+  // hue on purpose — the product has exactly one action colour.
+  accent: { dark: '#8cb8da', light: '#2a6791' },
+  ok: { dark: '#47cd89', light: '#027a48' },
+  danger: { dark: '#f97066', light: '#b42318' },
+  warn: { dark: '#fdb022', light: '#a94306' },
+  info: { dark: '#8cb8da', light: '#2a6791' },
+  plan: { dark: '#b692f6', light: '#6941c6' },
+  er: { dark: '#67e3f9', light: '#0e7090' },
+  structure: { dark: '#a4bcfd', light: '#3538cd' },
 };
 
 export const SURFACE_PALETTES: Record<string, SurfacePalette> = {
@@ -213,6 +218,18 @@ function blendRgb(c1: [number, number, number], c2: [number, number, number], ra
   ];
 }
 
+/**
+ * Pulls a colour toward its own luminance grey. The dark shell must read as neutral charcoal, so
+ * the surface palette only decides how dark it gets — never which hue it carries.
+ */
+function neutralizeRgb(rgb: [number, number, number], ratio: number): [number, number, number] {
+  const grey = 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
+  return blendRgb(rgb, [grey, grey, grey], ratio);
+}
+
+const WHITE_RGB: [number, number, number] = [255, 255, 255];
+const BLACK_RGB: [number, number, number] = [0, 0, 0];
+
 export function applyGlobalSurfaceVariables(surfaceName: string, mode: 'dark' | 'light') {
   if (typeof document === 'undefined') return;
   const root = document.documentElement;
@@ -236,59 +253,57 @@ export function applyGlobalSurfaceVariables(surfaceName: string, mode: 'dark' | 
  * Builds every `--color-*` custom property for one surface palette + colour mode.
  *
  * Kept as a pure function (no DOM access) so the contrast regression test can assert the
- * same values the runtime applies. The text steps (100-600) are shifted by one so the muted
- * step stays >= 4.5:1 in both modes; the surface steps are described inline below.
+ * same values the runtime applies.
+ *
+ * Light mode is the primary design: the canvas is white, panel headers and tab strips sit one
+ * notch below it, and the chrome (title bar, sidebars, toolbars, status bar) is the palette's 50
+ * step. Hover, active-row and well steps deepen from there, and borders are hairlines on the 200
+ * step (visible without shouting). Overlays are white like the canvas and separate from it through
+ * their 1px outline and shadow instead of being brighter.
+ *
+ * Dark mode is the paired variant: a neutral charcoal shell whose surfaces only get lighter with
+ * elevation (canvas < chrome < panel < hover), with the palette's hue pulled 85% toward grey. The
+ * text steps keep the palette's own ramp, which is neutral by construction in every palette.
  */
 export function buildThemeTokens(surfaceName: string, mode: 'dark' | 'light'): Record<string, string> {
   const pal = (SURFACE_PALETTES[surfaceName] ?? SURFACE_PALETTES['slate'])!;
   const isDark = mode === 'dark';
 
-  const p50 = hexToRgb(pal['50']);
-  const p100 = hexToRgb(pal['100']);
-  const p200 = hexToRgb(pal['200']);
-  const p300 = hexToRgb(pal['300']);
-  const p400 = hexToRgb(pal['400']);
-  const p500 = hexToRgb(pal['500']);
-  const p600 = hexToRgb(pal['600']);
-  const p700 = hexToRgb(pal['700']);
-  const p800 = hexToRgb(pal['800']);
-  const p900 = hexToRgb(pal['900']);
-  const p950 = hexToRgb(pal['950']);
+  const step = (shade: SurfaceShade): [number, number, number] => hexToRgb(pal[shade]);
 
   const vars: Record<string, string> = isDark
-    ? {
-        '--color-dark-950': rgbStr(p950),
-        '--color-dark-900': rgbStr(p900),
-        '--color-dark-850': rgbStr(blendRgb(p900, p800, 0.4)),
-        '--color-dark-800': rgbStr(p800),
-        '--color-dark-750': rgbStr(blendRgb(p800, p700, 0.4)),
-        '--color-dark-700': rgbStr(p700),
-        '--color-dark-600': rgbStr(p500),
-        '--color-dark-500': rgbStr(p400),
-        '--color-dark-400': rgbStr(p300),
-        '--color-dark-300': rgbStr(p200),
-        '--color-dark-200': rgbStr(p100),
-        '--color-dark-100': rgbStr(p50),
-        '--color-raised': rgbStr(p800),
-      }
+    ? (() => {
+        const canvas = neutralizeRgb(step('900'), 0.85);
+        return {
+          '--color-dark-950': rgbStr(blendRgb(canvas, BLACK_RGB, 0.45)), // deepest wells
+          '--color-dark-900': rgbStr(canvas), // main app canvas (editor, grid, results)
+          '--color-dark-850': rgbStr(blendRgb(canvas, WHITE_RGB, 0.025)), // chrome
+          '--color-dark-800': rgbStr(blendRgb(canvas, WHITE_RGB, 0.05)), // panels, inputs, row hover
+          '--color-dark-750': rgbStr(blendRgb(canvas, WHITE_RGB, 0.075)), // active rows, dividers
+          '--color-dark-700': rgbStr(blendRgb(canvas, WHITE_RGB, 0.16)), // borders
+          '--color-dark-600': rgbStr(neutralizeRgb(step('500'), 0.5)), // separators (>= 3:1)
+          '--color-dark-500': rgbStr(step('400')), // muted text / placeholder
+          '--color-dark-400': rgbStr(step('300')), // secondary text
+          '--color-dark-300': rgbStr(step('200')), // body text
+          '--color-dark-200': rgbStr(step('100')), // high contrast text
+          '--color-dark-100': rgbStr(step('50')), // brightest / prominent text
+          '--color-raised': rgbStr(blendRgb(canvas, WHITE_RGB, 0.055)), // menus, dialogs, tooltips
+        };
+      })()
     : {
-        // Light mode runs the ramp from the canvas downwards: the main background is a soft grey
-        // (never pure white, which is harsh at full-screen brightness) and each lower step deepens
-        // the tone so panels, hover states and inset wells stay distinguishable from it.
-        '--color-dark-950': rgbStr(blendRgb(p200, p300, 0.35)), // inset wells (code previews)
-        '--color-dark-900': rgbStr(p100), // main app canvas (editor, grid, results)
-        '--color-dark-850': rgbStr(blendRgb(p100, p200, 0.55)), // chrome (header, sidebar, tab bar)
-        '--color-dark-800': rgbStr(p200), // panels, menus, inputs
-        '--color-dark-750': rgbStr(blendRgb(p200, p300, 0.5)), // hover / active rows, dividers
-        '--color-dark-700': rgbStr(p300),
-        '--color-dark-600': rgbStr(p500),
-        '--color-dark-500': rgbStr(p600),
-        '--color-dark-400': rgbStr(p700),
-        '--color-dark-300': rgbStr(p800),
-        '--color-dark-200': rgbStr(p900),
-        '--color-dark-100': rgbStr(p950),
-        // The only surface lighter than the canvas: menus, popovers, tooltips and dialogs.
-        '--color-raised': rgbStr(p50),
+        '--color-dark-950': rgbStr(blendRgb(step('100'), step('200'), 0.5)), // inset wells
+        '--color-dark-900': rgbStr(WHITE_RGB), // main app canvas (editor, grid, results)
+        '--color-dark-850': rgbStr(step('50')), // chrome (title bar, sidebars, toolbars, status bar)
+        '--color-dark-800': rgbStr(blendRgb(step('50'), WHITE_RGB, 0.55)), // panel headers, tab strips
+        '--color-dark-750': rgbStr(blendRgb(step('100'), step('200'), 0.35)), // row hover, dividers
+        '--color-dark-700': rgbStr(step('200')), // hairline borders
+        '--color-dark-600': rgbStr(step('500')), // separators / hover borders (>= 3:1)
+        '--color-dark-500': rgbStr(step('600')), // muted text / placeholder
+        '--color-dark-400': rgbStr(step('700')), // secondary text
+        '--color-dark-300': rgbStr(step('800')), // body text
+        '--color-dark-200': rgbStr(step('900')), // high contrast text
+        '--color-dark-100': rgbStr(step('950')), // brightest / prominent text
+        '--color-raised': rgbStr(WHITE_RGB), // menus, dialogs, tooltips (outlined + shadowed)
       };
 
   for (const [role, colors] of Object.entries(THEME_ROLE_COLORS)) {

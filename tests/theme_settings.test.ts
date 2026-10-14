@@ -104,7 +104,8 @@ test('settingsStore: theme settings defaults, setters, and resetToDefaults', () 
   const store = useSettingsStore();
 
   // Initial defaults
-  assert.equal(store.colorMode, 'dark');
+  // The minimal design is light-first; dark is the paired variant.
+  assert.equal(store.colorMode, 'light');
   assert.equal(store.themePreset, 'Aura');
   assert.equal(store.primaryColor, 'blue');
   assert.equal(store.surfaceColor, 'slate');
@@ -136,7 +137,7 @@ test('settingsStore: theme settings defaults, setters, and resetToDefaults', () 
 
   // Reset to defaults
   store.resetToDefaults();
-  assert.equal(store.colorMode, 'dark');
+  assert.equal(store.colorMode, 'light');
   assert.equal(store.themePreset, 'Aura');
   assert.equal(store.primaryColor, 'blue');
   assert.equal(store.surfaceColor, 'slate');

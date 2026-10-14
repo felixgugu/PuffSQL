@@ -13,37 +13,40 @@
 
     /* ==========================================================================
        Light Mode Semantic Palette (Channels for rgb(var(...) / <alpha>))
-       The canvas is a soft grey (slate-100) rather than pure white, which keeps a full-screen
-       workspace comfortable to read; every surface below it deepens by one notch so panels,
-       hover states and inset wells stay distinguishable. `--color-raised` is the single
-       surface that sits above the canvas and is reserved for menus, popovers and dialogs.
-       Text steps (100-600) are shifted one step darker than the surface steps so the muted
-       step keeps >= 4.5:1 on the panel surface (#e2e8f0).
+       Primary design: the canvas is white, panel headers and tab strips sit one notch below it,
+       and the chrome (title bar, sidebars, toolbars, status bar) is the palette's 50 step. Row
+       hover, active rows and inset wells deepen from there; borders are hairlines on the 200 step.
+       `--color-raised` is white like the canvas: overlays separate from it through a 1px outline
+       and a shadow, not by being brighter.
+       Text steps (100-600) are the palette's 950→500 ramp, so the muted step keeps >= 4.5:1 on
+       every surface above.
+       These values mirror buildThemeTokens('slate', 'light'); the runtime re-applies them so the
+       surface-colour setting stays live.
        ========================================================================== */
-    --color-dark-950: 218 225 235;   /* Inset wells / code preview backdrop */
-    --color-dark-900: 241 245 249;   /* Slate 100 - Main app canvas (editor, grid, results) */
-    --color-dark-850: 233 238 244;   /* Outer background (toolbars, header, sidebar, status) */
-    --color-dark-800: 226 232 240;   /* Slate 200 - Panel background, secondary surface */
-    --color-dark-750: 215 223 233;   /* Surface background, active rows, dividers */
-    --color-dark-700: 203 213 225;   /* Slate 300 - Border color / divider */
-    --color-dark-600: 100 116 139;   /* Slate 500 - Separator / hover border (non-text only) */
-    --color-dark-500: 71 85 105;     /* Slate 600 - Muted text / placeholder */
-    --color-dark-400: 51 65 85;      /* Slate 700 - Secondary text */
-    --color-dark-300: 30 41 59;      /* Slate 800 - Body text */
-    --color-dark-200: 15 23 42;      /* Slate 900 - High contrast text */
-    --color-dark-100: 2 6 23;        /* Slate 950 - Brightest / prominent text */
-    --color-raised: 248 250 252;     /* Slate 50 - Raised overlay surface (menus, dialogs, tooltips) */
+    --color-dark-950: 234 239 245;   /* Inset wells / code preview backdrop */
+    --color-dark-900: 255 255 255;   /* Main app canvas (editor, grid, results, inputs) */
+    --color-dark-850: 248 250 252;   /* Chrome (title bar, sidebar, toolbars, status bar) */
+    --color-dark-800: 252 253 254;   /* Panel headers, tab strips, secondary surface */
+    --color-dark-750: 236 240 246;   /* Row hover, active rows, subtle dividers */
+    --color-dark-700: 226 232 240;   /* Hairline borders / panel edges */
+    --color-dark-600: 100 116 139;   /* Separator / hover border (non-text only, >= 3:1) */
+    --color-dark-500: 71 85 105;     /* Muted text / placeholder */
+    --color-dark-400: 51 65 85;      /* Secondary text */
+    --color-dark-300: 30 41 59;      /* Body text */
+    --color-dark-200: 15 23 42;      /* High contrast text */
+    --color-dark-100: 2 6 23;        /* Brightest / prominent text */
+    --color-raised: 255 255 255;     /* Menus, dialogs, tooltips (outlined + shadowed) */
 
     /* Theme-aware accent roles: light values clear 4.5:1 on the raised overlay surface, on the
        panel surface (#e2e8f0) and on the 15-25% self-hue tints used by the status chips. */
-    --color-accent: 29 78 216;       /* Blue 700 */
-    --color-ok: 6 95 70;             /* Emerald 800 */
-    --color-danger: 159 18 57;       /* Rose 800 */
-    --color-warn: 146 64 14;         /* Amber 800 */
-    --color-info: 7 89 133;          /* Sky 800 */
-    --color-plan: 109 40 217;        /* Violet 700 */
-    --color-er: 21 94 117;           /* Cyan 800 */
-    --color-structure: 67 56 202;    /* Indigo 700 */
+    --color-accent: 42 103 145;      /* Steel blue 700 - the single action colour */
+    --color-ok: 2 122 72;            /* Emerald 700 */
+    --color-danger: 180 35 24;       /* Rose 700 */
+    --color-warn: 169 67 6;          /* Amber 700 (darkened for the 25% chip tint) */
+    --color-info: 42 103 145;        /* Same steel blue: only one accent in the product */
+    --color-plan: 105 65 198;        /* Violet 700 */
+    --color-er: 14 112 144;          /* Cyan 700 */
+    --color-structure: 53 56 205;    /* Indigo 700 */
   }
 
   html.dark,
@@ -51,33 +54,36 @@
     color-scheme: dark;
 
     /* ==========================================================================
-       Dark Mode Semantic Palette (PuffSQL Deep Charcoal Theme, slate surface default)
-       Text steps (100-600) are shifted one step brighter so the muted step keeps
-       >= 4.5:1 on the panel and raised surfaces.
+       Dark Mode Semantic Palette (neutral charcoal paired variant)
+       Surfaces only get lighter with elevation (canvas < chrome < panel < hover) and the palette's
+       hue is pulled 85% toward grey, so the dark shell never turns blue. Text steps keep the
+       palette's own ramp, which is neutral in every palette; the muted step keeps >= 4.5:1 on the
+       panel and raised surfaces.
+       These values mirror buildThemeTokens('slate', 'dark').
        ========================================================================== */
-    --color-dark-950: 12 13 18;      /* Deepest dark */
-    --color-dark-900: 20 20 24;      /* #141418 Deepest background (e.g. status bar, title bar) */
-    --color-dark-850: 24 24 31;      /* #18181f Outer background (toolbar, sidebar) */
-    --color-dark-800: 30 30 38;      /* #1e1e26 Panel background (sidebar, bottom panel) */
-    --color-dark-750: 37 37 48;      /* #252530 Surface background (active tab, header) */
-    --color-dark-700: 45 45 58;      /* #2d2d3a Border color / divider */
-    --color-dark-600: 100 116 139;   /* Slate 500 - Separator / hover border (non-text only) */
-    --color-dark-500: 148 163 184;   /* Slate 400 - Muted text / placeholder */
-    --color-dark-400: 203 213 225;   /* Slate 300 - Secondary text */
-    --color-dark-300: 226 232 240;   /* Slate 200 - Body text */
-    --color-dark-200: 241 245 249;   /* Slate 100 - High contrast text */
-    --color-dark-100: 248 250 252;   /* Slate 50 - Brightest / prominent text */
-    --color-raised: 30 30 38;        /* #1e1e26 - Raised overlay surface (menus, dialogs, tooltips) */
+    --color-dark-950: 12 13 14;      /* Deepest dark (inset wells) */
+    --color-dark-900: 22 23 26;      /* #16171a Canvas (editor, grid, results) */
+    --color-dark-850: 28 29 32;      /* #1c1d20 Chrome (title bar, sidebar, toolbar, status bar) */
+    --color-dark-800: 34 35 37;      /* #222325 Panels, inputs, row hover */
+    --color-dark-750: 39 40 43;      /* #27282b Active rows, subtle dividers */
+    --color-dark-700: 59 60 63;      /* #3b3c3f Borders */
+    --color-dark-600: 107 115 127;   /* Separator / hover border (non-text only, >= 3:1) */
+    --color-dark-500: 148 163 184;   /* Muted text / placeholder */
+    --color-dark-400: 203 213 225;   /* Secondary text */
+    --color-dark-300: 226 232 240;   /* Body text */
+    --color-dark-200: 241 245 249;   /* High contrast text */
+    --color-dark-100: 248 250 252;   /* Brightest / prominent text */
+    --color-raised: 35 36 39;        /* #232427 Menus, dialogs, tooltips */
 
     /* Theme-aware accent roles (dark values: >= 4.5:1 on #0f172a and the raised surface) */
-    --color-accent: 96 165 250;      /* Blue 400 */
-    --color-ok: 52 211 153;          /* Emerald 400 */
-    --color-danger: 251 113 133;     /* Rose 400 */
-    --color-warn: 251 191 36;        /* Amber 400 */
-    --color-info: 56 189 248;        /* Sky 400 */
-    --color-plan: 192 132 252;       /* Purple 400 */
-    --color-er: 34 211 238;          /* Cyan 400 */
-    --color-structure: 165 180 252;  /* Indigo 300 (kept >= 4.5:1 on the raised dark surface) */
+    --color-accent: 140 184 218;     /* Steel blue 300 - the single action colour */
+    --color-ok: 71 205 137;          /* Emerald 400 */
+    --color-danger: 249 112 102;     /* Rose 400 */
+    --color-warn: 253 176 34;        /* Amber 400 */
+    --color-info: 140 184 218;       /* Same steel blue: only one accent in the product */
+    --color-plan: 182 146 246;       /* Violet 400 */
+    --color-er: 103 227 249;         /* Cyan 400 */
+    --color-structure: 164 188 253;  /* Indigo 300 (kept >= 4.5:1 on the raised dark surface) */
   }
 
   html, body {

@@ -17,22 +17,23 @@
 html.dark .tabulator {
   --sq-grid-bg: rgb(var(--color-dark-900)); /* Canvas: rows and the results surface */
   --sq-grid-header-bg: rgb(var(--color-dark-850)); /* Chrome: the header strip */
-  --sq-grid-header-hover: rgb(var(--color-dark-800)); /* Panel: a hovered header cell */
+  --sq-grid-header-hover: rgb(var(--color-dark-750)); /* A hovered header cell */
   --sq-grid-header-text: rgb(var(--color-dark-500));
   --sq-grid-fg: rgb(var(--color-dark-300));
   /* Muted grid text must clear 4.5:1 on the canvas and on the hover surface. */
   --sq-grid-muted: rgb(var(--color-dark-500));
-  /* `--sq-grid-border` frames the header and the frozen edge; `--sq-grid-line` draws the softer
-     row / cell separators. */
+  /* `--sq-grid-border` frames the header and the frozen edge; `--sq-grid-line` draws the row /
+     cell separators. Both are the hairline step, which is the only border that stays visible on
+     the near-white light panel. */
   --sq-grid-border: rgb(var(--color-dark-700));
-  --sq-grid-line: rgb(var(--color-dark-800));
-  --sq-grid-row-hover: rgb(var(--color-dark-800));
+  --sq-grid-line: rgb(var(--color-dark-700));
+  --sq-grid-row-hover: rgb(var(--color-dark-750));
   /* Zebra striping mirrors the light theme: a half step between the canvas and the hover row, so a
      hovered even row still reads as hovered. */
   --sq-grid-row-stripe: rgb(var(--color-dark-850));
   --sq-grid-sort-icon: #a1a1aa;
   --sq-grid-sort-icon-hover: #e4e4e7;
-  --sq-grid-sort-icon-active: #0284c7;
+  --sq-grid-sort-icon-active: #8cb8da;
   --sq-grid-binary-accent: #93c5fd;
   --sq-grid-bool-true-accent: #34d399;
   --sq-grid-bool-false-accent: #fb7185;
@@ -43,33 +44,33 @@ html.dark .tabulator {
   --sq-grid-identity-accent: #22d3ee;
   --sq-grid-type-accent: #7dd3fc;
   --sq-grid-fulltype-accent: #6ee7b7;
-  /* Selection palette (dark): tinted area, stronger focus cell, bright blue outline. */
-  --sq-grid-range-fill: rgba(56, 125, 237, 0.25);
-  --sq-grid-range-active-fill: rgba(56, 125, 237, 0.45);
-  --sq-grid-range-border: #3b82f6;
+  /* Selection palette (dark): tinted area, stronger focus cell, steel-blue outline. */
+  --sq-grid-range-fill: rgba(140, 184, 218, 0.20);
+  --sq-grid-range-active-fill: rgba(140, 184, 218, 0.38);
+  --sq-grid-range-border: #8cb8da;
   --sq-grid-range-border-width: 1.5px;
-  --sq-grid-range-handle: #3b82f6;
+  --sq-grid-range-handle: #8cb8da;
   --sq-grid-range-text: #ffffff;
 }
 
 html:not(.dark) .tabulator {
-  /* Light mode runs the same token names, which resolve to the soft grey ramp the shell uses
-     instead of white, so the hierarchy stays readable and matches every surface palette. */
+  /* Light mode runs the same token names. The canvas is white, the zebra stripe is the chrome
+     step and the row hover is the hover step, so a hovered even row still reads as hovered. */
   --sq-grid-bg: rgb(var(--color-dark-900));
   --sq-grid-header-bg: rgb(var(--color-dark-850));
-  --sq-grid-header-hover: rgb(var(--color-dark-800));
+  --sq-grid-header-hover: rgb(var(--color-dark-750));
   --sq-grid-header-text: rgb(var(--color-dark-500));
   --sq-grid-fg: rgb(var(--color-dark-300));
   /* Muted grid text must clear 4.5:1 on the canvas and on the hover / stripe surfaces. */
   --sq-grid-muted: rgb(var(--color-dark-500));
-  /* The header keeps the stronger line that anchors it; rows and cells stay softly separated. */
+  /* The hairline step separates the header, the frozen edge and every row. */
   --sq-grid-border: rgb(var(--color-dark-700));
-  --sq-grid-line: rgb(var(--color-dark-800));
-  --sq-grid-row-hover: rgb(var(--color-dark-800));
+  --sq-grid-line: rgb(var(--color-dark-700));
+  --sq-grid-row-hover: rgb(var(--color-dark-750));
   --sq-grid-row-stripe: rgb(var(--color-dark-850));
   --sq-grid-sort-icon: #64748b;
   --sq-grid-sort-icon-hover: #1e293b;
-  --sq-grid-sort-icon-active: #2563eb;
+  --sq-grid-sort-icon-active: #2a6791;
   --sq-grid-binary-accent: #0369a1;
   --sq-grid-bool-true-accent: #047857;
   --sq-grid-bool-false-accent: #be123c;
@@ -81,12 +82,13 @@ html:not(.dark) .tabulator {
   --sq-grid-identity-accent: #0e7490;
   --sq-grid-type-accent: #0369a1;
   --sq-grid-fulltype-accent: #047857;
-  /* Selection palette (light): a barely-there wash, with the focus border doing the work. */
-  --sq-grid-range-fill: rgba(59, 130, 246, 0.08);
+  /* Selection palette (light): a barely-there wash of the single accent, with the focus border
+     doing the work. */
+  --sq-grid-range-fill: rgba(42, 103, 145, 0.08);
   --sq-grid-range-active-fill: var(--sq-grid-range-fill);
-  --sq-grid-range-border: #2563eb;
+  --sq-grid-range-border: #2a6791;
   --sq-grid-range-border-width: 1.5px;
-  --sq-grid-range-handle: #2563eb;
+  --sq-grid-range-handle: #2a6791;
   /* White would be unreadable on a light tint, so the light theme keeps the normal text colour. */
   --sq-grid-range-text: var(--sq-grid-fg);
 }

@@ -240,14 +240,14 @@ test('dark theme selection palette matches the agreed colours', () => {
   const css = readTheme();
   const darkBlock = themeBlock(css, 'html\\.dark \\.tabulator');
 
-  assert.match(darkBlock, /--sq-grid-range-fill: rgba\(56, 125, 237, 0\.25\)/, 'selection area tint');
+  assert.match(darkBlock, /--sq-grid-range-fill: rgba\(140, 184, 218, 0\.20\)/, 'selection area tint');
   assert.match(
     darkBlock,
-    /--sq-grid-range-active-fill: rgba\(56, 125, 237, 0\.45\)/,
+    /--sq-grid-range-active-fill: rgba\(140, 184, 218, 0\.38\)/,
     'active cell tint'
   );
-  assert.match(darkBlock, /--sq-grid-range-border: #3b82f6/, 'selection border colour');
-  assert.match(darkBlock, /--sq-grid-range-handle: #3b82f6/, 'drag handle colour');
+  assert.match(darkBlock, /--sq-grid-range-border: #8cb8da/, 'selection border colour');
+  assert.match(darkBlock, /--sq-grid-range-handle: #8cb8da/, 'drag handle colour');
   assert.match(darkBlock, /--sq-grid-range-text: #ffffff/, 'selection text colour');
 
   const cellRule =
@@ -295,15 +295,17 @@ test('light theme palette keeps the header anchored and the accents readable', (
   // These resolve through the shell's tokens, so the grid keeps following the surface palette.
   assert.match(lightBlock, /--sq-grid-bg: rgb\(var\(--color-dark-900\)\)/);
   assert.match(lightBlock, /--sq-grid-fg: rgb\(var\(--color-dark-300\)\)/);
-  assert.match(lightBlock, /--sq-grid-line: rgb\(var\(--color-dark-800\)\)/);
-  assert.match(lightBlock, /--sq-grid-row-hover: rgb\(var\(--color-dark-800\)\)/);
+  // Row lines ride the hairline step and hover rows the hover step: with a near-white light panel
+  // the previous panel-step mapping made a hovered even row indistinguishable from its stripe.
+  assert.match(lightBlock, /--sq-grid-line: rgb\(var\(--color-dark-700\)\)/);
+  assert.match(lightBlock, /--sq-grid-row-hover: rgb\(var\(--color-dark-750\)\)/);
   assert.match(lightBlock, /--sq-grid-row-stripe: rgb\(var\(--color-dark-850\)\)/);
   assert.match(css, /\.tabulator-row:hover \{\s*\n\s*background-color: var\(--sq-grid-row-hover\)/);
 
   // Selection: a barely-there wash with a bright focus border and handle.
-  assert.match(lightBlock, /--sq-grid-range-fill: rgba\(59, 130, 246, 0\.08\)/);
-  assert.match(lightBlock, /--sq-grid-range-border: #2563eb/);
-  assert.match(lightBlock, /--sq-grid-range-handle: #2563eb/);
+  assert.match(lightBlock, /--sq-grid-range-fill: rgba\(42, 103, 145, 0\.08\)/);
+  assert.match(lightBlock, /--sq-grid-range-border: #2a6791/);
+  assert.match(lightBlock, /--sq-grid-range-handle: #2a6791/);
 
   // Accents that read as neon on white get solid, contrast-safe replacements.
   assert.match(lightBlock, /--sq-grid-pk-accent: #b45309/);

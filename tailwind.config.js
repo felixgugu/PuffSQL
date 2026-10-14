@@ -32,9 +32,11 @@ export default {
           100: withOpacity('--color-dark-100'), // Brightest text
         },
         brand: {
-          500: '#3b82f6', // Primary action / highlight blue
-          600: '#2563eb', // Primary button hover
-          700: '#1d4ed8',
+          // Minimal spec accent: one low-saturation steel blue for every primary action. The
+          // darker steps are the hover/pressed fills (white text stays >= 5.4:1 on all three).
+          500: '#2a6791',
+          600: '#235a7e',
+          700: '#1e4f70',
         },
         // Theme-aware accent roles. Unlike the fixed `brand` scale above (which is used for
         // solid backgrounds whose text is white), these resolve per colour mode so accent text

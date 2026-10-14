@@ -64,30 +64,40 @@ test('the separator step clears 3:1 as a non-text affordance and is never a body
   }
 });
 
-test('the light theme paints a soft grey canvas instead of pure white', () => {
-  const SURFACE_STEPS = ['700', '750', '800', '850', '900', '950'] as const;
+test('the light theme paints a white canvas with grey chrome, panels and hover rows below it', () => {
+  const BELOW_CANVAS_STEPS = ['700', '750', '800', '850', '950'] as const;
 
   for (const surface of SURFACES) {
     const tokens = buildThemeTokens(surface, 'light');
-    for (const step of SURFACE_STEPS) {
-      assert.notEqual(
-        tokens[`--color-dark-${step}`],
-        '255 255 255',
-        `${surface}/light: dark-${step} must not be pure white`
+
+    // The minimal design is light-first: the editor / grid / results canvas is pure white.
+    assert.equal(
+      tokens['--color-dark-900'],
+      '255 255 255',
+      `${surface}/light: the canvas must be white`
+    );
+
+    // Every other surface steps *down* from the canvas so full-screen grey stays comfortable,
+    // and the raised overlay is white as well: it separates from the canvas through its 1px
+    // outline and shadow, not by being brighter.
+    for (const step of BELOW_CANVAS_STEPS) {
+      const value = tokens[`--color-dark-${step}`]!;
+      assert.notEqual(value, '255 255 255', `${surface}/light: dark-${step} must not be white`);
+      assert.ok(
+        relativeLuminance(tokensToRgba(value)) < 1,
+        `${surface}/light: dark-${step} must sit below the white canvas`
       );
     }
+    assert.equal(tokens['--color-raised'], '255 255 255');
 
-    const canvas = relativeLuminance(tokensToRgba(tokens['--color-dark-900']!));
-    const raised = relativeLuminance(tokensToRgba(tokens['--color-raised']!));
     const chrome = relativeLuminance(tokensToRgba(tokens['--color-dark-850']!));
     const panel = relativeLuminance(tokensToRgba(tokens['--color-dark-800']!));
+    const hover = relativeLuminance(tokensToRgba(tokens['--color-dark-750']!));
 
-    // A full-screen #ffffff canvas (luminance 1.0) is the glare the light theme avoids; the
-    // chrome, panel and row steps stay below the canvas and only the raised overlay sits above it.
-    assert.ok(canvas <= 0.93, `${surface}/light: canvas is too bright (${canvas.toFixed(3)})`);
-    assert.ok(raised > canvas, `${surface}/light: the raised overlay must sit above the canvas`);
-    assert.ok(chrome < canvas, `${surface}/light: chrome must stay below the canvas`);
-    assert.ok(panel < chrome, `${surface}/light: panels must stay below the chrome`);
+    // Panel headers sit between the canvas and the chrome; hover rows deepen past both so a
+    // hovered row is always perceptible (the grid suite pins the numeric threshold).
+    assert.ok(panel > chrome, `${surface}/light: panels must stay lighter than the chrome`);
+    assert.ok(hover < chrome, `${surface}/light: hover rows must deepen past the chrome`);
   }
 });
 
@@ -141,9 +151,21 @@ test('role accent colours stay readable on their own 15-25% status chip tints', 
     er: '#06b6d4',
     structure: '#6366f1',
   };
+  // Only the alphas the interface actually paints. Blue-family chips (accent / info) are the
+  // strongest tint in the app at 25%, which is what the steel blue was tuned against.
+  const chipAlphas: Record<string, number[]> = {
+    accent: [0.25],
+    ok: [0.15],
+    danger: [0.15],
+    warn: [0.15, 0.25],
+    info: [0.25],
+    plan: [0.15, 0.25],
+    er: [0.15],
+    structure: [0.15],
+  };
 
   for (const [role, hue] of Object.entries(hue500)) {
-    for (const alpha of [0.15, 0.25]) {
+    for (const alpha of chipAlphas[role]!) {
       const surface = mixRgb(white, parseHexColor(hue)!, alpha);
       const ratio = contrastRatio(tokensToRgba(lightTokens[`--color-${role}`]!), surface);
       assert.ok(
@@ -181,9 +203,10 @@ function hexToChannels(hex: string): string {
 }
 
 test('inactive workspace tabs keep 3:1 icons in light mode', () => {
-  // Composite of the inactive light tab background (rgba(226,232,240,0.45)) over the light
-  // chrome surface (--color-dark-850 = #e9eef4).
-  const tabStripSurface = { r: 230, g: 235, b: 242 };
+  // Composite of the inactive light tab background (rgba(226,232,240,0.45), see utils/tabTheme.ts)
+  // over the light chrome surface, read from the tokens so the two cannot drift apart.
+  const chrome = tokensToRgba(buildThemeTokens('slate', 'light')['--color-dark-850']!);
+  const tabStripSurface = mixRgb(chrome, { r: 226, g: 232, b: 240 }, 0.45);
   for (const theme of Object.values(TAB_CATEGORY_THEMES)) {
     const ratio = contrastRatio(parseHexColor(theme.iconColorLight)!, tabStripSurface);
     assert.ok(ratio >= 3, `${theme.type} light icon is ${ratio.toFixed(2)}:1`);
@@ -235,7 +258,8 @@ test('Monaco themes keep syntax and gutter colours readable', () => {
 
 test('connection labels stay readable in light mode without touching the stored colour', () => {
   const presets = ['#ef4444', '#f97316', '#eab308', '#10b981', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899'];
-  const panelSurface = parseHexColor('#e2e8f0')!;
+  // Read the surface the label actually sits on instead of pinning a hex that can drift.
+  const panelSurface = tokensToRgba(buildThemeTokens('slate', 'light')['--color-dark-800']!);
 
   for (const preset of presets) {
     assert.equal(resolveConnectionLabelColor(preset, 'dark'), preset, 'dark mode keeps the raw colour');
@@ -284,17 +308,19 @@ test('tabulator surfaces are driven by the app colour tokens in both themes', ()
     assert.ok(block.length > 0, `the ${mode} grid block must exist`);
 
     // The grid canvas, chrome and separators are the shell's surfaces, not a fixed zinc ramp, so
-    // changing the surface palette re-tones the grid together with the rest of the app.
+    // changing the surface palette re-tones the grid together with the rest of the app. Row lines
+    // ride the hairline step and hover rows the hover step, which is what keeps a hovered even row
+    // readable now that the light panel sits next to white.
     assert.match(block, /--sq-grid-bg: rgb\(var\(--color-dark-900\)\)/, `${mode} grid canvas`);
     assert.match(block, /--sq-grid-header-bg: rgb\(var\(--color-dark-850\)\)/, `${mode} header`);
     assert.match(
       block,
-      /--sq-grid-header-hover: rgb\(var\(--color-dark-800\)\)/,
+      /--sq-grid-header-hover: rgb\(var\(--color-dark-750\)\)/,
       `${mode} header hover`
     );
     assert.match(block, /--sq-grid-border: rgb\(var\(--color-dark-700\)\)/, `${mode} border`);
-    assert.match(block, /--sq-grid-line: rgb\(var\(--color-dark-800\)\)/, `${mode} row separator`);
-    assert.match(block, /--sq-grid-row-hover: rgb\(var\(--color-dark-800\)\)/, `${mode} row hover`);
+    assert.match(block, /--sq-grid-line: rgb\(var\(--color-dark-700\)\)/, `${mode} row separator`);
+    assert.match(block, /--sq-grid-row-hover: rgb\(var\(--color-dark-750\)\)/, `${mode} row hover`);
 
     // Text resolves through the ramp the token suite already proves at >= 4.5:1.
     assert.match(block, /--sq-grid-fg: rgb\(var\(--color-dark-300\)\)/, `${mode} body text`);
