@@ -26,56 +26,57 @@
 
       <div class="flex items-center space-x-1.5 flex-shrink-0">
         <!-- Copy TSV -->
-        <Button
+        <SqButton
           type="button"
-          :icon="copiedTsv ? 'pi pi-check text-ok' : 'pi pi-file-excel text-ok'"
           :label="copiedTsv ? $t('common.copied') : 'Copy TSV'"
-          size="small"
-          severity="secondary"
-          outlined
+          size="sm"
+          variant="outline"
           @click="copyAsTsv"
           v-tooltip.top="$t('structure.copyTsvTooltip')"
-          class="!text-xxs !py-0.5 !px-2"
-        />
+        >
+          <template #icon>
+            <Check v-if="copiedTsv" class="w-3.5 h-3.5 text-ok" />
+            <FileSpreadsheet v-else class="w-3.5 h-3.5" />
+          </template>
+        </SqButton>
 
         <!-- Copy JSON -->
-        <Button
+        <SqButton
           type="button"
-          icon="pi pi-code text-er"
           label="JSON"
-          size="small"
-          severity="secondary"
-          outlined
+          size="sm"
+          variant="outline"
           @click="copyAsJson"
           v-tooltip.top="$t('structure.copyJsonTooltip')"
-          class="!text-xxs !py-0.5 !px-2"
-        />
+        >
+          <template #icon><FileCode class="w-3.5 h-3.5" /></template>
+        </SqButton>
 
         <!-- Copy Markdown -->
-        <Button
+        <SqButton
           type="button"
-          icon="pi pi-table text-danger"
           label="MD"
-          size="small"
-          severity="secondary"
-          outlined
+          size="sm"
+          variant="outline"
           @click="copyAsMarkdown"
           v-tooltip.top="$t('structure.copyMdTooltip')"
-          class="!text-xxs !py-0.5 !px-2"
-        />
+        >
+          <template #icon><Table2 class="w-3.5 h-3.5" /></template>
+        </SqButton>
 
         <!-- Reload Data -->
-        <Button
+        <SqButton
           type="button"
-          :icon="isLoading ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"
           :label="$t('common.refresh')"
-          size="small"
-          severity="secondary"
-          outlined
+          size="sm"
+          variant="outline"
+          class="ml-1"
+          :loading="isLoading"
           @click="loadStructure"
           v-tooltip.top="$t('structure.reloadStructureTooltip')"
-          class="!text-xxs !py-0.5 !px-2 ml-1"
-        />
+        >
+          <template #icon><RefreshCw class="w-3.5 h-3.5" /></template>
+        </SqButton>
       </div>
     </div>
 
@@ -138,12 +139,10 @@
             {{ $t('results.distinct') }}: <strong class="font-mono text-dark-100">{{ selectionStats.distinctCount.toLocaleString() }}</strong>
           </div>
 
-          <Button
+          <SqButton
             type="button"
             :label="$t('common.clear')"
-            text
-            size="small"
-            severity="secondary"
+            size="sm"
             @click="clearCellSelection"
             :v-tooltip.top="$t('results.clearSelectionTooltip')"
             class="!ml-1 !p-0 !text-xxs !font-medium !underline"
@@ -320,7 +319,7 @@
 
 <script setup lang="ts">
 import { ref, computed, reactive, onMounted, onBeforeUnmount, nextTick, watch } from 'vue';
-import Button from 'primevue/button';
+import SqButton from '@/components/ui/SqButton.vue';
 import SqInput from '@/components/ui/SqInput.vue';
 import SqChip from '@/components/ui/SqChip.vue';
 import {
@@ -332,6 +331,10 @@ import {
   Pencil,
   FileCode,
   Search,
+  Check,
+  FileSpreadsheet,
+  RefreshCw,
+  Table2,
 } from 'lucide-vue-next';
 import {
   generateAlterColumnSql,

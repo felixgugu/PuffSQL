@@ -22,17 +22,19 @@
         </span>
 
         <!-- Toggle SQL Query Preview -->
-        <Button
+        <SqButton
           type="button"
-          size="small"
-          :severity="showSql ? 'primary' : 'secondary'"
-          :outlined="!showSql"
-          icon="pi pi-code"
+          size="sm"
+          :tone="showSql ? 'accent' : 'neutral'"
+          :variant="showSql ? 'solid' : 'outline'"
+          :active="showSql"
           label="SQL"
+          class="flex-shrink-0"
           @click="showSql = !showSql"
           v-tooltip.top="$t('executionPlan.viewSqlTooltip')"
-          class="!text-xs !py-0.5 !px-2 flex-shrink-0"
-        />
+        >
+          <template #icon><FileCode class="w-3.5 h-3.5" /></template>
+        </SqButton>
       </div>
 
       <!-- Right: View Mode, Zoom Controls, Copy & Download Actions -->
@@ -47,103 +49,102 @@
 
         <!-- Zoom Controls (Only in Diagram mode) -->
         <div v-if="viewMode === 'diagram'" class="flex items-center rounded overflow-hidden border border-dark-700 bg-dark-800">
-          <Button
+          <SqButton
             type="button"
-            icon="pi pi-search-minus"
-            text
-            size="small"
-            severity="secondary"
+            size="sm"
             :disabled="zoom <= 30"
+            :aria-label="$t('executionPlan.zoomOutTooltip')"
             @click="zoomOut"
             v-tooltip.top="$t('executionPlan.zoomOutTooltip')"
-            class="!p-1.5 !w-7 !h-7"
-          />
-          <Button
+          >
+            <template #icon><ZoomOut class="w-3.5 h-3.5" /></template>
+          </SqButton>
+          <SqButton
             type="button"
             :label="`${zoom}%`"
-            text
-            size="small"
-            severity="secondary"
+            size="sm"
+            class="font-mono min-w-[42px]"
             @click="resetZoom"
             v-tooltip.top="$t('executionPlan.zoomResetTooltip')"
-            class="!px-1.5 !py-1 !text-xxs font-mono min-w-[42px]"
           />
-          <Button
+          <SqButton
             type="button"
-            icon="pi pi-search-plus"
-            text
-            size="small"
-            severity="secondary"
+            size="sm"
             :disabled="zoom >= 250"
+            :aria-label="$t('executionPlan.zoomInTooltip')"
             @click="zoomIn"
             v-tooltip.top="$t('executionPlan.zoomInTooltip')"
-            class="!p-1.5 !w-7 !h-7"
-          />
-          <Button
+          >
+            <template #icon><ZoomIn class="w-3.5 h-3.5" /></template>
+          </SqButton>
+          <SqButton
             type="button"
-            icon="pi pi-refresh"
-            text
-            size="small"
-            severity="secondary"
+            size="sm"
+            :aria-label="$t('executionPlan.zoomFitTooltip')"
             @click="resetZoom"
             v-tooltip.top="$t('executionPlan.zoomFitTooltip')"
-            class="!p-1.5 !w-7 !h-7 border-l border-dark-700"
-          />
+          >
+            <template #icon><RefreshCw class="w-3.5 h-3.5" /></template>
+          </SqButton>
         </div>
 
         <!-- Theme Switcher (Dark / Classic Light) -->
-        <Button
+        <SqButton
           v-if="viewMode === 'diagram'"
           type="button"
-          :icon="planTheme === 'dark' ? 'pi pi-moon text-plan' : 'pi pi-sun text-warn'"
           :label="planTheme === 'dark' ? $t('executionPlan.darkTheme') : $t('executionPlan.lightTheme')"
-          size="small"
-          severity="secondary"
-          outlined
+          size="sm"
+          variant="outline"
           @click="togglePlanTheme"
           v-tooltip.top="planTheme === 'dark' ? $t('executionPlan.darkThemeTooltip') : $t('executionPlan.lightThemeTooltip')"
-          class="!text-xs !py-1 !px-2"
-        />
+        >
+          <template #icon>
+            <Moon v-if="planTheme === 'dark'" class="w-3.5 h-3.5" />
+            <Sun v-else class="w-3.5 h-3.5" />
+          </template>
+        </SqButton>
 
         <div class="h-4 w-px bg-dark-700 mx-0.5"></div>
 
         <!-- AI Plan Tuning Advice Button -->
-        <Button
+        <SqButton
           type="button"
-          icon="pi pi-sparkles"
           :label="$t('executionPlan.aiAdvice')"
-          size="small"
-          severity="help"
-          outlined
+          size="sm"
+          tone="accent"
+          variant="outline"
           @click="requestAiPlanTuning"
           v-tooltip.top="$t('executionPlan.aiAdviceTooltip')"
-          class="!text-xs !py-1 !px-2.5 text-plan border-purple-500/40 hover:bg-purple-950/30"
-        />
+        >
+          <template #icon><Sparkles class="w-3.5 h-3.5" /></template>
+        </SqButton>
 
         <!-- Copy Raw XML Button -->
-        <Button
+        <SqButton
           type="button"
-          :icon="copied ? 'pi pi-check text-ok' : 'pi pi-copy'"
           :label="copied ? $t('executionPlan.copied') : $t('executionPlan.copyRawXml')"
-          size="small"
-          severity="secondary"
-          outlined
+          size="sm"
+          variant="outline"
           @click="copyXml"
           v-tooltip.top="$t('executionPlan.copyRawXmlTooltip')"
-          class="!text-xs !py-1 !px-2.5"
-        />
+        >
+          <template #icon>
+            <Check v-if="copied" class="w-3.5 h-3.5 text-ok" />
+            <Copy v-else class="w-3.5 h-3.5" />
+          </template>
+        </SqButton>
 
         <!-- Save as .sqlplan File Button -->
-        <Button
+        <SqButton
           type="button"
-          icon="pi pi-download"
-          size="small"
-          severity="secondary"
-          outlined
+          size="sm"
+          variant="outline"
+          :aria-label="$t('executionPlan.saveSqlPlanTooltip')"
           @click="exportSqlPlanFile"
           v-tooltip.top="$t('executionPlan.saveSqlPlanTooltip')"
-          class="!text-xs !py-1 !px-2"
-        />
+        >
+          <template #icon><Download class="w-3.5 h-3.5" /></template>
+        </SqButton>
       </div>
     </div>
 
@@ -155,17 +156,17 @@
       <div class="overflow-x-auto max-h-24 flex-1 text-dark-300 whitespace-pre-wrap leading-relaxed">
         {{ tab.querySql }}
       </div>
-      <Button
+      <SqButton
         type="button"
-        icon="pi pi-copy"
         label="複製 SQL"
-        size="small"
-        severity="secondary"
-        outlined
+        size="sm"
+        variant="outline"
+        class="flex-shrink-0"
         @click="copySql"
         v-tooltip.top="'複製 SQL 語句'"
-        class="!text-xxs !py-0.5 !px-1.5 flex-shrink-0"
-      />
+      >
+        <template #icon><Copy class="w-3.5 h-3.5" /></template>
+      </SqButton>
     </div>
 
     <!-- Main Content Area -->
@@ -195,11 +196,11 @@
           <div class="max-w-md">
             <h4 class="font-semibold text-dark-100 text-sm mb-1">圖形渲染失敗</h4>
             <p class="text-dark-400 text-xxs font-mono break-all mb-3">{{ renderError }}</p>
-            <Button
+            <SqButton
               type="button"
               label="切換至原始 XML 模式檢視"
-              severity="primary"
-              size="small"
+              tone="accent"
+              variant="solid"
               @click="viewMode = 'xml'"
             />
           </div>
@@ -265,7 +266,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
-import Button from 'primevue/button';
+import SqButton from '@/components/ui/SqButton.vue';
 import SqChip from '@/components/ui/SqChip.vue';
 import SqSegmented from '@/components/ui/SqSegmented.vue';
 import SqCheckbox from '@/components/ui/SqCheckbox.vue';
@@ -273,6 +274,16 @@ import {
   Network,
   RotateCw,
   AlertTriangle,
+  Check,
+  Copy,
+  Download,
+  FileCode,
+  Moon,
+  RefreshCw,
+  Sparkles,
+  Sun,
+  ZoomIn,
+  ZoomOut,
 } from 'lucide-vue-next';
 import type { ExecutionPlanTab } from '@/types/workspace';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
