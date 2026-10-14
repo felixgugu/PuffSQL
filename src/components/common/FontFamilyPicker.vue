@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-1.5">
-    <Select
+    <SqSelect
       :model-value="selectedValue"
       :options="selectOptions"
       option-label="label"
@@ -30,7 +30,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue';
-import Select from 'primevue/select';
+import SqSelect from '@/components/ui/SqSelect.vue';
 import SqInput from '@/components/ui/SqInput.vue';
 import {
   CUSTOM_FONT_VALUE,

@@ -412,12 +412,12 @@
       <div class="grid grid-cols-2 gap-3">
         <div class="space-y-1">
           <label class="block text-dark-300 font-medium">{{ $t('sqlTemplates.tplCategory') }}</label>
-          <Select
+          <SqSelect
             v-model="formState.category"
             :options="customCategoryOptions"
-            optionLabel="label"
-            optionValue="value"
-            size="small"
+            option-label="label"
+            option-value="value"
+            size="sm"
             class="w-full"
           />
         </div>
@@ -488,7 +488,7 @@ import Dialog from 'primevue/dialog';
 import SqInput from '@/components/ui/SqInput.vue';
 import SqTextarea from '@/components/ui/SqTextarea.vue';
 import SqButton from '@/components/ui/SqButton.vue';
-import Select from 'primevue/select';
+import SqSelect from '@/components/ui/SqSelect.vue';
 import SqChip, { type SqChipTone } from '@/components/ui/SqChip.vue';
 import {
   ArrowDownLeft,

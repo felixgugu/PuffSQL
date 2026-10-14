@@ -81,13 +81,13 @@
           <span>/</span>
           <div class="flex items-center space-x-1">
             <i class="pi pi-database text-warn text-xs"></i>
-            <Select
+            <SqSelect
               v-if="availableDatabases.length > 0"
               v-model="currentDatabase"
               :options="availableDatabases"
-              @change="handleDatabaseChange"
-              size="small"
-              class="!text-xs !h-6 !py-0 font-mono"
+              @update:model-value="handleDatabaseChange"
+              size="sm"
+              class="font-mono"
             >
               <template #value="slotProps">
                 <span class="text-xs font-mono text-warn font-medium">{{ slotProps.value || 'master' }}</span>
@@ -95,7 +95,7 @@
               <template #option="slotProps">
                 <span class="text-xs font-mono py-0.5 text-dark-200">{{ slotProps.option }}</span>
               </template>
-            </Select>
+            </SqSelect>
             <span v-else class="text-warn font-medium font-mono">{{ currentDatabase || 'master' }}</span>
           </div>
         </div>
@@ -337,7 +337,7 @@ import { useI18n } from 'vue-i18n';
 import Dialog from 'primevue/dialog';
 import SqInput from '@/components/ui/SqInput.vue';
 import SqButton from '@/components/ui/SqButton.vue';
-import Select from 'primevue/select';
+import SqSelect from '@/components/ui/SqSelect.vue';
 import { FileCode, FileEdit, List, Play, RefreshCw, Search, Table2, X } from 'lucide-vue-next';
 import SqChip from '@/components/ui/SqChip.vue';
 import { useConnectionStore } from '@/stores/connectionStore';

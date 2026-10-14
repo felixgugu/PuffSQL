@@ -47,12 +47,12 @@
               <label class="font-medium text-dark-100 block">{{ $t('settingsModal.language') }}</label>
               <span class="text-xxs text-dark-400">{{ $t('settingsModal.languageDesc') }}</span>
             </div>
-            <Select
+            <SqSelect
               :model-value="settingsStore.locale"
               :options="SUPPORTED_LOCALES"
               option-label="label"
               option-value="value"
-              class="min-w-[240px] !text-xs !bg-dark-900 !border-dark-700"
+              class="min-w-[240px]"
               @update:model-value="handleLocaleChange"
             />
           </div>
@@ -253,12 +253,12 @@
             <label class="font-medium text-dark-100 block">{{ $t('settingsModal.editorFontSize') }}</label>
             <span class="text-xxs text-dark-400">{{ $t('settingsModal.editorFontSizeDesc') }}</span>
           </div>
-          <Select
+          <SqSelect
             v-model="settingsStore.editorFontSize"
             :options="fontSizeOptions"
             option-label="label"
             option-value="value"
-            class="!h-7 !text-xs !bg-dark-900 !border-dark-700 min-w-[90px]"
+            class="min-w-[90px]"
           />
         </div>
 
@@ -282,7 +282,7 @@
             <label class="font-medium text-dark-100 block">{{ $t('settingsModal.editorWordWrap') }}</label>
             <span class="text-xxs text-dark-400">{{ $t('settingsModal.editorWordWrapDesc') }}</span>
           </div>
-          <Select
+          <SqSelect
             v-model="settingsStore.editorWordWrap"
             :options="[
               { label: '開啟 (On)', value: 'on' },
@@ -290,7 +290,7 @@
             ]"
             option-label="label"
             option-value="value"
-            class="!h-7 !text-xs !bg-dark-900 !border-dark-700 min-w-[110px]"
+            class="min-w-[110px]"
           />
         </div>
 
@@ -300,7 +300,7 @@
             <label class="font-medium text-dark-100 block">{{ $t('settingsModal.editorTabSize') }}</label>
             <span class="text-xxs text-dark-400">{{ $t('settingsModal.editorTabSizeDesc') }}</span>
           </div>
-          <Select
+          <SqSelect
             v-model="settingsStore.editorTabSize"
             :options="[
               { label: '2 空格', value: 2 },
@@ -308,7 +308,7 @@
             ]"
             option-label="label"
             option-value="value"
-            class="!h-7 !text-xs !bg-dark-900 !border-dark-700 min-w-[90px]"
+            class="min-w-[90px]"
           />
         </div>
 
@@ -373,7 +373,7 @@
               {{ $t('settingsModal.maxResultTabsDesc') }}
             </span>
           </div>
-          <Select
+          <SqSelect
             v-model="settingsStore.maxResultTabs"
             :options="[
               { label: '5 組', value: 5 },
@@ -385,7 +385,7 @@
             ]"
             option-label="label"
             option-value="value"
-            class="!h-7 !text-xs !bg-dark-900 !border-dark-700 min-w-[120px]"
+            class="min-w-[120px]"
           />
         </div>
 
@@ -406,7 +406,7 @@
             <label class="font-medium text-dark-100 block">{{ $t('settingsModal.defaultMaxRows') }}</label>
             <span class="text-xxs text-dark-400">{{ $t('settingsModal.defaultMaxRowsDesc') }}</span>
           </div>
-          <Select
+          <SqSelect
             v-model="settingsStore.defaultMaxRows"
             :options="[
               { label: '1,000 筆', value: 1000 },
@@ -417,7 +417,7 @@
             ]"
             option-label="label"
             option-value="value"
-            class="!h-7 !text-xs !bg-dark-900 !border-dark-700 min-w-[140px]"
+            class="min-w-[140px]"
           />
         </div>
 
@@ -587,7 +587,7 @@ import appIcon from '../../../src-tauri/icons/64x64.png';
 import Dialog from 'primevue/dialog';
 import SqButton from '@/components/ui/SqButton.vue';
 import { Check, FileCode, Filter, Info, Palette, Sparkles, Table2 } from 'lucide-vue-next';
-import Select from 'primevue/select';
+import SqSelect from '@/components/ui/SqSelect.vue';
 import SqSegmented from '@/components/ui/SqSegmented.vue';
 import SqSwitch from '@/components/ui/SqSwitch.vue';
 import SqCheckbox from '@/components/ui/SqCheckbox.vue';

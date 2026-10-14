@@ -18,13 +18,13 @@
       <div class="grid grid-cols-12 gap-2 items-center">
         <!-- Target Scope Selector -->
         <div class="col-span-3">
-          <Select
+          <SqSelect
             v-model="newTarget"
             :options="targetOptions"
-            optionLabel="label"
-            optionValue="value"
-            size="small"
-            class="w-full !text-xs !h-7"
+            option-label="label"
+            option-value="value"
+            size="sm"
+            class="w-full"
           />
         </div>
 
@@ -101,13 +101,13 @@
             <div class="grid grid-cols-12 gap-2 items-center">
               <!-- Target Scope Selector -->
               <div class="col-span-3">
-                <Select
+                <SqSelect
                   v-model="editTarget"
                   :options="targetOptions"
-                  optionLabel="label"
-                  optionValue="value"
-                  size="small"
-                  class="w-full !text-xs !h-7"
+                  option-label="label"
+                  option-value="value"
+                  size="sm"
+                  class="w-full"
                 />
               </div>
 
@@ -284,7 +284,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import Select from 'primevue/select';
+import SqSelect from '@/components/ui/SqSelect.vue';
 import SqInput from '@/components/ui/SqInput.vue';
 import SqButton from '@/components/ui/SqButton.vue';
 import { Check, Pencil, Plus, Trash2, X } from 'lucide-vue-next';

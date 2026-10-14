@@ -103,6 +103,45 @@ describe('minimal UI primitives (src/components/ui)', () => {
     assert.match(map, /export function piIcon\(/, 'the map exposes a resolver for dynamic icons');
   });
 
+  test('SqSelect keeps the combobox/listbox contract and the footer slot', () => {
+    const source = readSource('src/components/ui/SqSelect.vue');
+
+    assert.match(source, /role="combobox"/, 'the trigger is a combobox');
+    assert.match(source, /:aria-expanded="isOpen"/, 'the trigger announces its expanded state');
+    assert.match(source, /role="listbox"/, 'the popup is a listbox');
+    assert.match(source, /role="option"/, 'options are options');
+    assert.match(source, /:aria-selected="isSelected\(option\)"/, 'selection is announced');
+
+    for (const key of ['ArrowDown', 'ArrowUp', 'Home', 'End', 'Enter']) {
+      assert.match(source, new RegExp(`case '${key}':`), `handles ${key}`);
+    }
+    assert.match(source, /function handleTypeAhead/, 'typing jumps to the matching option');
+    assert.match(source, /name="footer"/, 'a footer slot hosts actions like "new connection"');
+    assert.match(source, /is-selected/, 'the selected option is highlighted');
+  });
+
+  test('no component still imports PrimeVue Select, Menu, Popover, Toolbar, Message or DataTable', () => {
+    const files = [
+      'src/components/layout/AppHeader.vue',
+      'src/components/modals/SettingsModal.vue',
+      'src/components/modals/TableFilterTab.vue',
+      'src/components/modals/SqlTemplateModal.vue',
+      'src/components/modals/QuickObjectFinderModal.vue',
+      'src/components/common/FontFamilyPicker.vue',
+      'src/components/results/ExecutionStatsViewer.vue',
+      'src/components/editor/ErDiagramViewer.vue',
+    ];
+
+    for (const file of files) {
+      const source = readSource(file);
+      assert.doesNotMatch(
+        source,
+        /from 'primevue\/(select|menu|popover|toolbar|message|datatable|column|button|tag|inputtext|checkbox|toggleswitch|selectbutton|textarea|progressbar|badge|card|divider|inputnumber|password|iconfield|inputicon)'/,
+        `${file} still imports a retired PrimeVue component`
+      );
+    }
+  });
+
   test('the shell no longer renders PrimeIcons glyphs in its own markup', () => {
     for (const file of [
       'src/components/layout/AppStatusBar.vue',

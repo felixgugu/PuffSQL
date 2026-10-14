@@ -23,14 +23,14 @@
         </div>
 
         <!-- Connection Select -->
-        <Select
+        <SqSelect
           :model-value="connectionStore.activeConnectionId"
           :options="connectionStore.connections"
           option-value="id"
           option-label="name"
           :placeholder="$t('sidebar.connections') + '...'"
-          size="small"
-          class="!h-7 !text-xs !bg-dark-800 !border-dark-600 hover:!border-dark-500 min-w-[160px] max-w-[220px]"
+          size="sm"
+          class="min-w-[160px] max-w-[220px]"
           :style="activeConnStyle"
           @update:model-value="val => handleSelectConnection(val as string)"
         >
@@ -100,15 +100,15 @@
               </SqButton>
             </div>
           </template>
-        </Select>
+        </SqSelect>
 
         <!-- Database Select -->
-        <Select
+        <SqSelect
           :model-value="connectionStore.activeDatabase"
           :options="filteredAvailableDatabases"
           :placeholder="$t('header.selectDatabase') + '...'"
-          size="small"
-          class="!h-7 !text-xs !bg-dark-800 !border-dark-600 hover:!border-dark-500 min-w-[130px] max-w-[180px]"
+          size="sm"
+          class="min-w-[130px] max-w-[180px]"
           @update:model-value="val => onDatabaseChange(val as string)"
         >
           <template #value="slotProps">
@@ -126,7 +126,7 @@
               <span class="truncate text-dark-200">{{ slotProps.option }}</span>
             </div>
           </template>
-        </Select>
+        </SqSelect>
     </div>
 
     <!-- End: Actions Toolbar & Settings -->
@@ -301,14 +301,14 @@
         <!-- Max Rows Limit Selector -->
         <div class="flex items-center space-x-1 pl-1 text-dark-400 text-xxs font-mono">
           <span>Limit:</span>
-          <Select
+          <SqSelect
             :model-value="queryStore.maxRows ?? 'none'"
             :options="limitOptions"
             option-value="value"
             option-label="label"
-            size="small"
-            class="!h-6 !text-[11px] !bg-dark-800 !border-dark-700 min-w-[75px] font-mono"
-            @update:model-value="onMaxRowsChange"
+            size="sm"
+            class="min-w-[75px] font-mono"
+            @update:model-value="val => onMaxRowsChange(val as string | number)"
           >
             <template #value="slotProps">
               <span class="text-[11px] font-mono leading-none">
@@ -320,7 +320,7 @@
                 {{ slotProps.option.label }}
               </span>
             </template>
-          </Select>
+          </SqSelect>
         </div>
 
         <div class="w-px h-4 bg-dark-700 mx-0.5 flex-shrink-0" />
@@ -365,7 +365,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import Select from 'primevue/select';
+import SqSelect from '@/components/ui/SqSelect.vue';
 import {
   AlignLeft,
   Book,
