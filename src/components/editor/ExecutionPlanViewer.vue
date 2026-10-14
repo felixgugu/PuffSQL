@@ -38,22 +38,12 @@
       <!-- Right: View Mode, Zoom Controls, Copy & Download Actions -->
       <div class="flex items-center space-x-1.5 flex-shrink-0">
         <!-- View Mode Segmented Buttons -->
-        <SelectButton
+        <SqSegmented
           v-model="viewMode"
           :options="viewModeOptions"
-          optionLabel="label"
-          optionValue="value"
-          size="small"
-          :allowEmpty="false"
-          class="!text-xs"
-        >
-          <template #option="{ option }">
-            <div class="flex items-center space-x-1.5">
-              <i :class="option.icon" class="text-xs"></i>
-              <span>{{ option.label }}</span>
-            </div>
-          </template>
-        </SelectButton>
+          size="sm"
+          aria-label="執行計畫檢視模式"
+        />
 
         <!-- Zoom Controls (Only in Diagram mode) -->
         <div v-if="viewMode === 'diagram'" class="flex items-center rounded overflow-hidden border border-dark-700 bg-dark-800">
@@ -255,8 +245,7 @@
             <span>總行數: {{ xmlLines.length }} 行</span>
           </div>
           <div class="flex items-center space-x-2">
-            <Checkbox v-model="wordWrap" :binary="true" inputId="xmlWordWrap" />
-            <label for="xmlWordWrap" class="cursor-pointer select-none text-dark-400 hover:text-dark-200">自動折行</label>
+            <SqCheckbox v-model="wordWrap" id="xmlWordWrap">自動折行</SqCheckbox>
           </div>
         </div>
 
@@ -278,8 +267,8 @@ import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n';
 import Button from 'primevue/button';
 import SqChip from '@/components/ui/SqChip.vue';
-import SelectButton from 'primevue/selectbutton';
-import Checkbox from 'primevue/checkbox';
+import SqSegmented from '@/components/ui/SqSegmented.vue';
+import SqCheckbox from '@/components/ui/SqCheckbox.vue';
 import {
   Network,
   RotateCw,
@@ -295,8 +284,8 @@ import { savePlanToFile } from '@/utils/fileStorage';
 const { t } = useI18n();
 
 const viewModeOptions = computed(() => [
-  { label: t('executionPlan.viewDiagram'), value: 'diagram', icon: 'pi pi-sitemap' },
-  { label: t('executionPlan.viewXml'), value: 'xml', icon: 'pi pi-code' },
+  { label: t('executionPlan.viewDiagram'), value: 'diagram' },
+  { label: t('executionPlan.viewXml'), value: 'xml' },
 ]);
 
 const props = defineProps<{

@@ -185,7 +185,7 @@
                 : 'bg-dark-900/40 border-dark-750/60'
             ]"
           >
-            <ToggleSwitch v-model="form.modificationPrompt" class="mt-0.5 flex-shrink-0" />
+            <SqSwitch v-model="form.modificationPrompt" class="mt-0.5 flex-shrink-0" />
             <div class="flex-1 min-w-0">
               <div class="flex items-center space-x-2">
                 <span
@@ -209,13 +209,13 @@
           <!-- TLS & Certificate Options -->
           <div class="flex items-center space-x-5 text-dark-300 px-0.5">
             <div class="flex items-center space-x-2 cursor-pointer select-none">
-              <Checkbox v-model="form.encrypt" :binary="true" input-id="encrypt-cb" />
+              <SqCheckbox v-model="form.encrypt" id="encrypt-cb" />
               <label for="encrypt-cb" class="cursor-pointer text-xxs hover:text-dark-100 transition-colors">
                 {{ $t('connectionModal.forceTls') }}
               </label>
             </div>
             <div class="flex items-center space-x-2 cursor-pointer select-none">
-              <Checkbox v-model="form.trustServerCertificate" :binary="true" input-id="trust-cert-cb" />
+              <SqCheckbox v-model="form.trustServerCertificate" id="trust-cert-cb" />
               <label for="trust-cert-cb" class="cursor-pointer text-xxs hover:text-dark-100 transition-colors">
                 {{ $t('connectionModal.trustSelfSigned') }}
               </label>
@@ -361,8 +361,8 @@ import { useDialogWindow } from '@/composables/useDialogWindow';
 import SqInput from '@/components/ui/SqInput.vue';
 import InputNumber from 'primevue/inputnumber';
 import Password from 'primevue/password';
-import ToggleSwitch from 'primevue/toggleswitch';
-import Checkbox from 'primevue/checkbox';
+import SqSwitch from '@/components/ui/SqSwitch.vue';
+import SqCheckbox from '@/components/ui/SqCheckbox.vue';
 import Button from 'primevue/button';
 import SqChip from '@/components/ui/SqChip.vue';
 import type { ConnectionProfile } from '@/types/connection';

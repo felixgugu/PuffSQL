@@ -217,7 +217,7 @@ test('the retention toggle sits in the result toolbar and in the settings modal'
   const modal = readSource('src/components/modals/SettingsModal.vue');
   assert.match(
     modal,
-    /ToggleSwitch v-model="settingsStore\.accumulateResultTabs"/,
+    /SqSwitch v-model="settingsStore\.accumulateResultTabs"/,
     'the settings modal exposes the same switch'
   );
 });

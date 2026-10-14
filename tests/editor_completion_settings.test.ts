@@ -50,11 +50,11 @@ test('SettingsModal.vue: contains editorAutoCompletion toggle switch in Editor t
   const settingsModalPath = path.join(rootDir, 'src/components/modals/SettingsModal.vue');
   const content = fs.readFileSync(settingsModalPath, 'utf8');
 
-  // Verify ToggleSwitch bound to settingsStore.editorAutoCompletion exists
+  // Verify the switch bound to settingsStore.editorAutoCompletion exists (SqSwitch since P4d)
   assert.match(
     content,
-    /ToggleSwitch\s+v-model="settingsStore\.editorAutoCompletion"/,
-    'SettingsModal must have ToggleSwitch bound to editorAutoCompletion'
+    /SqSwitch\s+v-model="settingsStore\.editorAutoCompletion"/,
+    'SettingsModal must have a switch bound to editorAutoCompletion'
   );
 });
 

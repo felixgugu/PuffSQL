@@ -87,24 +87,14 @@
             <label class="font-medium text-dark-100 block">{{ $t('settingsModal.colorMode') }}</label>
             <span class="text-xxs text-dark-400">{{ $t('settingsModal.colorModeDesc') }}</span>
           </div>
-          <SelectButton
+          <SqSegmented
             :model-value="settingsStore.colorMode"
             :options="[
-              { label: $t('settingsModal.darkMode'), value: 'dark', icon: 'pi pi-moon' },
-              { label: $t('settingsModal.lightMode'), value: 'light', icon: 'pi pi-sun' },
+              { label: $t('settingsModal.darkMode'), value: 'dark' },
+              { label: $t('settingsModal.lightMode'), value: 'light' },
             ]"
-            option-label="label"
-            option-value="value"
-            class="!text-xs"
-            @update:model-value="val => val && settingsStore.setColorMode(val as 'dark' | 'light')"
-          >
-            <template #option="slotProps">
-              <div class="flex items-center space-x-1.5 py-0.5 px-1">
-                <i :class="slotProps.option.icon" class="text-xs" />
-                <span>{{ slotProps.option.label }}</span>
-              </div>
-            </template>
-          </SelectButton>
+            @update:model-value="val => settingsStore.setColorMode(val as 'dark' | 'light')"
+          />
         </div>
 
         <!-- 2. Theme Preset (Aura, Lara, Nora, Material) -->
@@ -220,7 +210,7 @@
             <label class="font-medium text-dark-100 block">{{ $t('settingsModal.rippleEffect') }}</label>
             <span class="text-xxs text-dark-400">{{ $t('settingsModal.rippleEffectDesc') }}</span>
           </div>
-          <ToggleSwitch
+          <SqSwitch
             :model-value="settingsStore.ripple"
             @update:model-value="val => handleRippleToggle(val)"
           />
@@ -240,10 +230,10 @@
             <Button label="次要外框" severity="secondary" outlined size="small" />
             <Button label="文字按鈕" text size="small" />
             <SqChip label="狀態標籤" />
-            <Badge value="99+" />
+            <SqChip tone="accent" label="12" />
             <SqInput placeholder="輸入框預覽..." size="sm" class="w-32" />
             <div class="flex items-center space-x-1.5 pl-2">
-              <Checkbox :binary="true" :model-value="true" />
+              <SqCheckbox :model-value="true" />
               <span class="text-xxs text-dark-300">核取方塊</span>
             </div>
           </div>
@@ -323,7 +313,7 @@
             <label class="font-medium text-dark-100 block">{{ $t('settingsModal.editorAutoCompletion') }}</label>
             <span class="text-xxs text-dark-400">{{ $t('settingsModal.editorAutoCompletionDesc') }}</span>
           </div>
-          <ToggleSwitch v-model="settingsStore.editorAutoCompletion" />
+          <SqSwitch v-model="settingsStore.editorAutoCompletion" />
         </div>
 
         <!-- Highlight Color -->
@@ -402,7 +392,7 @@
               {{ $t('settingsModal.accumulateResultTabsDesc') }}
             </span>
           </div>
-          <ToggleSwitch v-model="settingsStore.accumulateResultTabs" />
+          <SqSwitch v-model="settingsStore.accumulateResultTabs" />
         </div>
 
         <!-- Default Max Rows -->
@@ -594,10 +584,9 @@ import appIcon from '../../../src-tauri/icons/64x64.png';
 import Dialog from 'primevue/dialog';
 import Button from 'primevue/button';
 import Select from 'primevue/select';
-import SelectButton from 'primevue/selectbutton';
-import ToggleSwitch from 'primevue/toggleswitch';
-import Badge from 'primevue/badge';
-import Checkbox from 'primevue/checkbox';
+import SqSegmented from '@/components/ui/SqSegmented.vue';
+import SqSwitch from '@/components/ui/SqSwitch.vue';
+import SqCheckbox from '@/components/ui/SqCheckbox.vue';
 import SqInput from '@/components/ui/SqInput.vue';
 import SqChip from '@/components/ui/SqChip.vue';
 import { usePrimeVue } from 'primevue/config';

@@ -441,25 +441,23 @@
       <!-- Description Field -->
       <div class="space-y-1">
         <label class="block text-dark-300 font-medium">{{ $t('sqlTemplates.tplDesc') }}</label>
-        <Textarea
+        <SqTextarea
           v-model="formState.description"
           rows="2"
           :placeholder="$t('sqlTemplates.tplDescPlaceholder')"
-          size="small"
-          class="w-full resize-none leading-relaxed"
+          class="w-full leading-relaxed"
         />
       </div>
 
       <!-- SQL Code Field -->
       <div class="space-y-1">
         <label class="block text-dark-300 font-medium">{{ $t('sqlTemplates.tplCode') }} <span class="text-danger">*</span></label>
-        <Textarea
+        <SqTextarea
           v-model="formState.code"
           required
           rows="7"
           placeholder="SELECT * FROM dbo.YourTable..."
-          size="small"
-          class="w-full font-mono resize-y leading-relaxed !bg-dark-950"
+          class="w-full font-mono leading-relaxed"
         />
       </div>
 
@@ -493,7 +491,7 @@ import { ref, reactive, computed, watch, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import Dialog from 'primevue/dialog';
 import SqInput from '@/components/ui/SqInput.vue';
-import Textarea from 'primevue/textarea';
+import SqTextarea from '@/components/ui/SqTextarea.vue';
 import Button from 'primevue/button';
 import Select from 'primevue/select';
 import SqChip, { type SqChipTone } from '@/components/ui/SqChip.vue';

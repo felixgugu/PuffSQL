@@ -8,7 +8,7 @@
         </label>
         <span class="text-xxs text-dark-400">{{ $t('settingsModal.editorBackgroundImageDesc') }}</span>
       </div>
-      <ToggleSwitch
+      <SqSwitch
         :model-value="settingsStore.editorBackgroundImageEnabled"
         :disabled="!hasImage"
         :aria-label="$t('settingsModal.editorBackgroundImage')"
@@ -111,7 +111,7 @@
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import Button from 'primevue/button';
-import ToggleSwitch from 'primevue/toggleswitch';
+import SqSwitch from '@/components/ui/SqSwitch.vue';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import {

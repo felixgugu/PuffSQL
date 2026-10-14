@@ -171,10 +171,9 @@
             title="雙擊即可快速編輯"
           >
             <div class="flex items-center space-x-2.5 min-w-0">
-              <Checkbox
-                :modelValue="rule.enabled"
-                :binary="true"
-                @change="settingsStore.toggleFilterRule(rule.id)"
+              <SqCheckbox
+                :model-value="rule.enabled"
+                @update:model-value="settingsStore.toggleFilterRule(rule.id)"
                 v-tooltip.top="'切換啟用/停用'"
               />
               <!-- Target Scope Badge -->
@@ -244,14 +243,11 @@
       </div>
       <div class="flex items-center space-x-2">
         <!-- Target Type for Tester -->
-        <SelectButton
+        <SqSegmented
           v-model="testTargetType"
           :options="testTargetOptions"
-          optionLabel="label"
-          optionValue="value"
-          :allowEmpty="false"
-          size="small"
-          class="!text-xxs"
+          size="sm"
+          aria-label="測試目標類型"
         />
 
         <SqInput
@@ -291,10 +287,10 @@ import { ref, computed } from 'vue';
 import Select from 'primevue/select';
 import SqInput from '@/components/ui/SqInput.vue';
 import Button from 'primevue/button';
-import Checkbox from 'primevue/checkbox';
+import SqCheckbox from '@/components/ui/SqCheckbox.vue';
 import { Eye, EyeOff } from 'lucide-vue-next';
 import SqChip from '@/components/ui/SqChip.vue';
-import SelectButton from 'primevue/selectbutton';
+import SqSegmented from '@/components/ui/SqSegmented.vue';
 import { useSettingsStore } from '@/stores/settingsStore';
 import {
   validateRegexPattern,

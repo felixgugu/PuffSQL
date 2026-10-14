@@ -77,11 +77,11 @@
         />
       </div>
 
-      <Textarea
+      <SqTextarea
         v-model="aiChatStore.config.curlTemplate"
         rows="13"
         placeholder="請貼上完整的 curl 指令..."
-        class="w-full !text-[11px] font-mono !bg-dark-900 !border-dark-750 !p-3 leading-relaxed !resize-y"
+        class="w-full font-mono leading-relaxed"
       />
     </div>
 
@@ -198,11 +198,11 @@
         </div>
         <div class="space-y-1">
           <label class="text-xs font-medium text-dark-200 block">提示詞內容 (Prompt) *</label>
-          <Textarea
+          <SqTextarea
             v-model="promptForm.prompt"
             rows="5"
             placeholder="請輸入點選此快捷選項時，自動帶入聊天輸入框的提問內容..."
-            class="w-full !text-xs !p-2.5 font-sans !bg-dark-900 !border-dark-700 leading-relaxed !resize-y"
+            class="w-full leading-relaxed"
           />
         </div>
       </div>
@@ -235,7 +235,7 @@
 import { ref, reactive } from 'vue';
 import SqInput from '@/components/ui/SqInput.vue';
 import Button from 'primevue/button';
-import Textarea from 'primevue/textarea';
+import SqTextarea from '@/components/ui/SqTextarea.vue';
 import Dialog from 'primevue/dialog';
 import { useAiChatStore } from '@/stores/aiChatStore';
 import { curlAiService } from '@/services/ai/curlAiService';

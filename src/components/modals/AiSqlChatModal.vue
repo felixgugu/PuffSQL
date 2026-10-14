@@ -246,7 +246,7 @@
 
           <!-- 運算中進度列 -->
           <div v-if="aiChatStore.isGenerating" class="flex items-center space-x-2 py-2 text-dark-400">
-            <ProgressBar mode="indeterminate" class="w-24 !h-1.5" />
+            <div class="sq-progress-line w-24" role="progressbar" aria-label="分析中" />
             <span class="text-[11px]">{{ $t('aiSqlChat.analyzing', { seconds: aiChatStore.executionElapsedSeconds }) }}</span>
             <Button
               :label="$t('aiSqlChat.abortBtn')"
@@ -281,13 +281,13 @@
         <!-- 輸入文字框區塊 -->
         <div class="p-3 border-t border-dark-750 bg-dark-850/90 flex-shrink-0 select-none">
           <div class="relative flex items-end space-x-2">
-            <Textarea
+            <SqTextarea
               ref="inputTextareaRef"
               v-model="inputQuery"
               rows="2"
               auto-resize
               :placeholder="$t('aiSqlChat.inputPlaceholder')"
-              class="w-full !text-xs !p-2.5 font-sans !resize-none !bg-dark-900 !border-dark-700"
+              class="w-full"
               :disabled="aiChatStore.isGenerating"
               @keydown.enter.exact.prevent="handleSubmit"
             />
@@ -324,9 +324,8 @@
 import { ref, reactive, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
 import { useI18n } from 'vue-i18n';
 import Button from 'primevue/button';
-import Textarea from 'primevue/textarea';
+import SqTextarea from '@/components/ui/SqTextarea.vue';
 import SqChip from '@/components/ui/SqChip.vue';
-import ProgressBar from 'primevue/progressbar';
 import { useToast } from 'primevue/usetoast';
 import { useAiChatStore } from '@/stores/aiChatStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
