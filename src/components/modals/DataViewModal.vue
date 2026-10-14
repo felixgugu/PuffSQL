@@ -41,10 +41,10 @@
               - {{ dataViewStore.tableName }}
             </span>
           </span>
-          <Tag
-            :value="`第 ${dataViewStore.currentDisplayIndex} 列 / 共 ${dataViewStore.totalRows} 列`"
-            severity="secondary"
-            class="!text-xxs !py-0.5 !px-1.5 font-mono"
+          <SqChip
+            :label="`第 ${dataViewStore.currentDisplayIndex} 列 / 共 ${dataViewStore.totalRows} 列`"
+            tone="neutral"
+            class="font-mono"
           />
         </div>
 
@@ -369,7 +369,7 @@
 import { ref, reactive, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
 import { Table2, Search, X, SearchX, Copy } from 'lucide-vue-next';
 import Button from 'primevue/button';
-import Tag from 'primevue/tag';
+import SqChip from '@/components/ui/SqChip.vue';
 import { useDataViewStore } from '@/stores/dataViewStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useFloatingWindowDrag } from '@/composables/useFloatingWindowDrag';

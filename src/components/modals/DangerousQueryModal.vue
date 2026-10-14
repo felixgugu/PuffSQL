@@ -47,11 +47,11 @@
             <span class="text-xxs text-dark-500 font-mono">{{ $t('dangerousQuery.keywordsCount', { count: detectedKeywords.length }) }}</span>
           </div>
           <div class="flex items-center flex-wrap gap-1.5">
-            <Tag
+            <SqChip
               v-for="kw in detectedKeywords"
               :key="kw"
-              severity="warn"
-              :value="kw"
+              tone="warn"
+              :label="kw"
               class="font-mono font-bold"
             />
           </div>
@@ -131,7 +131,7 @@
 <script setup lang="ts">
 import Dialog from 'primevue/dialog';
 import Button from 'primevue/button';
-import Tag from 'primevue/tag';
+import SqChip from '@/components/ui/SqChip.vue';
 import { useDialogWindow } from '@/composables/useDialogWindow';
 
 const dialogWindow = useDialogWindow();

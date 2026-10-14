@@ -32,11 +32,11 @@
           AI 助手 (點擊展開)
         </span>
 
-        <Tag
+        <SqChip
           v-if="aiChatStore.currentSql"
-          value="已帶入 SQL"
-          severity="info"
-          class="!text-xxs !font-medium !py-0 !px-1.5"
+          label="已帶入 SQL"
+          tone="accent"
+          class="font-medium"
         />
       </div>
 
@@ -80,7 +80,7 @@
 
 <script setup lang="ts">
 import Button from 'primevue/button';
-import Tag from 'primevue/tag';
+import SqChip from '@/components/ui/SqChip.vue';
 import { useAiChatStore } from '@/stores/aiChatStore';
 
 const aiChatStore = useAiChatStore();

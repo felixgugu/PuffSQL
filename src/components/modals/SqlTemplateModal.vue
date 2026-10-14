@@ -19,7 +19,7 @@
         <i class="pi pi-book text-warn text-base flex-shrink-0"></i>
         <span class="text-sm font-semibold text-dark-100 flex items-center space-x-2">
           <span>{{ $t('sqlTemplates.title') }}</span>
-          <Tag :value="templateStore.allTemplates.length" severity="secondary" class="!font-mono !text-xxs !px-1.5 !py-0.2" />
+          <SqChip :label="templateStore.allTemplates.length" tone="neutral" class="font-mono" />
         </span>
 
         <div class="h-4 w-px bg-dark-700 mx-1"></div>
@@ -143,17 +143,17 @@
             <div class="flex items-center justify-between space-x-1 mb-1">
               <!-- Category Badge -->
               <div class="flex items-center space-x-1.5 min-w-0">
-                <Tag
-                  :severity="getCategorySeverity(tpl.category, tpl.isCustom)"
-                  :value="tpl.categoryLabel || tpl.category"
-                  class="!text-xxs !font-medium !px-1.5 !py-0.5 uppercase tracking-wider"
+                <SqChip
+                  :tone="getCategoryTone(tpl.category, tpl.isCustom)"
+                  :label="tpl.categoryLabel || tpl.category"
+                  class="font-medium uppercase tracking-wider"
                 />
 
-                <Tag
+                <SqChip
                   v-if="tpl.isCustom"
-                  severity="danger"
-                  :value="$t('sqlTemplates.customDoc')"
-                  class="!text-xxs !font-medium !px-1.5 !py-0.5"
+                  tone="danger"
+                  :label="$t('sqlTemplates.customDoc')"
+                  class="font-medium"
                 />
               </div>
 
@@ -214,16 +214,15 @@
           <div class="p-3.5 border-b border-dark-750 bg-dark-850/60 flex items-center justify-between flex-shrink-0">
             <div class="min-w-0 flex-1 pr-3">
               <div class="flex items-center space-x-2 mb-1">
-                <Tag
-                  :severity="getCategorySeverity(templateStore.selectedTemplate.category, templateStore.selectedTemplate.isCustom)"
-                  :value="templateStore.selectedTemplate.categoryLabel || templateStore.selectedTemplate.category"
-                  class="!text-xxs uppercase tracking-wider"
+                <SqChip
+                  :tone="getCategoryTone(templateStore.selectedTemplate.category, templateStore.selectedTemplate.isCustom)"
+                  :label="templateStore.selectedTemplate.categoryLabel || templateStore.selectedTemplate.category"
+                  class="uppercase tracking-wider"
                 />
-                <Tag
+                <SqChip
                   v-if="templateStore.selectedTemplate.isCustom"
-                  severity="danger"
-                  :value="$t('sqlTemplates.externalCustomDoc')"
-                  class="!text-xxs"
+                  tone="danger"
+                  :label="$t('sqlTemplates.externalCustomDoc')"
                 />
               </div>
               <h3 class="text-sm font-semibold text-dark-100 truncate">
@@ -497,7 +496,7 @@ import InputText from 'primevue/inputtext';
 import Textarea from 'primevue/textarea';
 import Button from 'primevue/button';
 import Select from 'primevue/select';
-import Tag from 'primevue/tag';
+import SqChip, { type SqChipTone } from '@/components/ui/SqChip.vue';
 import { useSqlTemplateStore } from '@/stores/sqlTemplateStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useDialogWindow } from '@/composables/useDialogWindow';
@@ -568,23 +567,24 @@ const categoryChips = computed<{ category: SqlTemplateCategory; label: string; c
   ];
 });
 
-function getCategorySeverity(category: SqlTemplateCategory, isCustom?: boolean): string {
+/** Category identity as a chip tone: one neutral base, with the semantic roles carrying meaning. */
+function getCategoryTone(category: SqlTemplateCategory, isCustom?: boolean): SqChipTone {
   if (isCustom || category === 'custom') {
     return 'danger';
   }
   switch (category) {
     case 'basic':
-      return 'success';
+      return 'neutral';
     case 'cte':
-      return 'info';
+      return 'plan';
     case 'advanced':
       return 'warn';
     case 'inspection':
-      return 'help';
+      return 'er';
     case 'maintenance':
-      return 'secondary';
+      return 'neutral';
     default:
-      return 'secondary';
+      return 'neutral';
   }
 }
 

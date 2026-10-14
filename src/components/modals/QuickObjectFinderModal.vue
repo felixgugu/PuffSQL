@@ -172,24 +172,22 @@
         <!-- Left: Type Badge & Object Name with Highlights -->
         <div class="flex items-center space-x-2.5 min-w-0 flex-1 mr-3">
           <!-- Type Badge with Icon -->
-          <Tag
-            :severity="
-              res.item.type === 'table' ? 'success' :
-              res.item.type === 'view' ? 'info' :
-              res.item.type === 'procedure' ? 'warn' : 'secondary'
+          <SqChip
+            :tone="
+              res.item.type === 'table' ? 'neutral' :
+              res.item.type === 'view' ? 'plan' :
+              res.item.type === 'procedure' ? 'warn' : 'neutral'
             "
-            class="!text-xxs !font-medium !px-1.5 !py-0.5 uppercase tracking-wider"
+            class="font-medium uppercase tracking-wider"
           >
-            <i
-              :class="[
-                'mr-1 text-xxs',
-                res.item.type === 'table' ? 'pi pi-table' :
-                res.item.type === 'view' ? 'pi pi-list' :
-                res.item.type === 'procedure' ? 'pi pi-play' : 'pi pi-code'
-              ]"
-            ></i>
+            <template #icon>
+              <Table2 v-if="res.item.type === 'table'" class="w-3 h-3" />
+              <List v-else-if="res.item.type === 'view'" class="w-3 h-3" />
+              <Play v-else-if="res.item.type === 'procedure'" class="w-3 h-3" />
+              <FileCode v-else class="w-3 h-3" />
+            </template>
             <span>{{ res.item.type === 'table' ? 'TABLE' : res.item.type === 'view' ? 'VIEW' : res.item.type === 'procedure' ? 'PROC' : 'FUNC' }}</span>
-          </Tag>
+          </SqChip>
 
           <!-- Highlighted Name -->
           <div class="truncate flex items-baseline space-x-0.5">
@@ -346,7 +344,8 @@ import InputIcon from 'primevue/inputicon';
 import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
 import Select from 'primevue/select';
-import Tag from 'primevue/tag';
+import { FileCode, List, Play, Table2 } from 'lucide-vue-next';
+import SqChip from '@/components/ui/SqChip.vue';
 import { useConnectionStore } from '@/stores/connectionStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useSchemaStore } from '@/stores/schemaStore';

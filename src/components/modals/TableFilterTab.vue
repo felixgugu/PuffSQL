@@ -178,10 +178,10 @@
                 v-tooltip.top="'切換啟用/停用'"
               />
               <!-- Target Scope Badge -->
-              <Tag
-                :severity="rule.target === 'database' ? 'warn' : rule.target === 'table' ? 'success' : 'info'"
-                :value="rule.target === 'database' ? '資料庫' : rule.target === 'table' ? '資料表' : '全部'"
-                class="!text-xxs !font-medium !px-1.5 !py-0.5"
+              <SqChip
+                :tone="rule.target === 'database' ? 'warn' : rule.target === 'table' ? 'neutral' : 'plan'"
+                :label="rule.target === 'database' ? '資料庫' : rule.target === 'table' ? '資料表' : '全部'"
+                class="font-medium"
               />
               <!-- Pattern -->
               <span
@@ -262,16 +262,24 @@
           class="flex-1 font-mono !text-xs !h-7 placeholder:!text-[11px] placeholder:!text-dark-500"
         />
         <div v-if="testName.trim()" class="flex-shrink-0">
-          <Tag
+          <SqChip
             v-if="testResult.isHidden"
-            severity="danger"
-            :value="`🚫 將被隱藏 (符合: ${testResult.matchedPattern})`"
-          />
-          <Tag
+            tone="danger"
+            :label="`將被隱藏 (符合: ${testResult.matchedPattern})`"
+          >
+            <template #icon>
+              <EyeOff class="w-3 h-3" />
+            </template>
+          </SqChip>
+          <SqChip
             v-else
-            severity="success"
-            value="✅ 正常顯示 (Visible)"
-          />
+            tone="ok"
+            label="正常顯示 (Visible)"
+          >
+            <template #icon>
+              <Eye class="w-3 h-3" />
+            </template>
+          </SqChip>
         </div>
       </div>
     </div>
@@ -284,7 +292,8 @@ import Select from 'primevue/select';
 import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
 import Checkbox from 'primevue/checkbox';
-import Tag from 'primevue/tag';
+import { Eye, EyeOff } from 'lucide-vue-next';
+import SqChip from '@/components/ui/SqChip.vue';
 import SelectButton from 'primevue/selectbutton';
 import { useSettingsStore } from '@/stores/settingsStore';
 import {

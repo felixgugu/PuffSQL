@@ -10,13 +10,13 @@
         <span class="font-medium text-xs text-dark-100 truncate">
           {{ tab.title }}
         </span>
-        <Tag
+        <SqChip
           v-if="tab.database"
-          severity="secondary"
-          class="!font-mono !text-xs !py-0.5 !px-1.5 flex-shrink-0"
+          tone="neutral"
+          class="font-mono"
         >
           {{ tab.database }}
-        </Tag>
+        </SqChip>
         <span class="text-xxs text-dark-500 font-mono flex-shrink-0">
           {{ tab.executedAt }}
         </span>
@@ -277,7 +277,7 @@
 import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import Button from 'primevue/button';
-import Tag from 'primevue/tag';
+import SqChip from '@/components/ui/SqChip.vue';
 import SelectButton from 'primevue/selectbutton';
 import Checkbox from 'primevue/checkbox';
 import {

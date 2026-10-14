@@ -185,7 +185,7 @@
           <div class="flex items-center space-x-1.5 font-medium text-dark-200">
             <i class="pi pi-table text-accent text-xs"></i>
             <span>{{ $t('stats.tableBreakdown') }}</span>
-            <Tag :value="stats.tableStats.length" severity="secondary" class="!font-mono !text-xxs !px-1.5 !py-0" />
+            <SqChip :label="stats.tableStats.length" tone="neutral" class="font-mono" />
           </div>
 
           <!-- Quick Filter Input -->
@@ -255,10 +255,10 @@
             <Column field="bytesFormatted" :header="$t('stats.totalBytesCol')" sortable class="!py-1.5 !px-2 text-right font-medium text-dark-300" />
             <Column :header="$t('stats.statusCol')" class="!py-1.5 !px-3 text-center">
               <template #body="{ data }">
-                <Tag
-                  :severity="data.isHighIo ? 'danger' : 'success'"
-                  :value="data.isHighIo ? 'High IO' : 'OK'"
-                  class="!text-xxs !font-medium !px-1.5 !py-0.5"
+                <SqChip
+                  :tone="data.isHighIo ? 'danger' : 'ok'"
+                  :label="data.isHighIo ? 'High IO' : 'OK'"
+                  class="font-medium"
                 />
               </template>
             </Column>
@@ -302,7 +302,7 @@ import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import Button from 'primevue/button';
 import Card from 'primevue/card';
-import Tag from 'primevue/tag';
+import SqChip from '@/components/ui/SqChip.vue';
 import Message from 'primevue/message';
 import IconField from 'primevue/iconfield';
 import InputIcon from 'primevue/inputicon';

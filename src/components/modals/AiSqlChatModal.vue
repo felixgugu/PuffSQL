@@ -101,10 +101,10 @@
             @mouseenter="isSqlHovered = true"
             @mouseleave="isSqlHovered = false"
           >
-            <Tag
-              :value="aiChatStore.isSelectionOnly ? $t('aiSqlChat.selectionOnlyTag') : $t('aiSqlChat.fullPageTag')"
-              severity="info"
-              class="!text-xxs !font-medium !py-0.5 !px-1.5 flex-shrink-0"
+            <SqChip
+              :label="aiChatStore.isSelectionOnly ? $t('aiSqlChat.selectionOnlyTag') : $t('aiSqlChat.fullPageTag')"
+              tone="neutral"
+              class="font-medium"
             />
             <span class="text-dark-300 group-hover:text-plan truncate max-w-[360px] font-mono transition-colors flex items-center gap-1">
               {{ sqlPreviewText }}
@@ -325,7 +325,7 @@ import { ref, reactive, computed, watch, nextTick, onMounted, onBeforeUnmount } 
 import { useI18n } from 'vue-i18n';
 import Button from 'primevue/button';
 import Textarea from 'primevue/textarea';
-import Tag from 'primevue/tag';
+import SqChip from '@/components/ui/SqChip.vue';
 import ProgressBar from 'primevue/progressbar';
 import { useToast } from 'primevue/usetoast';
 import { useAiChatStore } from '@/stores/aiChatStore';

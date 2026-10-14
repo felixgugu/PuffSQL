@@ -24,11 +24,11 @@
           <span class="text-dark-400 font-mono text-xxs">
             #{{ dataViewStore.currentDisplayIndex }}
           </span>
-          <Tag
+          <SqChip
             v-if="dataViewStore.filterText"
-            value="過濾中"
-            severity="warn"
-            class="!text-xxs !font-medium !py-0 !px-1.5"
+            label="過濾中"
+            tone="warn"
+            class="font-medium"
           />
         </div>
 
@@ -66,7 +66,7 @@
 import { computed } from 'vue';
 import { Eye } from 'lucide-vue-next';
 import Button from 'primevue/button';
-import Tag from 'primevue/tag';
+import SqChip from '@/components/ui/SqChip.vue';
 import { useDataViewStore } from '@/stores/dataViewStore';
 import { useAiChatStore } from '@/stores/aiChatStore';
 

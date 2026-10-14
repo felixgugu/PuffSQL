@@ -6,9 +6,9 @@
         <i class="pi pi-list text-structure text-xs flex-shrink-0"></i>
         <span class="font-semibold text-dark-100 truncate">{{ schema }}.{{ tableName }}</span>
         <span class="text-dark-600">|</span>
-        <Tag :value="$t('structure.columnsTag', { count: columns.length })" severity="info" class="!text-xxs !px-1.5 !py-0.2" />
-        <Tag v-if="pkCount > 0" :value="$t('structure.pkTag', { count: pkCount })" severity="warn" class="!text-xxs !px-1.5 !py-0.2" />
-        <Tag v-if="identityCount > 0" :value="$t('structure.identityTag', { count: identityCount })" severity="secondary" class="!text-xxs !px-1.5 !py-0.2" />
+        <SqChip :label="$t('structure.columnsTag', { count: columns.length })" tone="neutral" />
+        <SqChip v-if="pkCount > 0" :label="$t('structure.pkTag', { count: pkCount })" tone="warn" />
+        <SqChip v-if="identityCount > 0" :label="$t('structure.identityTag', { count: identityCount })" tone="neutral" />
 
         <!-- Quick Filter Input -->
         <IconField class="w-40 sm:w-56 ml-2">
@@ -323,7 +323,7 @@ import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
 import IconField from 'primevue/iconfield';
 import InputIcon from 'primevue/inputicon';
-import Tag from 'primevue/tag';
+import SqChip from '@/components/ui/SqChip.vue';
 import {
   FileText,
   Copy,

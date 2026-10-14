@@ -38,10 +38,14 @@ test('editor tab titles are only bolded while their tab is active', () => {
 
 test('the connection alias tag drops to the regular weight on inactive tabs', () => {
   const source = readSource('src/components/layout/AppMain.vue');
-  assert.match(
-    source,
-    /:class="workspaceStore\.activeTabId === tab\.id \? '' : '!font-normal'"/,
-    'the alias tag must be reset to the regular weight outside the active tab'
+  // The alias chip is our own SqChip now: the chip fixes the label weight itself, so the active
+  // tab can no longer emphasise it and there is no PrimeVue tag weight left to reset.
+  const alias = source.match(/<SqChip[\s\S]{0,320}?getTabConnectionAlias\(tab\)[\s\S]{0,220}?\/>/);
+  assert.ok(alias, 'the tab alias chip must stay easy to locate');
+  assert.doesNotMatch(
+    alias![0]!,
+    /font-(medium|semibold|bold)/,
+    'the tab alias chip must stay on the regular weight in every tab state'
   );
 });
 

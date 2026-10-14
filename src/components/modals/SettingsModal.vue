@@ -239,7 +239,7 @@
             <Button label="主要按鈕" icon="pi pi-check" size="small" />
             <Button label="次要外框" severity="secondary" outlined size="small" />
             <Button label="文字按鈕" text size="small" />
-            <Tag value="Tag 標籤" />
+            <SqChip label="狀態標籤" />
             <Badge value="99+" />
             <InputText placeholder="輸入框預覽..." size="small" class="w-32 !h-7 !text-xs" />
             <div class="flex items-center space-x-1.5 pl-2">
@@ -448,7 +448,7 @@
             <div>
               <div class="flex items-center space-x-2">
                 <span class="font-bold text-dark-100 text-sm">PuffSQL</span>
-                <Tag severity="info" value="v0.1.1" class="!text-xxs !font-mono !px-1.5 !py-0.5" />
+                <SqChip tone="neutral" label="v0.1.1" class="font-mono" />
               </div>
               <span class="text-xxs text-dark-400 font-mono">Lightweight & Fast SQL Client</span>
             </div>
@@ -599,7 +599,7 @@ import ToggleSwitch from 'primevue/toggleswitch';
 import Badge from 'primevue/badge';
 import Checkbox from 'primevue/checkbox';
 import InputText from 'primevue/inputtext';
-import Tag from 'primevue/tag';
+import SqChip from '@/components/ui/SqChip.vue';
 import { usePrimeVue } from 'primevue/config';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useDialogWindow } from '@/composables/useDialogWindow';

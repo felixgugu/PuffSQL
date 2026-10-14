@@ -12,16 +12,15 @@
       <!-- Left Controls: Info & Relation Depth & Layout -->
       <div class="flex items-center space-x-2">
         <!-- Root Table Badge -->
-        <Tag
+        <SqChip
           v-if="tab.rootTable"
-          severity="info"
-          class="!font-sans !text-xs !px-2 !py-1"
+          tone="neutral"
         >
           <template #icon>
-            <i class="pi pi-database text-accent mr-1 text-xs"></i>
+            <Database class="w-3 h-3" />
           </template>
           <span>{{ tab.rootSchema }}.{{ tab.rootTable }}</span>
-        </Tag>
+        </SqChip>
 
         <div class="h-4 w-px mx-1" :class="isLightTheme ? 'bg-slate-200' : 'bg-dark-750'"></div>
 
@@ -359,7 +358,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, onBeforeUnmount, shallowRef, nextTick } from 'vue';
 import Button from 'primevue/button';
-import Tag from 'primevue/tag';
+import SqChip from '@/components/ui/SqChip.vue';
 import Menu from 'primevue/menu';
 import {
   FileCode,
@@ -371,6 +370,7 @@ import {
   Trash2,
   Eye,
   Edit3,
+  Database,
 } from 'lucide-vue-next';
 import { Graph, Export } from '@antv/x6';
 import { register } from '@antv/x6-vue-shape';

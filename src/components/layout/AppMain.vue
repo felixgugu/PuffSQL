@@ -65,12 +65,11 @@
               {{ tab.title }}
             </span>
             <!-- Alias badge (right-aligned via ml-auto) -->
-            <Tag
+            <SqChip
               v-if="getTabConnectionAlias(tab)"
-              severity="secondary"
-              :value="getTabConnectionAlias(tab)"
-              class="!text-xxs !font-mono !px-1.5 !py-0 flex-shrink-0 ml-auto max-w-[85px] truncate"
-              :class="workspaceStore.activeTabId === tab.id ? '' : '!font-normal'"
+              tone="neutral"
+              :label="getTabConnectionAlias(tab)"
+              class="font-mono ml-auto max-w-[85px] truncate"
               :title="`${$t('sidebar.connections')}: ${getTabConnectionAlias(tab)}`"
             />
           </div>
@@ -186,7 +185,7 @@
 import { ref, reactive, watch, nextTick, onBeforeUnmount, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import Button from 'primevue/button';
-import Tag from 'primevue/tag';
+import SqChip from '@/components/ui/SqChip.vue';
 import ContextMenu from 'primevue/contextmenu';
 import { FileCode, Table2, TableProperties, Network, Workflow, X } from 'lucide-vue-next';
 import { useWorkspaceStore } from '@/stores/workspaceStore';

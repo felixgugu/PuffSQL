@@ -5,7 +5,7 @@
   </span>
 </template>
 
-<script setup lang="ts">
+<script lang="ts">
 /**
  * Minimal status chip (replaces PrimeVue Tag).
  *
@@ -22,7 +22,9 @@ export type SqChipTone =
   | 'plan'
   | 'er'
   | 'structure';
+</script>
 
+<script setup lang="ts">
 withDefaults(
   defineProps<{
     tone?: SqChipTone;

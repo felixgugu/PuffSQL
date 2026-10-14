@@ -194,10 +194,10 @@
                 >
                   {{ $t('connectionModal.modificationPromptTitle') }}
                 </span>
-                <Tag
-                  :severity="form.modificationPrompt ? 'warn' : 'secondary'"
-                  value="SAFE GUARD"
-                  class="!text-xxs !px-1.5 !py-0 font-mono font-semibold"
+                <SqChip
+                  :tone="form.modificationPrompt ? 'warn' : 'neutral'"
+                  label="SAFE GUARD"
+                  class="font-mono font-semibold"
                 />
               </div>
               <p class="text-xxs text-dark-400 mt-1 leading-relaxed">
@@ -274,11 +274,11 @@
               <span class="font-medium truncate max-w-[110px]" :style="{ color: connectionLabelColor || undefined }">
                 {{ form.name.trim() || 'New Connection' }}
               </span>
-              <Tag
+              <SqChip
                 v-if="form.alias.trim()"
-                severity="secondary"
-                :value="form.alias.trim()"
-                class="!text-xxs !px-1.5 !py-0 font-mono font-medium uppercase"
+                tone="neutral"
+                :label="form.alias.trim()"
+                class="font-mono font-medium uppercase"
               />
             </div>
           </div>
@@ -364,7 +364,7 @@ import Password from 'primevue/password';
 import ToggleSwitch from 'primevue/toggleswitch';
 import Checkbox from 'primevue/checkbox';
 import Button from 'primevue/button';
-import Tag from 'primevue/tag';
+import SqChip from '@/components/ui/SqChip.vue';
 import type { ConnectionProfile } from '@/types/connection';
 import { useConnectionStore } from '@/stores/connectionStore';
 import { useSettingsStore } from '@/stores/settingsStore';

@@ -17,11 +17,11 @@
               <Upload class="w-3.5 h-3.5" />
             </div>
             <span class="text-xs font-semibold truncate">{{ $t('tsvImportModal.title') }}</span>
-            <Tag
+            <SqChip
               v-if="targetLabel"
-              severity="secondary"
-              :value="targetLabel"
-              class="!text-xxs !py-0.5 !px-1.5 font-mono max-w-[320px] truncate"
+              tone="neutral"
+              :label="targetLabel"
+              class="font-mono max-w-[320px] truncate"
             />
             <span class="text-xxs text-dark-400">{{ $t('tsvImportModal.stepProgress', { step: store.step }) }}</span>
           </div>
@@ -53,7 +53,7 @@
 import { computed, onBeforeUnmount, onMounted } from 'vue';
 import { Upload } from 'lucide-vue-next';
 import Button from 'primevue/button';
-import Tag from 'primevue/tag';
+import SqChip from '@/components/ui/SqChip.vue';
 import TsvImportSourceStep from '@/components/modals/tsvImport/TsvImportSourceStep.vue';
 import TsvImportPreviewStep from '@/components/modals/tsvImport/TsvImportPreviewStep.vue';
 import { useTsvImportStore } from '@/stores/tsvImportStore';
