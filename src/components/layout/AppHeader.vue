@@ -50,7 +50,7 @@
               </span>
               <Tag
                 v-if="connectionStore.activeConnection.alias"
-                severity="info"
+                severity="secondary"
                 :value="connectionStore.activeConnection.alias"
                 class="!text-xxs !font-medium !px-1.5 !py-0 flex-shrink-0"
               />
@@ -73,7 +73,7 @@
                   >{{ slotProps.option.name }}</span>
                   <Tag
                     v-if="slotProps.option.alias"
-                    severity="info"
+                    severity="secondary"
                     :value="slotProps.option.alias"
                     class="!text-xxs !font-medium !px-1.5 !py-0"
                   />
@@ -114,7 +114,7 @@
         >
           <template #value="slotProps">
             <div class="flex items-center space-x-1.5 min-w-0">
-              <i class="pi pi-database text-warn text-xs flex-shrink-0" />
+              <i class="pi pi-database text-dark-400 text-xs flex-shrink-0" />
               <span class="font-mono text-xs truncate text-warn font-semibold">
                 {{ slotProps.value || $t('header.selectDatabase') + '...' }}
               </span>
@@ -138,7 +138,7 @@
         <Button
           v-if="!queryStore.isExecuting"
           icon="pi pi-play"
-          severity="success"
+          severity="primary"
           size="small"
           class="!h-7 !w-14 !p-0"
           v-tooltip.bottom="$t('header.runTooltip')"
@@ -149,7 +149,7 @@
           :icon="queryStore.isCancelling ? 'pi pi-spin pi-spinner' : 'pi pi-stop'"
           severity="danger"
           size="small"
-          class="!h-7 !w-14 !p-0 animate-pulse"
+          class="!h-7 !w-14 !p-0"
           :disabled="queryStore.isCancelling"
           v-tooltip.bottom="queryStore.isCancelling ? $t('common.running') : $t('header.cancelQueryTooltip')"
           @click="$emit('cancel-query')"
@@ -158,7 +158,7 @@
         <!-- Run All Statements Button -->
         <Button
           icon="pi pi-forward"
-          severity="success"
+          severity="primary"
           size="small"
           outlined
           class="!h-7 !w-14 !p-0"
@@ -192,7 +192,7 @@
           severity="secondary"
           size="small"
           text
-          class="!h-7 !w-7 !p-0 !text-info"
+          class="!h-7 !w-7 !p-0"
           v-tooltip.bottom="$t('editor.openFile')"
           @click="$emit('open-sql-file')"
         />
@@ -203,7 +203,7 @@
           severity="secondary"
           size="small"
           text
-          class="!h-7 !w-7 !p-0 !text-warn"
+          class="!h-7 !w-7 !p-0"
           v-tooltip.bottom="$t('editor.saveFile')"
           @click="$emit('save-sql-file')"
         />
@@ -225,7 +225,7 @@
           severity="secondary"
           size="small"
           text
-          class="!h-7 !w-7 !p-0 !text-er"
+          class="!h-7 !w-7 !p-0"
           v-tooltip.bottom="$t('header.quickFinderTooltip')"
           @click="$emit('open-quick-finder')"
         />
@@ -236,7 +236,7 @@
           severity="secondary"
           size="small"
           text
-          class="!h-7 !w-7 !p-0 !text-warn"
+          class="!h-7 !w-7 !p-0"
           v-tooltip.bottom="$t('sqlTemplates.title')"
           @click="$emit('open-sql-templates')"
         />
@@ -247,7 +247,7 @@
           severity="secondary"
           size="small"
           text
-          class="!h-7 !w-7 !p-0 !text-plan hover:!text-plan"
+          class="!h-7 !w-7 !p-0"
           v-tooltip.bottom="$t('header.aiAssistantTooltip')"
           @click="$emit('open-ai-chat')"
         />
@@ -258,7 +258,7 @@
           severity="secondary"
           size="small"
           text
-          class="!h-7 !w-7 !p-0 !text-danger"
+          class="!h-7 !w-7 !p-0"
           v-tooltip.bottom="'DBA 常用診斷維護工具箱'"
           @click="toggleDbaPopover"
         />
@@ -301,7 +301,7 @@
         <Button
           icon="pi pi-gauge"
           size="small"
-          :severity="queryStore.isStatsEnabled ? 'warn' : 'secondary'"
+          :severity="queryStore.isStatsEnabled ? 'primary' : 'secondary'"
           :text="!queryStore.isStatsEnabled"
           class="!h-7 !w-7 !p-0"
           v-tooltip.bottom="'效能分析 (SET STATISTICS IO, TIME ON)'"
@@ -312,7 +312,7 @@
         <Button
           icon="pi pi-sitemap"
           size="small"
-          :severity="queryStore.isShowplanEnabled ? 'info' : 'secondary'"
+          :severity="queryStore.isShowplanEnabled ? 'primary' : 'secondary'"
           :text="!queryStore.isShowplanEnabled"
           class="!h-7 !w-7 !p-0"
           v-tooltip.bottom="'預估執行計畫 (SET SHOWPLAN_ALL ON)'"
@@ -323,7 +323,7 @@
         <Button
           icon="pi pi-share-alt"
           size="small"
-          :severity="queryStore.isActualPlanEnabled ? 'help' : 'secondary'"
+          :severity="queryStore.isActualPlanEnabled ? 'primary' : 'secondary'"
           :text="!queryStore.isActualPlanEnabled"
           class="!h-7 !w-7 !p-0"
           v-tooltip.bottom="'實際執行計畫 (SET STATISTICS XML ON)'"

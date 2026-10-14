@@ -31,10 +31,10 @@
           :class="[
             'result-tab-item h-7 px-2 flex items-center space-x-1.5 text-xxs cursor-grab active:cursor-grabbing transition-all duration-100 group max-w-[220px] border flex-shrink-0 select-none touch-none relative',
             queryStore.activeResultTabId === rtab.id
-              ? 'font-medium shadow-sm border-primary active-tab'
+              ? 'font-medium border-primary active-tab'
               : 'bg-dark-850/60 border-dark-750/70 hover:border-dark-600 hover:bg-dark-800/90',
             isPointerDragging && dragSourceIndex === idx ? 'opacity-35 border-dashed border-brand-400 scale-95' : '',
-            dropHoverIndex === idx && isPointerDragging && dropHoverIndex !== dragSourceIndex ? 'border-brand-400 bg-brand-500/25 ring-1 ring-brand-400 scale-105' : ''
+            dropHoverIndex === idx && isPointerDragging && dropHoverIndex !== dragSourceIndex ? 'border-brand-500 bg-brand-500/10' : ''
           ]"
           :style="getResultTabStyle(rtab)"
           :title="`${rtab.title}\n執行時間: ${rtab.executedAt} (${rtab.durationMs}ms)\n筆數: ${rtab.rowCount} rows\n\nSQL 語句:\n${rtab.sql}`"
@@ -76,7 +76,7 @@
           <!-- Status Badge (if error) -->
           <span
             v-if="editingTabId !== rtab.id && rtab.result.messages.some((m) => m.level === 'error')"
-            class="text-xxs px-1 py-0.2 rounded font-mono flex-shrink-0 pointer-events-none bg-rose-100 dark:bg-rose-900/90 text-danger border border-rose-200 dark:border-rose-700/50"
+            class="text-xxs px-1 py-0.2 rounded font-mono flex-shrink-0 pointer-events-none bg-danger/10 text-danger border border-danger/30"
           >
             Err
           </span>
@@ -91,7 +91,7 @@
               'p-0.5 rounded transition-all flex-shrink-0',
               queryStore.resultTabs.length <= 1
                 ? 'opacity-20 cursor-not-allowed text-dark-600'
-                : (queryStore.activeResultTabId === rtab.id && workspaceStore.bottomPanelTab === 'results' ? 'text-dark-400 hover:text-danger hover:bg-rose-500/15 opacity-50 group-hover:opacity-100 cursor-pointer' : 'text-dark-400 hover:text-danger hover:bg-rose-500/15 opacity-0 group-hover:opacity-75 hover:!opacity-100 cursor-pointer')
+                : (queryStore.activeResultTabId === rtab.id && workspaceStore.bottomPanelTab === 'results' ? 'text-dark-400 hover:text-danger hover:bg-danger/10 opacity-50 group-hover:opacity-100 cursor-pointer' : 'text-dark-400 hover:text-danger hover:bg-danger/10 opacity-0 group-hover:opacity-75 hover:!opacity-100 cursor-pointer')
             ]"
             :title="queryStore.resultTabs.length <= 1 ? '最後一個查詢結果不可刪除' : '關閉此結果'"
           >

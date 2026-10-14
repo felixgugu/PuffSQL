@@ -66,9 +66,9 @@
         :class="[
           'p-2.5 rounded-md border flex flex-col space-y-1.5 transition-colors group',
           msg.level === 'error'
-            ? 'bg-rose-50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-900/60 text-danger'
+            ? 'bg-danger/8 border-danger/30 text-danger'
             : msg.level === 'warning'
-            ? 'bg-amber-500/15 border-amber-500/30 text-warn'
+            ? 'bg-warn/10 border-warn/30 text-warn'
             : 'bg-dark-850/60 border-dark-750 text-dark-200',
           { 'sq-message-flash': isFlashing(getMsgKey(msg, idx)) }
         ]"
@@ -103,7 +103,7 @@
               text
               @click.stop="handleDiagnoseWithAi(msg)"
               :v-tooltip.top="$t('results.aiDiagnoseTooltip')"
-              class="!text-xxs !py-0.5 !px-1.5 !h-5 text-plan hover:text-plan hover:bg-purple-950/40 font-sans font-medium"
+              class="!text-xxs !py-0.5 !px-1.5 !h-5 text-accent hover:text-accent hover:bg-accent/10 font-sans font-medium"
             />
 
             <Button

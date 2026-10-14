@@ -27,10 +27,10 @@
           :data-flip-key="tab.id"
           :class="[
             'query-tab-item h-7 px-2.5 flex items-center space-x-2 text-xs border cursor-grab active:cursor-grabbing transition-all duration-100 group max-w-[280px] select-none touch-none flex-shrink-0 relative',
-            workspaceStore.activeTabId === tab.id ? 'font-medium shadow-sm active-tab' : 'inactive-tab shadow-xs',
+            workspaceStore.activeTabId === tab.id ? 'font-medium active-tab' : 'inactive-tab',
             isPointerDragging && dragSourceIndex === idx ? 'opacity-35 border-dashed border-brand-400 scale-95' : '',
             dropHoverIndex === idx && isPointerDragging && dropHoverIndex !== dragSourceIndex ? 'border-brand-400 bg-brand-500/25 ring-1 ring-brand-400 scale-105' : '',
-            dragOverTabId === tab.id ? 'border-brand-400 bg-brand-500/30 ring-1 ring-brand-400 scale-105 shadow-md' : ''
+            dragOverTabId === tab.id ? 'border-brand-500 bg-brand-500/10' : ''
           ]"
           :style="getTabItemStyle(tab, idx)"
           :title="getTabTooltip(tab)"
@@ -78,7 +78,7 @@
           <!-- Dirty Indicator -->
           <span
             v-if="tab.isDirty && editingTabId !== tab.id"
-            class="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0 ring-1 ring-black/30"
+            class="w-1.5 h-1.5 rounded-full bg-warn flex-shrink-0"
             :title="$t('editor.unsavedChanges')"
           />
 
@@ -87,7 +87,7 @@
             v-if="editingTabId !== tab.id"
             type="button"
             @click.stop="workspaceStore.closeTab(tab.id)"
-            class="p-0.5 rounded transition-all flex-shrink-0 text-dark-400 hover:text-danger hover:bg-rose-500/15 cursor-pointer"
+            class="p-0.5 rounded transition-all flex-shrink-0 text-dark-400 hover:text-danger hover:bg-danger/10 cursor-pointer"
             :class="workspaceStore.activeTabId === tab.id ? 'opacity-40 group-hover:opacity-100' : 'opacity-0 group-hover:opacity-70 hover:!opacity-100'"
             :title="$t('editor.closeTab')"
           >
@@ -1038,7 +1038,6 @@ defineExpose({
   border-bottom-color: var(--tab-active-surface, rgb(var(--color-dark-900))) !important;
   margin-bottom: -1px;
   z-index: 10;
-  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.08);
 }
 
 /* 頂部高光指示條 (Top Accent Indicator) */

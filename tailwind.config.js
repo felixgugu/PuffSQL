@@ -59,6 +59,12 @@ export default {
         mono: ['"Fira Code"', 'Consolas', 'Monaco', 'monospace'],
         sans: ['var(--app-font-sans)'],
       },
+      // The only two shadows the minimal design allows: one for floating layers (menus,
+      // popovers, tooltips) and one for dialogs. Panels, toolbars and grids use borders.
+      boxShadow: {
+        raised: '0 1px 2px rgba(16, 24, 40, 0.06), 0 4px 12px rgba(16, 24, 40, 0.08)',
+        overlay: '0 8px 24px rgba(16, 24, 40, 0.12)',
+      },
       fontSize: {
         'xxs': '0.6875rem',
       }

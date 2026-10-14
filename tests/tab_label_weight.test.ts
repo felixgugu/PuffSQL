@@ -17,7 +17,7 @@ test('inactive editor tabs carry no bold weight class', () => {
   const source = readSource('src/components/layout/AppMain.vue');
   assert.match(
     source,
-    /workspaceStore\.activeTabId === tab\.id \? 'font-medium shadow-sm active-tab' : 'inactive-tab shadow-xs'/,
+    /workspaceStore\.activeTabId === tab\.id \? 'font-medium active-tab' : 'inactive-tab'/,
     'only the active editor tab may take font-medium; the inactive branch must stay unweighted'
   );
 });

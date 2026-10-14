@@ -6,7 +6,7 @@
         <span
           :class="[
             'w-2 h-2 rounded-full',
-            connectionStore.status === 'connected' ? 'bg-emerald-500 shadow-sm shadow-emerald-500/50' : 'bg-rose-500'
+            connectionStore.status === 'connected' ? 'bg-ok' : 'bg-danger'
           ]"
         />
         <span class="text-dark-200 font-medium">

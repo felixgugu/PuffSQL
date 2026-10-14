@@ -97,7 +97,7 @@
       <!-- ComboBox Dropdown Menu -->
       <div
         v-if="isHistoryDropdownOpen"
-        class="absolute left-2 right-2 top-full mt-1 z-50 bg-dark-800 border border-dark-700 rounded-md shadow-2xl py-1 text-xs font-sans text-dark-200 select-none overflow-hidden"
+        class="absolute left-2 right-2 top-full mt-1 z-50 bg-raised border border-dark-700 rounded shadow-raised py-1 text-xs font-sans text-dark-200 select-none overflow-hidden"
       >
         <!-- Dropdown Header -->
         <div class="px-2.5 py-1 text-xxs text-dark-400 border-b border-dark-750 flex items-center justify-between font-sans">
@@ -261,7 +261,7 @@
               :class="[
                 'flex items-center space-x-1 px-1.5 py-0.5 rounded cursor-pointer transition-colors group',
                 connectionStore.activeConnectionId === conn.id && connectionStore.activeDatabase === db
-                  ? 'bg-amber-500/15 text-warn'
+                  ? 'bg-dark-750 text-dark-100'
                   : 'text-dark-300 hover:bg-dark-750 hover:text-dark-100'
               ]"
               :title="`${db} - 點擊展開/收合，右鍵開啟選單 (匯出結構 CSV 等)`"
@@ -278,12 +278,12 @@
                   class="w-2.5 h-2.5"
                 />
               </button>
-              <Database class="w-3 h-3 text-warn flex-shrink-0" />
+              <Database class="w-3 h-3 text-dark-400 flex-shrink-0" />
               <span class="truncate flex-1">{{ db }}</span>
               <!-- Active database indicator -->
               <span
                 v-if="connectionStore.activeConnectionId === conn.id && connectionStore.activeDatabase === db"
-                class="text-xxs px-1.5 py-0.5 rounded bg-amber-500/15 text-warn font-sans border border-amber-500/30 flex-shrink-0 mr-1"
+                class="text-xxs px-1.5 py-0.5 rounded bg-dark-750 text-dark-300 font-sans border border-dark-700 flex-shrink-0 mr-1"
                 :title="$t('sidebar.currentActiveDb')"
               >
                 {{ $t('sidebar.inUse') }}
@@ -350,7 +350,7 @@
                         :class="[
                           'flex items-center space-x-1 px-1.5 py-0.5 rounded cursor-pointer select-none group transition-all duration-150',
                           activeLocatedKey === tableKey(conn.id, db, table.schema, table.name)
-                            ? 'bg-brand-500/25 ring-1 ring-brand-400 text-accent shadow-md shadow-brand-500/10'
+                            ? 'bg-brand-500/10 text-accent'
                             : 'hover:bg-dark-750 text-dark-300 hover:text-dark-100'
                         ]"
                         :title="`${table.schema}.${table.name} (Table)`"
@@ -364,7 +364,7 @@
                         <span class="truncate flex-1">{{ table.name }}</span>
                         <span
                           v-if="activeLocatedKey === tableKey(conn.id, db, table.schema, table.name)"
-                          class="text-xxs px-1.5 py-0.5 bg-brand-600 text-white rounded font-sans flex-shrink-0 animate-pulse ml-1"
+                          class="text-xxs px-1.5 py-0.5 bg-dark-750 text-dark-300 border border-dark-700 rounded font-sans flex-shrink-0 ml-1"
                         >
                           {{ $t('sidebar.located') }}
                         </span>
@@ -401,7 +401,7 @@
                           class="flex items-center space-x-1.5 px-1.5 py-0.5 text-xxs rounded cursor-pointer select-none transition-colors group"
                           :class="[
                             isPendingColumn(col.name)
-                              ? 'bg-brand-500/25 text-accent border border-brand-500/40 shadow-xs'
+                              ? 'bg-brand-500/10 text-accent'
                               : 'text-dark-400 hover:text-dark-100 hover:bg-dark-750/70'
                           ]"
                           :title="$t('sidebar.doubleClickToPaste', { name: col.name })"
@@ -416,7 +416,7 @@
                           </span>
                           <span
                             v-if="isPendingColumn(col.name)"
-                            class="text-xxs px-1.5 py-0.5 bg-brand-500/30 text-accent rounded border border-brand-400/40 flex-shrink-0 animate-pulse"
+                            class="text-xxs px-1.5 py-0.5 bg-dark-750 text-dark-300 rounded border border-dark-700 flex-shrink-0"
                           >
                             {{ $t('sidebar.pendingPaste') }}
                           </span>
@@ -438,7 +438,7 @@
                     />
                     <component
                       :is="isFolderExpanded(conn.id, db, 'views') ? FolderOpen : Folder"
-                      class="w-3 h-3 text-plan"
+                      class="w-3 h-3 text-dark-400"
                     />
                     <span class="font-sans text-dark-200">{{ $t('sidebar.views') }}</span>
                     <span class="text-xxs text-dark-500 font-sans">({{ getFilteredViews(conn.id, db).length }})</span>
@@ -474,7 +474,7 @@
                         :class="[
                           'flex items-center space-x-1 px-1.5 py-0.5 rounded cursor-pointer select-none group transition-all duration-150',
                           activeLocatedKey === tableKey(conn.id, db, view.schema, view.name)
-                            ? 'bg-purple-500/25 ring-1 ring-purple-400 text-plan shadow-md shadow-purple-500/10'
+                            ? 'bg-dark-750 text-dark-100'
                             : 'hover:bg-dark-750 text-dark-300 hover:text-dark-100'
                         ]"
                         :title="`${view.schema}.${view.name} (View)`"
@@ -483,12 +483,12 @@
                           :is="isTableExpanded(conn.id, db, view.schema, view.name) ? ChevronDown : ChevronRight"
                           class="w-2.5 h-2.5 text-dark-500 group-hover:text-dark-300 flex-shrink-0"
                         />
-                        <FileText class="w-3 h-3 text-plan flex-shrink-0" />
+                        <FileText class="w-3 h-3 text-dark-400 flex-shrink-0" />
                         <span class="text-dark-400 text-xxs flex-shrink-0">{{ view.schema }}.</span>
                         <span class="truncate flex-1">{{ view.name }}</span>
                         <span
                           v-if="activeLocatedKey === tableKey(conn.id, db, view.schema, view.name)"
-                          class="text-xxs px-1.5 py-0.5 bg-purple-600 text-white rounded font-sans flex-shrink-0 animate-pulse ml-1"
+                          class="text-xxs px-1.5 py-0.5 bg-dark-750 text-dark-300 border border-dark-700 rounded font-sans flex-shrink-0 ml-1"
                         >
                           {{ $t('sidebar.located') }}
                         </span>
@@ -525,7 +525,7 @@
                           class="flex items-center space-x-1.5 px-1.5 py-0.5 text-xxs rounded cursor-pointer select-none transition-colors group"
                           :class="[
                             isPendingColumn(col.name)
-                              ? 'bg-brand-500/25 text-accent border border-brand-500/40 shadow-xs'
+                              ? 'bg-brand-500/10 text-accent'
                               : 'text-dark-400 hover:text-dark-100 hover:bg-dark-750/70'
                           ]"
                           :title="$t('sidebar.doubleClickToPaste', { name: col.name })"
@@ -585,17 +585,17 @@
                       :class="[
                         'flex items-center space-x-1 px-1.5 py-0.5 rounded cursor-pointer group transition-all duration-150',
                         activeLocatedKey === tableKey(conn.id, db, proc.schema, proc.name)
-                          ? 'bg-amber-500/25 ring-1 ring-amber-400 text-warn shadow-md shadow-amber-500/10'
+                            ? 'bg-dark-750 text-dark-100'
                           : 'hover:bg-dark-750 text-dark-300 hover:text-dark-100'
                       ]"
                       :title="`${proc.schema}.${proc.name} (Stored Procedure)`"
                     >
-                      <Cog class="w-3 h-3 text-warn flex-shrink-0" />
+                      <Cog class="w-3 h-3 text-dark-400 flex-shrink-0" />
                       <span class="text-dark-400 text-xxs flex-shrink-0">{{ proc.schema }}.</span>
                       <span class="truncate flex-1">{{ proc.name }}</span>
                       <span
                         v-if="activeLocatedKey === tableKey(conn.id, db, proc.schema, proc.name)"
-                        class="text-xxs px-1.5 py-0.5 bg-amber-700 text-white rounded font-sans flex-shrink-0 animate-pulse ml-1"
+                        class="text-xxs px-1.5 py-0.5 bg-dark-750 text-dark-300 border border-dark-700 rounded font-sans flex-shrink-0 ml-1"
                       >
                         {{ $t('sidebar.located') }}
                       </span>
@@ -615,7 +615,7 @@
                     />
                     <component
                       :is="isFolderExpanded(conn.id, db, 'funcs') ? FolderOpen : Folder"
-                      class="w-3 h-3 text-info"
+                      class="w-3 h-3 text-dark-400"
                     />
                     <span class="font-sans text-dark-200">{{ $t('sidebar.functions') }}</span>
                     <span class="text-xxs text-dark-500 font-sans">({{ getFilteredFunctions(conn.id, db).length }})</span>
@@ -645,17 +645,17 @@
                       :class="[
                         'flex items-center space-x-1 px-1.5 py-0.5 rounded cursor-pointer group transition-all duration-150',
                         activeLocatedKey === tableKey(conn.id, db, func.schema, func.name)
-                          ? 'bg-sky-500/25 ring-1 ring-sky-400 text-info shadow-md shadow-sky-500/10'
+                            ? 'bg-dark-750 text-dark-100'
                           : 'hover:bg-dark-750 text-dark-300 hover:text-dark-100'
                       ]"
                       :title="`${func.schema}.${func.name} (Function)`"
                     >
-                      <Code2 class="w-3 h-3 text-info flex-shrink-0" />
+                      <Code2 class="w-3 h-3 text-dark-400 flex-shrink-0" />
                       <span class="text-dark-400 text-xxs flex-shrink-0">{{ func.schema }}.</span>
                       <span class="truncate flex-1">{{ func.name }}</span>
                       <span
                         v-if="activeLocatedKey === tableKey(conn.id, db, func.schema, func.name)"
-                        class="text-xxs px-1.5 py-0.5 bg-sky-700 text-white rounded font-sans flex-shrink-0 animate-pulse ml-1"
+                        class="text-xxs px-1.5 py-0.5 bg-dark-750 text-dark-300 border border-dark-700 rounded font-sans flex-shrink-0 ml-1"
                       >
                         {{ $t('sidebar.located') }}
                       </span>
