@@ -50,73 +50,61 @@
 
         <!-- Middle: Row Navigation (Prev / Next) -->
         <div v-if="dataViewStore.totalRows > 1" class="flex items-center space-x-1" @pointerdown.stop>
-          <Button
+          <SqButton
             type="button"
-            icon="pi pi-chevron-left"
-            severity="secondary"
-            text
-            rounded
-            size="small"
+            size="sm"
             :disabled="!dataViewStore.hasPrevRow"
+            aria-label="檢視上一筆資料列 (Alt+Up)"
             v-tooltip.top="'檢視上一筆資料列 (Alt+Up)'"
-            class="!w-6 !h-6 !p-0"
             @click="dataViewStore.goToPrevRow()"
-          />
+          >
+            <template #icon><ChevronLeft class="w-3.5 h-3.5" /></template>
+          </SqButton>
           <span class="text-xxs text-dark-400 font-mono select-none px-1">
             {{ dataViewStore.currentDisplayIndex }} / {{ dataViewStore.totalRows }}
           </span>
-          <Button
+          <SqButton
             type="button"
-            icon="pi pi-chevron-right"
-            severity="secondary"
-            text
-            rounded
-            size="small"
+            size="sm"
             :disabled="!dataViewStore.hasNextRow"
+            aria-label="檢視下一筆資料列 (Alt+Down)"
             v-tooltip.top="'檢視下一筆資料列 (Alt+Down)'"
-            class="!w-6 !h-6 !p-0"
             @click="dataViewStore.goToNextRow()"
-          />
+          >
+            <template #icon><ChevronRight class="w-3.5 h-3.5" /></template>
+          </SqButton>
         </div>
 
         <!-- Right: Window Actions (Maximize, Minimize, Close) -->
         <div class="flex items-center space-x-1" @pointerdown.stop>
-          <Button
+          <SqButton
             type="button"
-            :icon="dataViewStore.isMaximized ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"
-            severity="secondary"
-            text
-            rounded
-            size="small"
-            :title="dataViewStore.isMaximized ? '還原大小' : '最大化視窗'"
+            :aria-label="dataViewStore.isMaximized ? '還原大小' : '最大化視窗'"
             v-tooltip.top="dataViewStore.isMaximized ? '還原大小' : '最大化視窗'"
-            class="!w-7 !h-7 !p-0"
             @click="dataViewStore.toggleMaximize()"
-          />
-          <Button
+          >
+            <template #icon>
+              <SquareMinus v-if="dataViewStore.isMaximized" class="w-3.5 h-3.5" />
+              <SquarePlus v-else class="w-3.5 h-3.5" />
+            </template>
+          </SqButton>
+          <SqButton
             type="button"
-            icon="pi pi-minus"
-            severity="secondary"
-            text
-            rounded
-            size="small"
-            title="最小化至浮動標籤（不阻擋操作）"
+            aria-label="最小化至浮動標籤（不阻擋操作）"
             v-tooltip.top="'最小化至浮動標籤（不阻擋操作）'"
-            class="!w-7 !h-7 !p-0"
             @click="dataViewStore.minimize()"
-          />
-          <Button
+          >
+            <template #icon><Minus class="w-3.5 h-3.5" /></template>
+          </SqButton>
+          <SqButton
             type="button"
-            icon="pi pi-times"
-            severity="secondary"
-            text
-            rounded
-            size="small"
-            title="關閉 (Esc)"
+            tone="danger"
+            aria-label="關閉 (Esc)"
             v-tooltip.top="'關閉 (Esc)'"
-            class="!w-7 !h-7 !p-0 hover:text-danger"
             @click="dataViewStore.closeDataView()"
-          />
+          >
+            <template #icon><X class="w-3.5 h-3.5" /></template>
+          </SqButton>
         </div>
       </div>
 
@@ -150,39 +138,36 @@
 
         <!-- Copy Buttons Group -->
         <div class="flex items-center space-x-1.5 flex-shrink-0">
-          <Button
+          <SqButton
             type="button"
-            icon="pi pi-code text-ok"
             label="JSON"
-            size="small"
-            severity="secondary"
-            outlined
+            size="sm"
+            variant="outline"
             @click="handleCopyJson"
             v-tooltip.top="'複製原資料列為 JSON 物件'"
-            class="!text-xxs !py-1 !px-2"
-          />
-          <Button
+          >
+            <template #icon><FileCode class="w-3.5 h-3.5" /></template>
+          </SqButton>
+          <SqButton
             type="button"
-            icon="pi pi-file-excel text-ok"
             label="TSV"
-            size="small"
-            severity="secondary"
-            outlined
+            size="sm"
+            variant="outline"
             @click="handleCopyTsv"
             v-tooltip.top="'複製原資料列為 TSV (可直接貼入 Excel)'"
-            class="!text-xxs !py-1 !px-2"
-          />
-          <Button
+          >
+            <template #icon><FileSpreadsheet class="w-3.5 h-3.5" /></template>
+          </SqButton>
+          <SqButton
             type="button"
-            icon="pi pi-table text-danger"
             label="Markdown"
-            size="small"
-            severity="secondary"
-            outlined
+            size="sm"
+            variant="outline"
             @click="handleCopyMarkdown"
             v-tooltip.top="'複製原資料列為 Markdown 表格'"
-            class="!text-xxs !py-1 !px-2"
-          />
+          >
+            <template #icon><Table2 class="w-3.5 h-3.5" /></template>
+          </SqButton>
         </div>
       </div>
 
@@ -199,13 +184,9 @@
         >
           <SearchX class="w-8 h-8 text-dark-500 stroke-1" />
           <span class="text-xs">查無符合「{{ dataViewStore.filterText }}」的欄位</span>
-          <Button
+          <SqButton
             type="button"
             label="清除過濾條件"
-            size="small"
-            severity="secondary"
-            text
-            class="!text-xs !py-1"
             @click="clearFilter"
           />
         </div>
@@ -367,8 +348,19 @@
 
 <script setup lang="ts">
 import { ref, reactive, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
-import { Table2, Search, X, SearchX, Copy } from 'lucide-vue-next';
-import Button from 'primevue/button';
+import { Search, SearchX, Copy } from 'lucide-vue-next';
+import SqButton from '@/components/ui/SqButton.vue';
+import {
+  ChevronLeft,
+  ChevronRight,
+  FileCode,
+  FileSpreadsheet,
+  Minus,
+  SquareMinus,
+  SquarePlus,
+  Table2,
+  X,
+} from 'lucide-vue-next';
 import SqChip from '@/components/ui/SqChip.vue';
 import { useDataViewStore } from '@/stores/dataViewStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';

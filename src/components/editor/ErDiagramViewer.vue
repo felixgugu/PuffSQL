@@ -25,56 +25,61 @@
         <div class="h-4 w-px mx-1" :class="isLightTheme ? 'bg-slate-200' : 'bg-dark-750'"></div>
 
         <!-- Edit Mode Toggle Button -->
-        <Button
+        <SqButton
           type="button"
-          :icon="isEditMode ? 'pi pi-pencil' : 'pi pi-eye'"
           :label="isEditMode ? $t('erDiagram.editModeOn') : $t('erDiagram.editModeOff')"
-          size="small"
-          :severity="isEditMode ? 'warn' : 'secondary'"
-          :outlined="!isEditMode"
+          size="sm"
+          :tone="isEditMode ? 'warn' : 'neutral'"
+          :variant="isEditMode ? 'solid' : 'outline'"
+          :active="isEditMode"
+          class="font-medium"
           @click="toggleEditMode"
           v-tooltip.top="isEditMode ? $t('erDiagram.editModeTooltip') : $t('erDiagram.viewModeTooltip')"
-          class="!text-xs !py-1 !px-2.5 font-medium shadow-xs"
-        />
+        >
+          <template #icon>
+            <Pencil v-if="isEditMode" class="w-3.5 h-3.5" />
+            <Eye v-else class="w-3.5 h-3.5" />
+          </template>
+        </SqButton>
 
         <!-- Auto Layout (Dagre) Button -->
-        <Button
+        <SqButton
           type="button"
-          icon="pi pi-th-large text-accent"
           :label="$t('erDiagram.layout')"
-          size="small"
-          severity="secondary"
-          outlined
+          size="sm"
+          variant="outline"
           @click="applyAutoLayout(layoutDirection)"
           v-tooltip.top="$t('erDiagram.autoLayoutTooltip')"
-          class="!text-xs !py-1 !px-2.5 shadow-xs"
-        />
+        >
+          <template #icon><LayoutGrid class="w-3.5 h-3.5" /></template>
+        </SqButton>
 
         <!-- Direction Toggle (LR / TB) -->
-        <Button
+        <SqButton
           type="button"
-          :icon="layoutDirection === 'LR' ? 'pi pi-arrows-h' : 'pi pi-arrows-v'"
           :label="layoutDirection"
-          size="small"
-          severity="secondary"
-          outlined
+          size="sm"
+          variant="outline"
           @click="toggleLayoutDirection"
           v-tooltip.top="$t('erDiagram.directionTooltip', { dir: layoutDirection === 'LR' ? $t('erDiagram.horizontal') : $t('erDiagram.vertical') })"
-          class="!text-xs !py-1 !px-2 font-sans"
-        />
+        >
+          <template #icon>
+            <MoveHorizontal v-if="layoutDirection === 'LR'" class="w-3.5 h-3.5" />
+            <MoveVertical v-else class="w-3.5 h-3.5" />
+          </template>
+        </SqButton>
 
         <!-- Add Text Note Button -->
-        <Button
+        <SqButton
           type="button"
-          icon="pi pi-align-left"
           :label="$t('erDiagram.addTextNote')"
-          size="small"
-          severity="secondary"
-          outlined
+          size="sm"
+          variant="outline"
           @click="handleAddTextNode"
           v-tooltip.top="$t('erDiagram.addTextNoteTooltip')"
-          class="!text-xs !py-1 !px-2.5 shadow-xs"
-        />
+        >
+          <template #icon><AlignLeft class="w-3.5 h-3.5" /></template>
+        </SqButton>
       </div>
 
       <!-- Right Controls: Zoom, Theme, Export -->
@@ -84,76 +89,73 @@
           class="flex items-center rounded overflow-hidden border"
           :class="isLightTheme ? 'bg-slate-50 border-slate-200' : 'bg-dark-800 border-dark-700'"
         >
-          <Button
+          <SqButton
             type="button"
-            icon="pi pi-search-minus"
-            text
-            size="small"
-            severity="secondary"
+            size="sm"
+            :aria-label="$t('erDiagram.zoomOutTooltip')"
             @click="handleZoomOut"
             v-tooltip.top="$t('erDiagram.zoomOutTooltip')"
-            class="!p-1.5 !w-7 !h-7"
-          />
-          <Button
+          >
+            <template #icon><ZoomOut class="w-3.5 h-3.5" /></template>
+          </SqButton>
+          <SqButton
             type="button"
             :label="`${Math.round(zoomLevel * 100)}%`"
-            text
-            size="small"
-            severity="secondary"
+            size="sm"
+            class="font-sans min-w-[42px]"
             @click="handleZoomReset"
             v-tooltip.top="$t('erDiagram.zoomResetTooltip')"
-            class="!px-1.5 !py-1 !text-xxs font-sans min-w-[42px]"
           />
-          <Button
+          <SqButton
             type="button"
-            icon="pi pi-search-plus"
-            text
-            size="small"
-            severity="secondary"
+            size="sm"
+            :aria-label="$t('erDiagram.zoomInTooltip')"
             @click="handleZoomIn"
             v-tooltip.top="$t('erDiagram.zoomInTooltip')"
-            class="!p-1.5 !w-7 !h-7"
-          />
-          <Button
+          >
+            <template #icon><ZoomIn class="w-3.5 h-3.5" /></template>
+          </SqButton>
+          <SqButton
             type="button"
-            icon="pi pi-window-maximize"
-            text
-            size="small"
-            severity="secondary"
+            size="sm"
+            :aria-label="$t('erDiagram.zoomFitTooltip')"
             @click="handleZoomFit"
             v-tooltip.top="$t('erDiagram.zoomFitTooltip')"
-            class="!p-1.5 !w-7 !h-7 border-l"
-          />
+          >
+            <template #icon><SquarePlus class="w-3.5 h-3.5" /></template>
+          </SqButton>
         </div>
 
         <div class="h-4 w-px mx-1" :class="isLightTheme ? 'bg-slate-200' : 'bg-dark-750'"></div>
 
         <!-- Theme Toggle Button (Dark / Light) -->
-        <Button
+        <SqButton
           type="button"
-          :icon="isLightTheme ? 'pi pi-sun text-warn' : 'pi pi-moon text-structure'"
           :label="isLightTheme ? $t('erDiagram.lightTheme') : $t('erDiagram.darkTheme')"
-          size="small"
-          severity="secondary"
-          outlined
+          size="sm"
+          variant="outline"
           @click="toggleTheme"
           v-tooltip.top="$t('erDiagram.themeTooltip', { theme: isLightTheme ? $t('erDiagram.lightThemeName') : $t('erDiagram.darkThemeName') })"
-          class="!text-xs !py-1 !px-2.5 shadow-xs"
-        />
+        >
+          <template #icon>
+            <Sun v-if="isLightTheme" class="w-3.5 h-3.5" />
+            <Moon v-else class="w-3.5 h-3.5" />
+          </template>
+        </SqButton>
 
         <div class="h-4 w-px mx-1" :class="isLightTheme ? 'bg-slate-200' : 'bg-dark-750'"></div>
 
         <!-- Export Dropdown -->
-        <Button
+        <SqButton
           type="button"
-          icon="pi pi-download"
           :label="$t('erDiagram.export')"
-          iconPos="left"
-          size="small"
-          severity="primary"
+          tone="accent"
+          variant="solid"
+          class="font-medium"
           @click="(e) => exportMenuRef?.toggle(e)"
-          class="!text-xs !py-1 !px-2.5 font-medium shadow-sm"
-        />
+        >
+          <template #icon><Download class="w-3.5 h-3.5" /></template>
+        </SqButton>
         <Menu ref="exportMenuRef" :model="exportMenuItems" :popup="true" />
       </div>
     </div>
@@ -357,7 +359,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, onBeforeUnmount, shallowRef, nextTick } from 'vue';
-import Button from 'primevue/button';
+import SqButton from '@/components/ui/SqButton.vue';
 import SqChip from '@/components/ui/SqChip.vue';
 import Menu from 'primevue/menu';
 import {
@@ -371,6 +373,17 @@ import {
   Eye,
   Edit3,
   Database,
+  AlignLeft,
+  Download,
+  LayoutGrid,
+  Moon,
+  MoveHorizontal,
+  MoveVertical,
+  Pencil,
+  SquarePlus,
+  Sun,
+  ZoomIn,
+  ZoomOut,
 } from 'lucide-vue-next';
 import { Graph, Export } from '@antv/x6';
 import { register } from '@antv/x6-vue-shape';
