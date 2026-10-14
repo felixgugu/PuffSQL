@@ -269,15 +269,18 @@ WCAG 1.4.11 的豁免）；分隔步 `#64748B` 對畫布 4.76:1；focus 指示�
 - **P3 圖示：部分完成。** 外殼自有標記中的 PrimeIcons 已全數換成 lucide（含 DBA 按鈕補上
   `aria-label`）。仍待處理：62 處 `<i class="pi ...">` 元素（主要在對話框與檢視器）與 128 個
   PrimeVue `icon="pi ..."` prop（依賴 P4 換掉元件後改用 `#icon` slot），完成後才移除 primeicons。
-- **P4 葉節點元件：進行中。** 已建立 `src/components/ui/SqChip.vue`（取代 Tag）與
-  `SqInput.vue`（取代 InputText）。已全面退場的 PrimeVue 元件：**Tag**（0 匯入／0 渲染點，
-  SqChip 41 處）、**InputText**（0／0，改為 SqInput）、**IconField + InputIcon**（改為 prefix/suffix
-  slot）、**Divider**（改為 1px 分隔線）、**Card**（改為 1px 邊框容器，移除 `:pt` 穿透覆寫）。
+- **P4 葉節點元件：進行中。** 已建立 `src/components/ui/` 下的 6 個原語：`SqChip`（Tag）、
+  `SqInput`（InputText／IconField／InputIcon）、`SqCheckbox`、`SqSwitch`（ToggleSwitch）、
+  `SqSegmented`（SelectButton）、`SqTextarea`。**已全面退場的 PrimeVue 元件**：Tag、InputText、
+  IconField、InputIcon、Divider（改 1px 分隔線）、Card（改 1px 邊框容器）、Checkbox、ToggleSwitch、
+  SelectButton、Textarea、ProgressBar（改用既有 `.sq-progress-line`）、Badge（改用 SqChip）。
+  表單類一律是原生 `<input>`／`<textarea>` 加 token 樣式，因此鍵盤、螢幕閱讀器與表單語意不變；
+  focus 指示統一為 2px 操作色 outline，勾選／開啟態用 `accent-color` 吃同一個操作色。
   過程中一併移除標籤內的 emoji 圖示、把動態 severity 改為動態 tone，並修掉 SqInput 自身
   width 規則壓過呼叫端工具類的問題。
-  仍待處理：button(31 檔)、dialog(10)、select(6)、contextmenu(4)、checkbox(4)、
-  toggleswitch/selectbutton/textarea(各 3)，以及零星的 badge/progressbar/inputnumber/password／
-  menu/popover/toolbar/datatable/column/message（見 PRIMEVUE-EVALUATION.md §3）。
+  仍待處理：**button(31 檔)**、dialog(10)、select(6)、contextmenu(4)，以及單檔使用的
+  toolbar／message／inputnumber／password／datatable／column／menu／popover
+  （見 PRIMEVUE-EVALUATION.md §3）。
 
 - [ ] 全站只有一個操作藍 `#2E6F9E`（及其 hover／tint），沒有第二個彩色 CTA。
 - [ ] 淺色為預設：畫布白、外框淺灰、深灰文字；深色為配對變體且對比另行驗證。
