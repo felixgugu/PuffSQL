@@ -11,55 +11,49 @@
       <!-- Right: Toolbar (新增, 恢復排除, 重新整理, 全部收合) -->
       <div class="flex items-center space-x-1">
         <!-- 恢復取消監控的檔案 (Restore Excluded Items) -->
-        <Button
+        <SqButton
           v-if="sqlFolderStore.excludedPaths.length > 0"
-          icon="pi pi-eye"
-          severity="warn"
-          size="small"
-          text
-          rounded
-          class="!h-6 !w-6 !p-0 !text-warn"
+          size="sm"
+          tone="warn"
+          :aria-label="$t('sidebar.restoreExcludedPaths', { count: sqlFolderStore.excludedPaths.length })"
           v-tooltip.bottom="$t('sidebar.restoreExcludedPaths', { count: sqlFolderStore.excludedPaths.length })"
           @click="sqlFolderStore.restoreExcludedPaths"
-        />
+        >
+          <template #icon><Eye class="w-3.5 h-3.5" /></template>
+        </SqButton>
 
         <!-- 新增 (Add Folder) -->
-        <Button
-          icon="pi pi-plus"
-          severity="secondary"
-          size="small"
-          text
-          rounded
-          class="!h-6 !w-6 !p-0"
+        <SqButton
+          size="sm"
           :disabled="sqlFolderStore.isLoading"
+          :aria-label="$t('sidebar.addFolderTooltip')"
           v-tooltip.bottom="$t('sidebar.addFolderTooltip')"
           @click="handleAddFolder"
-        />
+        >
+          <template #icon><Plus class="w-3.5 h-3.5" /></template>
+        </SqButton>
 
         <!-- 重新整理 (Refresh) -->
-        <Button
-          :icon="sqlFolderStore.isLoading ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"
-          severity="secondary"
-          size="small"
-          text
-          rounded
-          class="!h-6 !w-6 !p-0"
+        <SqButton
+          size="sm"
+          :loading="sqlFolderStore.isLoading"
           :disabled="sqlFolderStore.isLoading"
+          :aria-label="$t('common.refresh')"
           v-tooltip.bottom="$t('common.refresh')"
           @click="handleRefreshAll"
-        />
+        >
+          <template #icon><RefreshCw class="w-3.5 h-3.5" /></template>
+        </SqButton>
 
         <!-- 全部收合 (Collapse All) -->
-        <Button
-          icon="pi pi-angle-double-up"
-          severity="secondary"
-          size="small"
-          text
-          rounded
-          class="!h-6 !w-6 !p-0"
+        <SqButton
+          size="sm"
+          :aria-label="$t('sidebar.collapseAll')"
           v-tooltip.bottom="$t('sidebar.collapseAll')"
           @click="sqlFolderStore.collapseAll"
-        />
+        >
+          <template #icon><ChevronsUp class="w-3.5 h-3.5" /></template>
+        </SqButton>
       </div>
     </div>
 
@@ -75,15 +69,15 @@
           {{ $t('sidebar.noMonitoredFolders') }}<br />
           {{ $t('sidebar.monitoredFoldersHint') }}
         </div>
-        <Button
+        <SqButton
           type="button"
-          size="small"
+          size="sm"
           :label="$t('sidebar.addFolder')"
-          icon="pi pi-folder-open"
-          severity="secondary"
-          class="!text-xxs !py-1 !px-2.5"
+          variant="outline"
           @click="handleAddFolder"
-        />
+        >
+          <template #icon><FolderOpen class="w-3.5 h-3.5" /></template>
+        </SqButton>
       </div>
 
       <!-- Monitored Folders List -->
@@ -221,24 +215,22 @@
 
       <template #footer>
         <div class="flex items-center justify-end space-x-2 pt-2">
-          <Button
+          <SqButton
             type="button"
             :label="$t('common.cancel')"
-            severity="secondary"
-            size="small"
-            text
             @click="isRenameModalOpen = false"
           />
-          <Button
+          <SqButton
             type="button"
             :label="$t('common.confirm')"
-            icon="pi pi-check"
-            severity="primary"
-            size="small"
+            tone="accent"
+            variant="solid"
             :disabled="!renameInput.trim() || isSubmittingRename"
             :loading="isSubmittingRename"
             @click="handleConfirmRename"
-          />
+          >
+            <template #icon><Check class="w-3.5 h-3.5" /></template>
+          </SqButton>
         </div>
       </template>
     </Dialog>
@@ -270,23 +262,21 @@
 
       <template #footer>
         <div class="flex items-center justify-end space-x-2 pt-2">
-          <Button
+          <SqButton
             type="button"
             :label="$t('common.cancel')"
-            severity="secondary"
-            size="small"
-            text
             @click="isManualPathModalOpen = false"
           />
-          <Button
+          <SqButton
             type="button"
             :label="$t('common.add')"
-            icon="pi pi-check"
-            severity="primary"
-            size="small"
+            tone="accent"
+            variant="solid"
             :disabled="!manualPathInput.trim()"
             @click="handleConfirmManualPath"
-          />
+          >
+            <template #icon><Check class="w-3.5 h-3.5" /></template>
+          </SqButton>
         </div>
       </template>
     </Dialog>
@@ -296,7 +286,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, provide, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
-import Button from 'primevue/button';
+import SqButton from '@/components/ui/SqButton.vue';
 import SqInput from '@/components/ui/SqInput.vue';
 import Dialog from 'primevue/dialog';
 import ContextMenu from 'primevue/contextmenu';
@@ -309,6 +299,11 @@ import {
   ChevronRight,
   ChevronDown,
   X,
+  Check,
+  ChevronsUp,
+  Eye,
+  Plus,
+  RefreshCw,
 } from 'lucide-vue-next';
 import { useSqlFolderStore } from '@/stores/sqlFolderStore';
 import { useDialogWindow } from '@/composables/useDialogWindow';

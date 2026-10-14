@@ -4,51 +4,43 @@
     <div class="h-6 bg-dark-850 border-b border-dark-750 flex items-center justify-between px-3 text-xxs text-dark-400 select-none flex-shrink-0">
       <span>{{ $t('results.messagesInSession', { count: messages.length }) }}</span>
       <div class="flex items-center space-x-2">
-        <Button
+        <SqButton
           v-if="hasErrorMessages"
           type="button"
-          icon="pi pi-sparkles"
           :label="$t('results.diagnoseLatestError')"
-          size="small"
-          text
-          severity="help"
+          size="sm"
+          tone="accent"
           @click="handleDiagnoseLatestError"
           :v-tooltip.top="$t('results.diagnoseLatestErrorTooltip')"
-          class="!text-xxs !p-0 text-plan hover:text-plan"
-        />
+        >
+          <template #icon><Sparkles class="w-3.5 h-3.5" /></template>
+        </SqButton>
         <span v-if="hasErrorMessages" class="text-dark-600">|</span>
-        <Button
+        <SqButton
           type="button"
-          icon="pi pi-file"
           :label="$t('results.physicalLog')"
-          size="small"
-          text
-          severity="secondary"
+          size="sm"
           @click="handleOpenLog"
           :v-tooltip.top="$t('results.openLogTooltip')"
-          class="!text-xxs !p-0"
-        />
+        >
+          <template #icon><FileText class="w-3.5 h-3.5" /></template>
+        </SqButton>
         <span v-if="messages.length > 0" class="text-dark-600">|</span>
-        <Button
+        <SqButton
           v-if="messages.length > 0"
           type="button"
           :label="isAllExpanded ? $t('common.collapseAll') : $t('common.expandAll')"
-          size="small"
-          text
-          severity="secondary"
+          size="sm"
           @click="toggleExpandAll"
-          class="!text-xxs !p-0"
         />
         <span v-if="messages.length > 0" class="text-dark-600">|</span>
-        <Button
+        <SqButton
           v-if="messages.length > 0"
           type="button"
           :label="$t('common.clear')"
-          size="small"
-          text
-          severity="danger"
+          size="sm"
+          tone="danger"
           @click="$emit('clear')"
-          class="!text-xxs !p-0"
         />
       </div>
     </div>
@@ -93,42 +85,46 @@
 
           <!-- 右上角按鈕：AI 診斷、展開|收合 與 複製 -->
           <div class="flex items-center space-x-1 flex-shrink-0 select-none">
-            <Button
+            <SqButton
               v-if="msg.level === 'error' || msg.level === 'warning'"
               type="button"
-              icon="pi pi-sparkles"
               :label="$t('results.aiDiagnose')"
-              size="small"
-              severity="help"
-              text
+              size="xs"
+              tone="accent"
+              class="font-medium"
               @click.stop="handleDiagnoseWithAi(msg)"
               :v-tooltip.top="$t('results.aiDiagnoseTooltip')"
-              class="!text-xxs !py-0.5 !px-1.5 !h-5 text-accent hover:text-accent hover:bg-accent/10 font-sans font-medium"
-            />
+            >
+              <template #icon><Sparkles class="w-3 h-3" /></template>
+            </SqButton>
 
-            <Button
+            <SqButton
               type="button"
-              :icon="isExpanded(getMsgKey(msg, idx)) ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
-              text
-              rounded
-              size="small"
-              severity="secondary"
+              size="sm"
+              class="opacity-0 group-hover:opacity-100"
+              :aria-label="isExpanded(getMsgKey(msg, idx)) ? $t('common.collapse') : $t('common.expand')"
               @click.stop="toggleExpand(getMsgKey(msg, idx))"
               :v-tooltip.top="isExpanded(getMsgKey(msg, idx)) ? $t('common.collapse') : $t('common.expand')"
-              class="opacity-0 group-hover:opacity-100 !w-6 !h-6 !p-0"
-            />
+            >
+              <template #icon>
+                <ChevronUp v-if="isExpanded(getMsgKey(msg, idx))" class="w-3.5 h-3.5" />
+                <ChevronDown v-else class="w-3.5 h-3.5" />
+              </template>
+            </SqButton>
 
-            <Button
+            <SqButton
               type="button"
-              :icon="copiedKey === (msg.seq ?? idx) ? 'pi pi-check text-ok' : 'pi pi-copy'"
-              text
-              rounded
-              size="small"
-              severity="secondary"
+              size="sm"
+              class="opacity-0 group-hover:opacity-100"
+              :aria-label="copiedKey === (msg.seq ?? idx) ? $t('common.copied') : $t('results.copyMessage')"
               @click.stop="copyMessage(msg.message, msg.seq ?? idx)"
               :v-tooltip.top="copiedKey === (msg.seq ?? idx) ? $t('common.copied') : $t('results.copyMessage')"
-              class="opacity-0 group-hover:opacity-100 !w-6 !h-6 !p-0"
-            />
+            >
+              <template #icon>
+                <Check v-if="copiedKey === (msg.seq ?? idx)" class="w-3.5 h-3.5 text-ok" />
+                <Copy v-else class="w-3.5 h-3.5" />
+              </template>
+            </SqButton>
           </div>
         </div>
 
@@ -151,7 +147,15 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onBeforeUnmount } from 'vue';
-import Button from 'primevue/button';
+import SqButton from '@/components/ui/SqButton.vue';
+import {
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Copy,
+  FileText,
+  Sparkles,
+} from 'lucide-vue-next';
 import SqChip from '@/components/ui/SqChip.vue';
 import type { SessionMessageItem, QueryMessage } from '@/types/query';
 import type { SqlEditorTab } from '@/types/workspace';
