@@ -284,7 +284,8 @@ WCAG 1.4.11 的豁免）；分隔步 `#64748B` 對畫布 4.76:1；focus 指示�
   `--color-accent-fill`／`--color-accent-fill-hover`：**填色不算文字色，另以白字對填色的
   4.5:1 驗證**。
   **外殼（標題列、編輯器工具列、側邊欄、底部面板、分頁列）已全數改用 SqButton**；
-  仍待處理：results／editor 檢視器與對話框裡約 150 處 Button、dialog(10)、select(6)、
+  另外結果資料格（ResultGridItem）、SQL 範本、物件快搜與 AI 設定對話框也已換完。
+  仍待處理：results／editor 檢視器與其餘對話框裡約 117 處 Button、dialog(10)、select(6)、
   contextmenu(4)，以及單檔使用的 toolbar／message／inputnumber／password／datatable／column／
   menu／popover（見 PRIMEVUE-EVALUATION.md §3）。
 
