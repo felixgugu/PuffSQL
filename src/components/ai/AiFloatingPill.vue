@@ -42,44 +42,41 @@
 
       <!-- 快速動作按鈕 -->
       <div class="flex items-center space-x-1 pl-1 border-l border-dark-700" @click.stop>
-        <Button
+        <SqButton
           v-if="aiChatStore.isGenerating"
-          icon="pi pi-stop-circle"
-          severity="danger"
-          text
-          rounded
-          size="small"
+          size="sm"
+          tone="danger"
+          aria-label="中斷 AI 分析"
           v-tooltip.top="'中斷 AI 分析'"
-          class="!w-6 !h-6 !p-0 text-danger hover:text-danger"
           @click="aiChatStore.cancelGeneration()"
-        />
-        <Button
-          icon="pi pi-window-maximize"
-          severity="secondary"
-          text
-          rounded
-          size="small"
+        >
+          <template #icon><CircleStop class="w-3.5 h-3.5" /></template>
+        </SqButton>
+        <SqButton
+          size="sm"
+          aria-label="還原視窗"
           v-tooltip.top="'還原視窗'"
-          class="!w-6 !h-6 !p-0"
           @click="aiChatStore.restoreWindow()"
-        />
-        <Button
-          icon="pi pi-times"
-          severity="secondary"
-          text
-          rounded
-          size="small"
+        >
+          <template #icon><SquarePlus class="w-3.5 h-3.5" /></template>
+        </SqButton>
+        <SqButton
+          size="sm"
+          tone="danger"
+          aria-label="關閉"
           v-tooltip.top="'關閉'"
-          class="!w-6 !h-6 !p-0 hover:text-danger"
           @click="aiChatStore.closeChat()"
-        />
+        >
+          <template #icon><X class="w-3.5 h-3.5" /></template>
+        </SqButton>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import Button from 'primevue/button';
+import SqButton from '@/components/ui/SqButton.vue';
+import { CircleStop, SquarePlus, X } from 'lucide-vue-next';
 import SqChip from '@/components/ui/SqChip.vue';
 import { useAiChatStore } from '@/stores/aiChatStore';
 

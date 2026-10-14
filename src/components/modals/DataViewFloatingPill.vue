@@ -34,28 +34,25 @@
 
         <!-- Actions -->
         <div class="flex items-center space-x-0.5 pl-1 border-l border-dark-700" @click.stop>
-          <Button
+          <SqButton
             type="button"
-            icon="pi pi-window-maximize"
-            severity="secondary"
-            text
-            rounded
-            size="small"
+            size="sm"
+            aria-label="還原檢視視窗"
             v-tooltip.top="'還原檢視視窗'"
-            class="!w-6 !h-6 !p-0 hover:text-info"
             @click="dataViewStore.restore()"
-          />
-          <Button
+          >
+            <template #icon><SquarePlus class="w-3.5 h-3.5" /></template>
+          </SqButton>
+          <SqButton
             type="button"
-            icon="pi pi-times"
-            severity="secondary"
-            text
-            rounded
-            size="small"
+            size="sm"
+            tone="danger"
+            aria-label="關閉"
             v-tooltip.top="'關閉'"
-            class="!w-6 !h-6 !p-0 hover:text-danger"
             @click="dataViewStore.closeDataView()"
-          />
+          >
+            <template #icon><X class="w-3.5 h-3.5" /></template>
+          </SqButton>
         </div>
       </div>
     </div>
@@ -64,8 +61,8 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { Eye } from 'lucide-vue-next';
-import Button from 'primevue/button';
+import { Eye, SquarePlus, X } from 'lucide-vue-next';
+import SqButton from '@/components/ui/SqButton.vue';
 import SqChip from '@/components/ui/SqChip.vue';
 import { useDataViewStore } from '@/stores/dataViewStore';
 import { useAiChatStore } from '@/stores/aiChatStore';

@@ -35,56 +35,45 @@
 
         <!-- 視窗控制按鈕組 (點擊不觸發拖曳) -->
         <div class="flex items-center space-x-1" @pointerdown.stop>
-          <Button
-            icon="pi pi-file-edit"
-            severity="secondary"
-            text
-            rounded
-            size="small"
+          <SqButton
+            :aria-label="$t('aiSqlChat.openLogTooltip')"
             v-tooltip.top="$t('aiSqlChat.openLogTooltip')"
-            class="!w-7 !h-7 !p-0 hover:text-plan"
             @click="handleOpenAiLog"
-          />
-          <Button
-            icon="pi pi-trash"
-            severity="secondary"
-            text
-            rounded
-            size="small"
+          >
+            <template #icon><FileEdit class="w-3.5 h-3.5" /></template>
+          </SqButton>
+          <SqButton
+            :aria-label="$t('aiSqlChat.clearHistoryTooltip')"
             v-tooltip.top="$t('aiSqlChat.clearHistoryTooltip')"
-            class="!w-7 !h-7 !p-0"
             @click="aiChatStore.clearHistory()"
-          />
-          <Button
-            :icon="isMaximized ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"
-            severity="secondary"
-            text
-            rounded
-            size="small"
+          >
+            <template #icon><Trash2 class="w-3.5 h-3.5" /></template>
+          </SqButton>
+          <SqButton
+            :aria-label="isMaximized ? $t('aiSqlChat.restoreSizeTooltip') : $t('aiSqlChat.maximizeTooltip')"
             v-tooltip.top="isMaximized ? $t('aiSqlChat.restoreSizeTooltip') : $t('aiSqlChat.maximizeTooltip')"
-            class="!w-7 !h-7 !p-0"
             @click="toggleMaximize"
-          />
-          <Button
-            icon="pi pi-minus"
-            severity="secondary"
-            text
-            rounded
-            size="small"
+          >
+            <template #icon>
+              <SquareMinus v-if="isMaximized" class="w-3.5 h-3.5" />
+              <SquarePlus v-else class="w-3.5 h-3.5" />
+            </template>
+          </SqButton>
+          <SqButton
+            :aria-label="$t('aiSqlChat.minimizeTooltip')"
             v-tooltip.top="$t('aiSqlChat.minimizeTooltip')"
-            class="!w-7 !h-7 !p-0"
             @click="aiChatStore.toggleMinimize()"
-          />
-          <Button
-            icon="pi pi-times"
-            severity="secondary"
-            text
-            rounded
-            size="small"
+          >
+            <template #icon><Minus class="w-3.5 h-3.5" /></template>
+          </SqButton>
+          <SqButton
+            tone="danger"
+            :aria-label="$t('aiSqlChat.closeTooltip')"
             v-tooltip.top="$t('aiSqlChat.closeTooltip')"
-            class="!w-7 !h-7 !p-0 hover:text-danger"
             @click="aiChatStore.closeChat()"
-          />
+          >
+            <template #icon><X class="w-3.5 h-3.5" /></template>
+          </SqButton>
         </div>
       </div>
 
@@ -141,16 +130,14 @@
             </Transition>
           </div>
 
-          <Button
-            icon="pi pi-times"
-            severity="secondary"
-            text
-            rounded
-            size="small"
+          <SqButton
+            size="xs"
+            :aria-label="$t('aiSqlChat.removeSqlTooltip')"
             v-tooltip.top="$t('aiSqlChat.removeSqlTooltip')"
-            class="!w-5 !h-5 !p-0"
             @click="aiChatStore.clearSqlContext()"
-          />
+          >
+            <template #icon><X class="w-3 h-3" /></template>
+          </SqButton>
         </div>
 
         <!-- 訊息列表 -->
@@ -208,23 +195,24 @@
                       <div class="flex items-center justify-between px-3 py-1 text-[11px] border-b border-dark-750 bg-dark-800 text-black dark:text-plan">
                         <span class="font-mono font-semibold text-black dark:text-plan">{{ $t('aiSqlChat.suggestionTitle') }}</span>
                         <div class="flex items-center space-x-1.5">
-                          <Button
+                          <SqButton
                             :label="$t('aiSqlChat.copyBtn')"
-                            icon="pi pi-copy"
-                            severity="secondary"
-                            text
-                            size="small"
-                            class="!text-xxs !font-medium !py-0.5 !px-1.5 !h-6"
+                            size="xs"
+                            class="font-medium"
                             @click="copySql(segment.value)"
-                          />
-                          <Button
+                          >
+                            <template #icon><Copy class="w-3 h-3" /></template>
+                          </SqButton>
+                          <SqButton
                             :label="$t('aiSqlChat.openToNewTab')"
-                            icon="pi pi-external-link"
-                            severity="primary"
-                            size="small"
-                            class="!text-xxs !font-medium !py-0.5 !px-2 !h-6"
+                            size="xs"
+                            tone="accent"
+                            variant="solid"
+                            class="font-medium"
                             @click="openInNewTab(segment.value)"
-                          />
+                          >
+                            <template #icon><ArrowUpRight class="w-3 h-3" /></template>
+                          </SqButton>
                         </div>
                       </div>
                       <pre class="p-3 overflow-x-auto text-[11px] font-mono leading-relaxed bg-black/30 m-0 select-text"><code>{{ segment.value }}</code></pre>
@@ -248,15 +236,15 @@
           <div v-if="aiChatStore.isGenerating" class="flex items-center space-x-2 py-2 text-dark-400">
             <div class="sq-progress-line w-24" role="progressbar" aria-label="分析中" />
             <span class="text-[11px]">{{ $t('aiSqlChat.analyzing', { seconds: aiChatStore.executionElapsedSeconds }) }}</span>
-            <Button
+            <SqButton
               :label="$t('aiSqlChat.abortBtn')"
-              icon="pi pi-stop-circle"
-              severity="danger"
-              text
-              size="small"
-              class="!text-xxs !font-medium !py-0 !px-1.5 !h-5 ml-1"
+              size="xs"
+              tone="danger"
+              class="font-medium ml-1"
               @click="aiChatStore.cancelGeneration()"
-            />
+            >
+              <template #icon><CircleStop class="w-3 h-3" /></template>
+            </SqButton>
           </div>
         </div>
 
@@ -265,14 +253,13 @@
           <span class="text-[11px] text-dark-400 flex-shrink-0">
             {{ $t('aiSqlChat.quickPromptsLabel') }}
           </span>
-          <Button
+          <SqButton
             v-for="chip in aiChatStore.quickPrompts"
             :key="chip.id"
             :label="chip.label"
-            size="small"
-            severity="secondary"
-            outlined
-            class="!text-[11px] !py-0.5 !px-2 !rounded-full flex-shrink-0 hover:border-purple-400 hover:text-plan transition-colors"
+            size="sm"
+            variant="outline"
+            class="flex-shrink-0"
             :disabled="aiChatStore.isGenerating"
             @click="handleSelectQuickPrompt(chip.prompt)"
           />
@@ -291,14 +278,18 @@
               :disabled="aiChatStore.isGenerating"
               @keydown.enter.exact.prevent="handleSubmit"
             />
-            <Button
-              icon="pi pi-send"
-              severity="primary"
-              class="!h-9 !w-9 !p-0 flex-shrink-0"
+            <SqButton
+              tone="accent"
+              variant="solid"
+              size="lg"
+              class="flex-shrink-0"
+              aria-label="送出"
               :loading="aiChatStore.isGenerating"
               :disabled="!inputQuery.trim() || aiChatStore.isGenerating"
               @click="handleSubmit"
-            />
+            >
+              <template #icon><Send class="w-3.5 h-3.5" /></template>
+            </SqButton>
           </div>
         </div>
       </div>
@@ -323,7 +314,19 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
 import { useI18n } from 'vue-i18n';
-import Button from 'primevue/button';
+import SqButton from '@/components/ui/SqButton.vue';
+import {
+  ArrowUpRight,
+  CircleStop,
+  Copy,
+  FileEdit,
+  Minus,
+  Send,
+  SquareMinus,
+  SquarePlus,
+  Trash2,
+  X,
+} from 'lucide-vue-next';
 import SqTextarea from '@/components/ui/SqTextarea.vue';
 import SqChip from '@/components/ui/SqChip.vue';
 import { useToast } from 'primevue/usetoast';
