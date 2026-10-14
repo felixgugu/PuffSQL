@@ -4,7 +4,7 @@
     <div
       class="p-3.5 rounded-lg border border-dark-700 bg-dark-850 flex items-start space-x-3 text-xs"
     >
-      <i class="pi pi-sparkles text-base mt-0.5 text-plan" />
+      <Sparkles class="w-4 h-4 mt-0.5 text-plan flex-shrink-0" />
       <div class="space-y-1">
         <div class="font-semibold text-dark-100">AI SQL 助手自訂請求設定 (通用 cURL 範本)</div>
         <p class="text-dark-400 leading-relaxed text-xxs">
@@ -34,7 +34,7 @@
             class="absolute right-2 top-1/2 -translate-y-1/2 text-dark-400 hover:text-dark-200 text-xs"
             @click="showApiKey = !showApiKey"
           >
-            <i :class="showApiKey ? 'pi pi-eye-slash' : 'pi pi-eye'" />
+            <component :is="showApiKey ? EyeOff : Eye" class="w-3.5 h-3.5" />
           </button>
         </div>
         <SqButton
@@ -56,7 +56,10 @@
         class="mt-2 p-2.5 rounded text-xs flex items-center space-x-2"
         :class="testResult.success ? 'bg-emerald-500/10 text-ok border border-emerald-500/30' : 'bg-rose-500/10 text-danger border border-rose-500/30'"
       >
-        <i :class="testResult.success ? 'pi pi-check-circle text-ok' : 'pi pi-exclamation-triangle text-danger'" />
+        <component
+          :is="testResult.success ? CircleCheck : TriangleAlert"
+          class="w-3.5 h-3.5 flex-shrink-0"
+        />
         <span class="flex-1 font-mono text-[11px]">{{ testResult.message }}</span>
       </div>
     </div>
@@ -224,7 +227,19 @@
 import { ref, reactive } from 'vue';
 import SqInput from '@/components/ui/SqInput.vue';
 import SqButton from '@/components/ui/SqButton.vue';
-import { ArrowUpRight, Check, Pencil, Plus, Trash2, Zap } from 'lucide-vue-next';
+import {
+  ArrowUpRight,
+  Check,
+  CircleCheck,
+  Eye,
+  EyeOff,
+  Pencil,
+  Plus,
+  Sparkles,
+  Trash2,
+  TriangleAlert,
+  Zap,
+} from 'lucide-vue-next';
 import SqTextarea from '@/components/ui/SqTextarea.vue';
 import SqDialog from '@/components/ui/SqDialog.vue';
 import { useAiChatStore } from '@/stores/aiChatStore';

@@ -191,7 +191,19 @@ import SqButton from '@/components/ui/SqButton.vue';
 import SqChip from '@/components/ui/SqChip.vue';
 import SqMenu from '@/components/ui/SqMenu.vue';
 import { useContextMenu } from '@/composables/useContextMenu';
-import { FileCode, Table2, TableProperties, Network, Workflow, X, Plus } from 'lucide-vue-next';
+import {
+  Copy,
+  CopyPlus,
+  FileCode,
+  Network,
+  Pencil,
+  Plus,
+  Save,
+  Table2,
+  TableProperties,
+  Workflow,
+  X,
+} from 'lucide-vue-next';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useConnectionStore } from '@/stores/connectionStore';
 import { useQueryStore } from '@/stores/queryStore';
@@ -446,7 +458,7 @@ const tabContextMenuItems = computed(() => {
     { separator: true },
     {
       label: t('editor.renameTab'),
-      icon: 'pi pi-pencil',
+      icon: Pencil,
       command: handleContextMenuRename,
     },
   ];
@@ -454,25 +466,25 @@ const tabContextMenuItems = computed(() => {
   if (tab.type === 'sql_editor') {
     items.push({
       label: t('editor.duplicateTab'),
-      icon: 'pi pi-copy',
+      icon: Copy,
       command: handleContextMenuDuplicate,
     });
     items.push({
       label: t('editor.saveAs'),
-      icon: 'pi pi-save',
+      icon: Save,
       command: handleContextMenuSaveAs,
     });
   }
 
   items.push({
     label: t('editor.closeTab'),
-    icon: 'pi pi-times',
+    icon: X,
     command: handleContextMenuClose,
   });
 
   items.push({
     label: t('editor.closeOthers'),
-    icon: 'pi pi-clone',
+    icon: CopyPlus,
     disabled: workspaceStore.tabs.length <= 1,
     command: handleContextMenuCloseOthers,
   });

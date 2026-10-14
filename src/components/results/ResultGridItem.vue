@@ -444,9 +444,12 @@
             class="w-7 h-7 rounded-md flex items-center justify-center"
             :class="requiresModificationPrompt ? (commitModal.confirmStep === 2 ? 'bg-rose-100 dark:bg-rose-950/80 border border-rose-200 dark:border-rose-700/60' : 'bg-amber-500/20 border border-amber-500/40') : 'bg-emerald-100 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-700/60'"
           >
-            <i v-if="requiresModificationPrompt && commitModal.confirmStep === 2" class="pi pi-exclamation-triangle text-danger animate-pulse text-sm"></i>
-            <i v-else-if="requiresModificationPrompt" class="pi pi-exclamation-triangle text-warn text-sm"></i>
-            <i v-else class="pi pi-check text-ok text-sm"></i>
+            <TriangleAlert
+              v-if="requiresModificationPrompt && commitModal.confirmStep === 2"
+              class="w-3.5 h-3.5 text-danger animate-pulse"
+            />
+            <TriangleAlert v-else-if="requiresModificationPrompt" class="w-3.5 h-3.5 text-warn" />
+            <Check v-else class="w-3.5 h-3.5 text-ok" />
           </div>
           <div>
             <h3 class="font-semibold text-sm text-dark-100 leading-tight">
@@ -485,7 +488,7 @@
 
         <!-- Error Alert if any -->
         <div v-if="commitModal.error" class="bg-rose-100 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 text-danger p-3 rounded-md text-xs flex items-start space-x-2 flex-shrink-0">
-          <i class="pi pi-exclamation-triangle text-danger flex-shrink-0 mt-0.5 text-sm"></i>
+          <TriangleAlert class="w-3.5 h-3.5 text-danger flex-shrink-0 mt-0.5" />
           <div class="flex-1 font-mono break-all whitespace-pre-wrap">{{ commitModal.error }}</div>
         </div>
 
@@ -523,7 +526,7 @@
             v-if="commitModal.confirmStep === 1"
             class="flex items-center space-x-2 px-3 py-1.5 rounded bg-amber-500/15 border border-amber-500/30 text-warn text-xxs leading-normal"
           >
-            <i class="pi pi-exclamation-triangle text-warn shrink-0 text-sm"></i>
+            <TriangleAlert class="w-3.5 h-3.5 text-warn shrink-0" />
             <span>
               <strong>高危提醒 (1/2)：</strong>連線「{{ currentConnection?.name }}」已啟用修改提示防護。此操作將直接更動資料庫，需進行 <strong>2 次重複確認</strong> 才可提交！
             </span>
@@ -532,7 +535,7 @@
             v-else
             class="flex items-center space-x-2 px-3 py-1.5 rounded bg-rose-100 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-700/80 text-danger text-xxs leading-normal animate-pulse"
           >
-            <i class="pi pi-exclamation-circle text-danger shrink-0 text-sm"></i>
+            <CircleAlert class="w-3.5 h-3.5 text-danger shrink-0" />
             <span>
               <strong class="text-danger">高危提醒 (2/2 最終確認)：</strong>即將對目標資料表實施實體資料更動！資料修改後可能無法復原，請再次核實無誤後點擊執行。
             </span>
@@ -612,6 +615,7 @@ import {
   Edit3,
   Trash2,
   Braces,
+  CircleAlert,
   Slash,
   Undo2,
   Eye,

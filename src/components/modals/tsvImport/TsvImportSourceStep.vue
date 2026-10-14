@@ -6,7 +6,7 @@
         <div class="flex items-center justify-between">
           <div class="text-xxs font-semibold text-dark-300 tracking-wide">{{ $t('tsvImportModal.targetTable') }}</div>
           <span v-if="store.isLoadingMetadata" class="text-xxs text-dark-400 flex items-center space-x-1">
-            <i class="pi pi-spin pi-spinner text-xxs"></i>
+            <Loader2 class="w-3 h-3 animate-spin" />
             <span>{{ $t('tsvImportModal.readingDefinitions') }}</span>
           </span>
         </div>
@@ -222,7 +222,7 @@
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import SqButton from '@/components/ui/SqButton.vue';
-import { ArrowRight, ArrowUpFromLine } from 'lucide-vue-next';
+import { ArrowRight, ArrowUpFromLine, Loader2 } from 'lucide-vue-next';
 import { checkUtf8File, openTsvFile } from '@/utils/fileStorage';
 import { countUtf8Bytes, MAX_SOURCE_BYTES } from '@/utils/tsvImport';
 import { useTsvImportStore } from '@/stores/tsvImportStore';

@@ -72,14 +72,14 @@
         <!-- Left: Target Connection & Database Switcher -->
         <div class="flex items-center space-x-2">
           <span class="flex items-center space-x-1">
-            <i class="pi pi-server text-ok text-xs"></i>
+            <Database class="w-3 h-3 text-ok" />
             <span class="text-dark-300 font-medium truncate max-w-[120px]">
               {{ connectionStore.activeConnection?.name || $t('quickFinder.unconnected') }}
             </span>
           </span>
           <span>/</span>
           <div class="flex items-center space-x-1">
-            <i class="pi pi-database text-warn text-xs"></i>
+            <Database class="w-3 h-3 text-warn" />
             <SqSelect
               v-if="availableDatabases.length > 0"
               v-model="currentDatabase"
@@ -123,7 +123,7 @@
       v-if="isLoading"
       class="flex-1 px-4 py-8 flex flex-col items-center justify-center space-y-2 text-dark-400"
     >
-      <i class="pi pi-spin pi-spinner text-2xl text-accent"></i>
+      <Loader2 class="w-6 h-6 animate-spin text-accent" />
       <span class="text-xs">{{ $t('quickFinder.loading') }}</span>
     </div>
 
@@ -132,7 +132,7 @@
       v-else-if="!connectionStore.activeConnectionId || connectionStore.status !== 'connected'"
       class="flex-1 px-4 py-12 flex flex-col items-center justify-center space-y-2 text-dark-400"
     >
-      <i class="pi pi-server text-3xl text-dark-600 mb-1"></i>
+      <Database class="w-5 h-5 text-dark-600 mb-1" />
       <span class="text-xs text-dark-300 font-medium">{{ $t('quickFinder.noConnection') }}</span>
       <span class="text-xxs text-dark-500">{{ $t('quickFinder.noConnectionSub') }}</span>
     </div>
@@ -142,7 +142,7 @@
       v-else-if="scoredResults.length === 0"
       class="flex-1 px-4 py-12 flex flex-col items-center justify-center space-y-1.5 text-dark-400"
     >
-      <i class="pi pi-search text-3xl text-dark-600 mb-1"></i>
+      <Search class="w-5 h-5 text-dark-600 mb-1" />
       <span class="text-xs text-dark-300">{{ $t('quickFinder.notFound', { query: searchQuery }) }}</span>
       <span class="text-xxs text-dark-500">{{ $t('quickFinder.notFoundSub') }}</span>
     </div>
@@ -337,7 +337,18 @@ import SqDialog from '@/components/ui/SqDialog.vue';
 import SqInput from '@/components/ui/SqInput.vue';
 import SqButton from '@/components/ui/SqButton.vue';
 import SqSelect from '@/components/ui/SqSelect.vue';
-import { FileCode, FileEdit, List, Play, RefreshCw, Search, Table2, X } from 'lucide-vue-next';
+import {
+  Database,
+  FileCode,
+  FileEdit,
+  List,
+  Loader2,
+  Play,
+  RefreshCw,
+  Search,
+  Table2,
+  X,
+} from 'lucide-vue-next';
 import SqChip from '@/components/ui/SqChip.vue';
 import { useConnectionStore } from '@/stores/connectionStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';

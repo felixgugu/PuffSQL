@@ -34,7 +34,8 @@ npm run dev   # 另一個視窗
   --user-data-dir=".design-preview\chrome" --virtual-time-budget=9000 --window-size=1120,1900 `
   --screenshot="docs\design\minimal-ui\screens\dialog-light.png" `
   "http://localhost:1420/.design-preview/dialog.html"
-# #dark 為深色、#overlay 為真實遮罩、#pair/#window/#debug 為單一對話框與拖曳縮放整合的檢查視圖
+# #dark 為深色、#overlay 為真實遮罩、#pair/#window/#debug 為單一對話框與拖曳縮放整合的檢查視圖，
+# #toast 為通知堆疊、#tooltip 以合成 hover 觸發真實提示
 ```
 
 ## 設計決策摘要
@@ -48,13 +49,14 @@ npm run dev   # 另一個視窗
 
 ## 進度與未定事項（詳見 PRIMEVUE-EVALUATION.md §5、§7）
 
-已完成：P1 token 層、P2 外殼、P4 葉節點元件（Tag／Input／Checkbox／Switch／Segmented／Button …）、
-P5 浮層元件（Select／Menu／Popover／ContextMenu／**Dialog**）。`primevue/dialog` 在 `src/` 已 0 匯入。
+已完成：**P1** token 層、**P2** 外殼、**P3** 圖示（`pi pi-*` 歸零、移除 284KB 的 primeicons 字型）、
+**P4** 葉節點元件（Tag／Input／Checkbox／Switch／Segmented／Button …）、
+**P5** 浮層元件（Select／Menu／Popover／ContextMenu／**Dialog**）、**P6** Tooltip（自建 `v-tooltip`）、
+**P7a** Toast（自建佇列）。`primevue/dialog`、`primevue/tooltip`、`primevue/toast*` 在 `src/` 皆已 0 匯入。
 
-尚未完成：**P3 圖示**（仍有 121 處 `pi pi-*` 與 primeicons 字型 284KB）、
-**P6 Tooltip／Toast**（約 150 個 `v-tooltip` 使用點與 2 處 toast）、
-**P7 主題與套件**（`@primevue/themes` 的 preset 旋鈕、`primevue/config`、`ripple`、
-`confirmationservice`，之後才可能把 `primevue` 從 `package.json` 移除）。
+尚未完成：**P7b 主題與套件**（`@primevue/themes` 的 preset／主色旋鈕、`primevue/config`、`ripple`、
+`confirmationservice`——後兩者已是死碼，`useConfirm` 0 使用點）。這一步做完 `primevue` 才能從
+`package.json` 移除，但它會動到使用者看得到的設定，因此需要你點頭。
 
 需要你決定的只剩一項：**設定裡是否保留 PrimeVue 的 theme preset／主色旋鈕**。
 保留就等於允許第二個操作色，與「單一低飽和藍」的規範衝突；移除則可讓淺／深 + 中性表面色盤

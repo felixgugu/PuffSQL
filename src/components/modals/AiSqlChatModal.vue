@@ -26,8 +26,8 @@
         @dblclick="toggleMaximize"
       >
         <div class="flex items-center space-x-2">
-          <i
-            class="pi pi-sparkles text-sm"
+          <Sparkles
+            class="w-3.5 h-3.5"
             :class="aiChatStore.isGenerating ? 'animate-spin text-plan' : 'text-plan'"
           />
           <span class="text-xs font-semibold text-dark-100">{{ $t('aiSqlChat.title') }}</span>
@@ -97,7 +97,7 @@
             />
             <span class="text-dark-300 group-hover:text-plan truncate max-w-[360px] font-mono transition-colors flex items-center gap-1">
               {{ sqlPreviewText }}
-              <i class="pi pi-eye text-xxs text-dark-400 group-hover:text-plan ml-0.5" />
+              <Eye class="w-3 h-3 text-dark-400 group-hover:text-plan ml-0.5 flex-shrink-0" />
             </span>
 
             <!-- Mouseover 浮動完整 SQL 預覽視窗 -->
@@ -111,7 +111,7 @@
                 <!-- 浮動卡片標題列 -->
                 <div class="px-3 py-1.5 bg-dark-800 border-b border-dark-700 flex items-center justify-between text-xxs text-dark-300 select-none">
                   <span class="font-semibold text-plan flex items-center gap-1.5">
-                    <i class="pi pi-code text-xs text-plan" />
+                    <FileCode class="w-3 h-3 text-plan" />
                     {{ $t('aiSqlChat.attachedSqlTitle', { count: sqlLineCount }) }}
                   </span>
                   <div class="flex items-center space-x-2">
@@ -120,7 +120,7 @@
                       class="text-dark-300 hover:text-ok transition-colors flex items-center gap-1 cursor-pointer"
                       @click.stop="copySql(aiChatStore.currentSql)"
                     >
-                      <i class="pi pi-copy text-xxs" />{{ $t('aiSqlChat.copyBtn') }}
+                      <Copy class="w-3 h-3" />{{ $t('aiSqlChat.copyBtn') }}
                     </button>
                   </div>
                 </div>
@@ -148,7 +148,7 @@
             class="flex flex-col items-center justify-center h-full text-center p-6 space-y-3 opacity-80 select-none"
           >
             <div class="w-12 h-12 rounded-full flex items-center justify-center bg-dark-800 text-plan">
-              <i class="pi pi-sparkles text-xl" />
+              <Sparkles class="w-5 h-5" />
             </div>
             <div>
               <h4 class="font-semibold text-sm text-dark-100">{{ $t('aiSqlChat.welcomeTitle') }}</h4>
@@ -170,7 +170,7 @@
                 }"
               >
                 <div v-if="msg.sqlContext" class="mb-2 pb-1.5 border-b border-white/20 opacity-90 font-mono text-[11px] truncate">
-                  <i class="pi pi-code mr-1" />{{ $t('aiSqlChat.userSqlTag') }}{{ msg.sqlContext.slice(0, 50) }}...
+                  <FileCode class="w-3 h-3 mr-1 inline-block align-text-bottom" />{{ $t('aiSqlChat.userSqlTag') }}{{ msg.sqlContext.slice(0, 50) }}...
                 </div>
                 <div class="whitespace-pre-wrap select-text font-sans">{{ msg.content }}</div>
               </div>
@@ -319,9 +319,12 @@ import {
   ArrowUpRight,
   CircleStop,
   Copy,
+  Eye,
+  FileCode,
   FileEdit,
   Minus,
   Send,
+  Sparkles,
   SquareMinus,
   SquarePlus,
   Trash2,

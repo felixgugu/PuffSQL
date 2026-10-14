@@ -3,7 +3,7 @@
     <!-- Subheader toolbar for Table Structure -->
     <div class="h-8 bg-dark-850 border-b border-dark-700 flex items-center justify-between px-2 text-xs flex-shrink-0 space-x-2">
       <div class="flex items-center space-x-2 min-w-0">
-        <i class="pi pi-list text-structure text-xs flex-shrink-0"></i>
+        <List class="w-3 h-3 text-structure flex-shrink-0" />
         <span class="font-semibold text-dark-100 truncate">{{ schema }}.{{ tableName }}</span>
         <span class="text-dark-600">|</span>
         <SqChip :label="$t('structure.columnsTag', { count: columns.length })" tone="neutral" />
@@ -333,6 +333,7 @@ import {
   Search,
   Check,
   FileSpreadsheet,
+  List,
   RefreshCw,
   Table2,
 } from 'lucide-vue-next';

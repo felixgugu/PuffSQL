@@ -6,7 +6,7 @@
       class="flex-1 flex flex-col items-center justify-center p-6 text-center text-dark-400 space-y-3"
     >
       <div class="w-12 h-12 rounded-full bg-dark-800 border border-dark-700 flex items-center justify-center text-warn">
-        <i class="pi pi-chart-bar text-xl"></i>
+        <ChartColumn class="w-5 h-5" />
       </div>
       <div class="space-y-1 max-w-md">
         <div class="text-sm font-medium text-dark-200">{{ $t('stats.noStats') }}</div>
@@ -22,7 +22,7 @@
       <div class="flex items-center justify-between border-b border-dark-750 pb-2 flex-shrink-0 text-xs">
         <div class="flex items-center space-x-2 truncate">
           <span class="flex items-center space-x-1.5 text-warn font-medium">
-            <i class="pi pi-chart-bar text-xs"></i>
+            <ChartColumn class="w-3 h-3" />
             <span>{{ $t('stats.reportTitle') }}</span>
           </span>
           <span class="text-dark-600">|</span>
@@ -75,7 +75,7 @@
         <div class="bg-dark-850 border border-dark-750 rounded p-2.5 flex flex-col justify-between h-full">
             <div class="flex items-center justify-between text-dark-400 text-xxs">
               <span>{{ $t('stats.cpuTimeCard') }}</span>
-              <i class="pi pi-microchip text-warn text-xs"></i>
+              <Cpu class="w-3 h-3 text-warn" />
             </div>
             <div class="mt-1 flex items-baseline space-x-1 font-mono">
               <span class="text-lg font-bold text-dark-100">{{ stats.cpuTimeMs }}</span>
@@ -90,7 +90,7 @@
         <div class="bg-dark-850 border border-dark-750 rounded p-2.5 flex flex-col justify-between h-full">
             <div class="flex items-center justify-between text-dark-400 text-xxs">
               <span>{{ $t('stats.elapsedTimeCard') }}</span>
-              <i class="pi pi-clock text-info text-xs"></i>
+              <Clock class="w-3 h-3 text-info" />
             </div>
             <div class="mt-1 flex items-baseline space-x-1 font-mono">
               <span class="text-lg font-bold text-dark-100">{{ stats.elapsedTimeMs }}</span>
@@ -105,7 +105,7 @@
         <div class="bg-dark-850 border border-dark-750 rounded p-2.5 flex flex-col justify-between h-full">
             <div class="flex items-center justify-between text-dark-400 text-xxs">
               <span>{{ $t('stats.logicalReadsCard') }}</span>
-              <i class="pi pi-book text-ok text-xs"></i>
+              <Book class="w-3 h-3 text-ok" />
             </div>
             <div class="mt-1 flex items-baseline space-x-1 font-mono">
               <span class="text-lg font-bold text-ok">{{ stats.totalLogicalReads.toLocaleString() }}</span>
@@ -120,7 +120,7 @@
         <div class="bg-dark-850 border border-dark-750 rounded p-2.5 flex flex-col justify-between h-full">
             <div class="flex items-center justify-between text-dark-400 text-xxs">
               <span>{{ $t('stats.physicalReadsCard') }}</span>
-              <i class="pi pi-server text-plan text-xs"></i>
+              <Database class="w-3 h-3 text-plan" />
             </div>
             <div class="mt-1 flex items-baseline space-x-1 font-mono">
               <span class="text-lg font-bold text-dark-100">{{ stats.totalPhysicalReads.toLocaleString() }}</span>
@@ -135,7 +135,7 @@
         <div class="bg-dark-850 border border-dark-750 rounded p-2.5 flex flex-col justify-between h-full">
             <div class="flex items-center justify-between text-dark-400 text-xxs">
               <span>{{ $t('stats.writesAndLobCard') }}</span>
-              <i class="pi pi-database text-structure text-xs"></i>
+              <HardDrive class="w-3 h-3 text-structure" />
             </div>
             <div class="mt-1 flex items-baseline space-x-1 font-mono">
               <span class="text-lg font-bold text-dark-100">{{ stats.totalPhysicalWrites.toLocaleString() }}</span>
@@ -169,7 +169,7 @@
         <!-- Table Header -->
         <div class="h-8 px-3 bg-dark-800/80 border-b border-dark-750 flex items-center justify-between text-xs flex-shrink-0">
           <div class="flex items-center space-x-1.5 font-medium text-dark-200">
-            <i class="pi pi-table text-accent text-xs"></i>
+            <Table2 class="w-3 h-3 text-accent" />
             <span>{{ $t('stats.tableBreakdown') }}</span>
             <SqChip :label="stats.tableStats.length" tone="neutral" class="font-mono" />
           </div>
@@ -278,7 +278,7 @@
       <!-- 4. Session Wait Stats (If any wait events captured) -->
       <div v-if="stats.waitStats.length > 0" class="bg-dark-850 border border-dark-750 rounded-lg p-2.5 flex flex-col space-y-2 flex-shrink-0">
         <div class="flex items-center space-x-1.5 text-xs font-medium text-dark-200">
-          <i class="pi pi-bolt text-warn text-xs"></i>
+          <Zap class="w-3 h-3 text-warn" />
           <span>{{ $t('stats.sessionWaitStats') }}</span>
         </div>
 
@@ -309,7 +309,7 @@
 import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import SqButton from '@/components/ui/SqButton.vue';
-import { Copy, Sparkles, Trash2 } from 'lucide-vue-next';
+import { Book, ChartColumn, Clock, Copy, Cpu, Database, HardDrive, Sparkles, Table2, Trash2, Zap } from 'lucide-vue-next';
 import SqChip from '@/components/ui/SqChip.vue';
 import { CircleCheck, TriangleAlert } from 'lucide-vue-next';
 import SqInput from '@/components/ui/SqInput.vue';

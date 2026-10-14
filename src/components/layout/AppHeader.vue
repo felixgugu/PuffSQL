@@ -36,8 +36,8 @@
         >
           <template #value="slotProps">
             <div v-if="slotProps.value && connectionStore.activeConnection" class="flex items-center space-x-1.5 min-w-0">
-              <i
-                class="pi pi-server text-xs flex-shrink-0"
+              <Database
+                class="w-3 h-3 flex-shrink-0"
                 :class="connectionStore.status === 'connected' ? 'text-ok' : 'text-dark-400'"
                 :title="connectionStore.status === 'connected' ? $t('sidebar.connected') : $t('sidebar.disconnected')"
               />
@@ -59,8 +59,8 @@
 
           <template #option="slotProps">
             <div class="flex items-center space-x-2 w-full py-0.5">
-              <i
-                class="pi pi-server text-xs flex-shrink-0"
+              <Database
+                class="w-3 h-3 flex-shrink-0"
                 :class="isOptionConnected(slotProps.option) ? 'text-ok' : 'text-dark-400'"
                 :title="isOptionConnected(slotProps.option) ? $t('sidebar.connected') : $t('sidebar.disconnected')"
               />
@@ -81,9 +81,9 @@
                   {{ slotProps.option.username ? `${slotProps.option.username}@` : '' }}{{ slotProps.option.host }}:{{ slotProps.option.port }}
                 </span>
               </div>
-              <i
+              <Check
                 v-if="connectionStore.activeConnectionId === slotProps.option.id"
-                class="pi pi-check text-accent text-xs ml-auto flex-shrink-0"
+                class="w-3 h-3 text-accent ml-auto flex-shrink-0"
               />
             </div>
           </template>
@@ -370,6 +370,7 @@ import {
   AlignLeft,
   Book,
   ChartLine,
+  Check,
   Database,
   FolderOpen,
   Gauge,

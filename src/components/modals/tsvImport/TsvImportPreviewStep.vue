@@ -138,7 +138,7 @@
       >
         <div class="flex items-center justify-between text-xxs text-ok">
           <span class="flex items-center space-x-1.5">
-            <i class="pi pi-spin pi-spinner text-xxs"></i>
+            <Loader2 class="w-3 h-3 animate-spin" />
             <span>{{ $t('tsvImportModal.importingNotice') }}</span>
           </span>
           <span class="font-mono">
@@ -258,7 +258,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import SqButton from '@/components/ui/SqButton.vue';
-import { ArrowLeft, Check, Database } from 'lucide-vue-next';
+import { ArrowLeft, Check, Database, Loader2 } from 'lucide-vue-next';
 import { MAX_DISPLAYED_ERRORS, NULL_SENTINEL } from '@/utils/tsvImport';
 import { useTsvImportStore } from '@/stores/tsvImportStore';
 

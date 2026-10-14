@@ -29,6 +29,22 @@ let owner: HTMLElement | null = null;
 let showTimer: ReturnType<typeof setTimeout> | null = null;
 let listening = false;
 
+/**
+ * A tooltip answers a question the *user* asks — "what is this control?" — with the keyboard or
+ * the mouse. It must not answer one the app asks itself: opening a dialog focuses its first
+ * control programmatically, and without this flag every dialog would pop a hint the moment it
+ * appeared.
+ */
+let keyboardNavigation = false;
+let modalityTracked = false;
+
+function trackModality() {
+  if (modalityTracked || typeof window === 'undefined') return;
+  modalityTracked = true;
+  window.addEventListener('keydown', () => { keyboardNavigation = true; }, true);
+  window.addEventListener('pointerdown', () => { keyboardNavigation = false; }, true);
+}
+
 function ensurePanel(): HTMLElement {
   if (panel && panel.isConnected) return panel;
   panel = document.createElement('div');
@@ -113,6 +129,7 @@ function isMounted(el: HTMLElement) {
 const tooltip: Directive<HTMLElement, unknown> = {
   mounted(el, binding) {
     stateByElement.set(el, { text: readText(binding.value), side: readSide(binding) });
+    trackModality();
 
     const onEnter = () => {
       if (showTimer !== null) clearTimeout(showTimer);
@@ -128,8 +145,11 @@ const tooltip: Directive<HTMLElement, unknown> = {
         showTimer = null;
       }
     };
-    // Keyboard users get the hint immediately once the control takes focus.
-    const onFocus = () => show(el);
+    // Keyboard users get the hint immediately once the control takes focus — but only when the
+    // keyboard is what moved it.
+    const onFocus = () => {
+      if (keyboardNavigation) show(el);
+    };
     const onBlur = () => {
       if (owner === el) hide();
     };

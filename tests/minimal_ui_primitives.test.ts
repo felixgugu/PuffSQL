@@ -1,7 +1,8 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { execSync } from 'node:child_process';
 
 const root = process.cwd();
 
@@ -95,12 +96,18 @@ describe('minimal UI primitives (src/components/ui)', () => {
     }
   });
 
-  test('the PrimeIcons lookup covers every icon the map is expected to resolve', () => {
-    const map = readSource('src/components/ui/piIcons.ts');
-    for (const key of ['pi-play', 'pi-stop', 'pi-search', 'pi-check', 'pi-times', 'pi-cog']) {
-      assert.match(map, new RegExp(`'${key}':`), `icon map must cover ${key}`);
+  test('no icon font survives anywhere in src', () => {
+    // The PrimeIcons class names and their lookup table are gone: every icon in the app is a
+    // lucide component, so a `pi pi-*` in a template would simply render nothing.
+    const files = execSync('git ls-files "src/*"', { encoding: 'utf-8' })
+      .split('\n')
+      .filter((line) => line.trim().length > 0);
+
+    for (const file of files) {
+      if (!existsSync(resolve(root, file))) continue;
+      assert.doesNotMatch(readSource(file), /pi pi-/, `${file} still names a PrimeIcon`);
     }
-    assert.match(map, /export function piIcon\(/, 'the map exposes a resolver for dynamic icons');
+    assert.equal(existsSync(resolve(root, 'src/components/ui/piIcons.ts')), false, 'the map is deleted');
   });
 
   test('SqSelect keeps the combobox/listbox contract and the footer slot', () => {

@@ -717,27 +717,39 @@ import SqMenu from '@/components/ui/SqMenu.vue';
 import { useContextMenu } from '@/composables/useContextMenu';
 import SqChip from '@/components/ui/SqChip.vue';
 import {
-  Server,
-  RotateCw,
+  ArrowUpFromLine,
   ChevronDown,
   ChevronRight,
-  Database,
-  Table2,
-  FileText,
-  Key,
+  CirclePlus,
+  Clock,
+  Code2,
+  Cog,
   Columns,
-  Settings,
-  X,
+  Compass,
+  Copy,
+  Database,
+  FileCode,
+  FileDown,
+  FileEdit,
+  FileText,
   Folder,
   FolderOpen,
-  Cog,
-  Code2,
   History,
-  Clock,
-  Search,
-  Compass,
+  Key,
+  List,
+  Network,
+  Pencil,
+  Play,
   Plus,
+  PowerOff,
   RefreshCw,
+  RotateCw,
+  Search,
+  Server,
+  Settings,
+  Table2,
+  Trash2,
+  X,
   ChevronsUp,
 } from 'lucide-vue-next';
 import ConfirmModal from '@/components/common/ConfirmModal.vue';
@@ -1345,7 +1357,7 @@ const objectMenuItems = computed(() => {
   const items: any[] = [
     {
       label: t('sidebar.copyName'),
-      icon: 'pi pi-copy',
+      icon: Copy,
       command: () => copyName(contextMenu.tableName),
     },
     { separator: true },
@@ -1353,25 +1365,25 @@ const objectMenuItems = computed(() => {
   if (isTable || isView) {
     items.push({
       label: isTable ? t('sidebar.openData') : t('sidebar.openViewData'),
-      icon: 'pi pi-table',
+      icon: Table2,
       command: handleOpenData,
     });
     items.push({
       label: t('sidebar.tableStructure'),
-      icon: 'pi pi-list',
+      icon: List,
       command: handleOpenStructure,
     });
   }
   if (isTable) {
     items.push({
       label: t('sidebar.erModel'),
-      icon: 'pi pi-sitemap',
+      icon: Network,
       command: () => handleOpenErDiagram(2),
     });
     if (workspaceStore.activeTab?.type === 'er_diagram') {
       items.push({
         label: t('sidebar.addToCurrentEr'),
-        icon: 'pi pi-plus-circle',
+        icon: CirclePlus,
         command: handleAddToCurrentErDiagram,
       });
     }
@@ -1379,40 +1391,40 @@ const objectMenuItems = computed(() => {
   if (isTable || isView) {
     items.push({
       label: t('sidebar.generateSelect'),
-      icon: 'pi pi-file-edit',
+      icon: FileEdit,
       command: handleGenerateSelect,
     });
   }
   if (isTable) {
     items.push({
       label: t('sidebar.scriptCreate'),
-      icon: 'pi pi-file',
+      icon: FileText,
       command: handleGenerateCreateTableDdl,
     });
     items.push({
       label: t('sidebar.importTsv'),
-      icon: 'pi pi-upload',
+      icon: ArrowUpFromLine,
       command: handleTsvImport,
     });
   }
   if (isView || isProc || isFunc) {
     items.push({
       label: t('sidebar.viewDefinition'),
-      icon: 'pi pi-code',
+      icon: FileCode,
       command: () => handleViewDefinition(contextMenu.connId, contextMenu.database, contextMenu.schema, contextMenu.tableName),
     });
   }
   if (isProc) {
     items.push({
       label: t('sidebar.generateExec'),
-      icon: 'pi pi-play',
+      icon: Play,
       command: handleGenerateExec,
     });
   }
   if (isFunc) {
     items.push({
       label: t('sidebar.generateFuncSelect'),
-      icon: 'pi pi-file-edit',
+      icon: FileEdit,
       command: handleGenerateFuncSelect,
     });
   }
@@ -1430,17 +1442,17 @@ const connMenuItems = computed(() => {
     { separator: true },
     {
       label: t('sidebar.refresh'),
-      icon: 'pi pi-refresh',
+      icon: RefreshCw,
       command: () => handleRefreshConn(conn),
     },
     {
       label: t('sidebar.editConnection'),
-      icon: 'pi pi-pencil',
+      icon: Pencil,
       command: () => handleEditConn(conn),
     },
     {
       label: t('sidebar.duplicateConnection'),
-      icon: 'pi pi-copy',
+      icon: Copy,
       command: () => handleDuplicateConn(conn),
     },
   ];
@@ -1448,7 +1460,7 @@ const connMenuItems = computed(() => {
   if (connectionStore.activeConnectionId === conn.id && connectionStore.status === 'connected') {
     items.push({
       label: t('sidebar.disconnect'),
-      icon: 'pi pi-power-off',
+      icon: PowerOff,
       command: handleDisconnect,
     });
   }
@@ -1456,7 +1468,7 @@ const connMenuItems = computed(() => {
   items.push({ separator: true });
   items.push({
     label: t('sidebar.deleteConnection'),
-    icon: 'pi pi-trash',
+    icon: Trash2,
     class: '!text-danger',
     command: () => handlePromptDelete(conn),
   });
@@ -1509,12 +1521,12 @@ const dbMenuItems = computed(() => {
     { separator: true },
     {
       label: t('sidebar.exportDbSchemaCsv'),
-      icon: 'pi pi-file-export',
+      icon: FileDown,
       command: () => handleOpenExportSchemaModal(conn, db),
     },
     {
       label: t('sidebar.refreshObjects'),
-      icon: 'pi pi-refresh',
+      icon: RefreshCw,
       command: () => loadDatabaseTables(conn.id, db, true),
     },
   ];
@@ -1522,7 +1534,7 @@ const dbMenuItems = computed(() => {
   if (connectionStore.activeConnectionId !== conn.id || connectionStore.activeDatabase !== db) {
     items.push({
       label: t('sidebar.setAsCurrentDb'),
-      icon: 'pi pi-database',
+      icon: Database,
       command: async () => {
         if (connectionStore.activeConnectionId !== conn.id) {
           await connectionStore.connect(conn.id);
@@ -1543,7 +1555,7 @@ const columnContextMenu = reactive<{ columnName: string }>({
 const columnMenuItems = computed(() => [
   {
     label: t('sidebar.copyName'),
-    icon: 'pi pi-copy',
+    icon: Copy,
     command: () => copyName(columnContextMenu.columnName),
   },
 ]);

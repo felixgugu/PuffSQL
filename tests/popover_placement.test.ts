@@ -113,11 +113,12 @@ describe('popover placement', () => {
     assert.equal(isOpen.value, false);
   });
 
-  test('SqMenu accepts both lucide components and legacy pi-* icon names', () => {
+  test('SqMenu takes icons as components, not as icon-font class names', () => {
     const source = readFileSync(resolve(process.cwd(), 'src/components/ui/SqMenu.vue'), 'utf-8');
 
-    assert.match(source, /icon\?: Component \| string/, 'the item model accepts both');
-    assert.match(source, /typeof icon === 'string' \? piIcon\(icon\) : icon/, 'pi-* strings resolve through the map');
+    assert.match(source, /icon\?: Component;/, 'the item model carries a component');
+    assert.match(source, /<component :is="item\.icon"/, 'the item renders that component');
+    assert.doesNotMatch(source, /piIcon|piIcons|pi pi-/, 'the PrimeIcons vocabulary is gone');
     assert.match(source, /anchorRect/, 'pointer-anchored menus are supported');
   });
 });

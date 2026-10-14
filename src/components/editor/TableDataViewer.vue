@@ -3,7 +3,7 @@
     <!-- Subheader toolbar for Table Data -->
     <div class="h-8 bg-dark-850 border-b border-dark-700 flex items-center justify-between px-2 text-xs flex-shrink-0 space-x-2">
       <div class="flex items-center space-x-2 min-w-0">
-        <i class="pi pi-table text-ok text-xs flex-shrink-0"></i>
+        <Table2 class="w-3 h-3 text-ok flex-shrink-0" />
         <span class="font-semibold text-dark-100 truncate">{{ schema }}.{{ tableName }}</span>
         <span class="text-dark-600">|</span>
         <span class="text-dark-400 text-xxs flex-shrink-0">

@@ -15,7 +15,7 @@
     <!-- Top Header & Search Area -->
     <div class="sq-dialog-drag-handle p-3.5 border-b border-dark-700 bg-dark-900/80 flex flex-col space-y-2.5 flex-shrink-0">
       <div class="flex items-center space-x-2.5">
-        <i class="pi pi-book text-warn text-base flex-shrink-0"></i>
+        <Book class="w-4 h-4 text-warn flex-shrink-0" />
         <span class="text-sm font-semibold text-dark-100 flex items-center space-x-2">
           <span>{{ $t('sqlTemplates.title') }}</span>
           <SqChip :label="templateStore.allTemplates.length" tone="neutral" class="font-mono" />
@@ -195,7 +195,7 @@
           v-else
           class="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-2 text-dark-400"
         >
-          <i class="pi pi-search text-3xl text-dark-600 mb-1"></i>
+          <Search class="w-5 h-5 text-dark-600 mb-1" />
           <span class="text-xs text-dark-300 font-medium">{{ $t('sqlTemplates.notFound') }}</span>
           <span class="text-xxs text-dark-500 max-w-xs">
             {{ $t('sqlTemplates.notFoundSub') }}
@@ -302,7 +302,7 @@
             <!-- Usage Notes / Description Card -->
             <div class="p-3 bg-dark-800/80 border border-dark-700/80 rounded-lg text-dark-300 text-xs leading-relaxed space-y-1.5">
               <div class="flex items-center space-x-1.5 font-semibold text-warn text-xxs uppercase tracking-wider">
-                <i class="pi pi-info-circle text-xs"></i>
+                <Info class="w-3 h-3"></Info>
                 <span>{{ $t('sqlTemplates.usageNotes') }}</span>
               </div>
               <div class="text-dark-200">
@@ -341,7 +341,7 @@
           v-else
           class="flex-1 flex flex-col items-center justify-center p-8 text-center text-dark-500 space-y-2"
         >
-          <i class="pi pi-book text-4xl text-dark-700"></i>
+          <Book class="w-6 h-6 text-dark-700"></Book>
           <span class="text-xs text-dark-400">{{ $t('sqlTemplates.noSelection') }}</span>
         </div>
       </div>
@@ -352,7 +352,7 @@
       <!-- Left: Co-located File Information -->
       <div class="flex items-center space-x-2 min-w-0 flex-1 mr-4">
         <span class="flex items-center space-x-1 text-dark-400 flex-shrink-0">
-          <i class="pi pi-file text-accent text-xs"></i>
+          <FileText class="w-3 h-3 text-accent"></FileText>
           <span>{{ $t('sqlTemplates.customDocLabel') }}</span>
         </span>
         <span
@@ -491,9 +491,12 @@ import SqChip, { type SqChipTone } from '@/components/ui/SqChip.vue';
 import {
   ArrowDownLeft,
   ArrowUpRight,
+  Book,
   Check,
   Copy,
+  FileText,
   FolderOpen,
+  Info,
   Pencil,
   Plus,
   RefreshCw,

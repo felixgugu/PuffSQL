@@ -73,7 +73,7 @@
             class="w-full flex items-center justify-between px-3 py-2 text-xxs text-dark-400 hover:text-dark-200 hover:bg-dark-800/60 transition-colors"
           >
             <span class="flex items-center space-x-1.5">
-              <i class="pi pi-code text-xs text-accent" />
+              <FileCode class="w-3 h-3 text-accent" />
               <span>{{ $t('exportSchemaModal.viewSql') }}</span>
             </span>
             <i :class="['pi text-xxs transition-transform duration-200', showSqlPreview ? 'pi-chevron-down' : 'pi-chevron-right']" />
@@ -92,7 +92,7 @@
       <template v-else-if="step === 'running'">
         <div class="space-y-3">
           <div class="flex items-center space-x-2 text-dark-300 text-xs py-1">
-            <i class="pi pi-spin pi-spinner text-accent" />
+            <Loader2 class="w-3.5 h-3.5 animate-spin text-accent" />
             <span>{{ $t('exportSchemaModal.querying') }}</span>
           </div>
 
@@ -116,17 +116,17 @@
                 <div class="flex items-center space-x-2.5">
                   <!-- Status Icon -->
                   <div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0">
-                    <i
+                    <Loader2
                       v-if="item.status === 'running'"
-                      class="pi pi-spin pi-spinner text-accent text-xs"
+                      class="w-3 h-3 animate-spin text-accent"
                     />
-                    <i
+                    <Check
                       v-else-if="item.status === 'success'"
-                      class="pi pi-check text-ok text-xs font-bold"
+                      class="w-3 h-3 text-ok"
                     />
-                    <i
+                    <X
                       v-else-if="item.status === 'error'"
-                      class="pi pi-times text-danger text-xs font-bold"
+                      class="w-3 h-3 text-danger"
                     />
                     <span
                       v-else
@@ -179,7 +179,7 @@
       <template v-else-if="step === 'save_prompt'">
         <div class="space-y-3.5">
           <div class="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg flex items-center space-x-2.5">
-            <i class="pi pi-check-circle text-ok text-lg flex-shrink-0" />
+            <CircleCheck class="w-4 h-4 text-ok flex-shrink-0" />
             <div class="text-xs text-ok">
               <span class="font-semibold">{{ $t('exportSchemaModal.successTitle') }}</span>
               <span class="text-xxs text-ok block mt-0.5">
@@ -232,7 +232,7 @@
           <!-- Save Options Box -->
           <div class="p-3 bg-dark-850 rounded-lg border border-dark-750 space-y-2.5">
             <div class="text-xs font-semibold text-dark-200 flex items-center space-x-1.5">
-              <i class="pi pi-folder-open text-accent" />
+              <FolderOpen class="w-3.5 h-3.5 text-accent" />
               <span>{{ $t('exportSchemaModal.chooseSaveMode') }}</span>
             </div>
 
@@ -245,7 +245,7 @@
                 class="flex flex-col items-start p-3 rounded-lg border border-brand-500/40 bg-brand-500/10 hover:bg-brand-500/20 text-left transition-colors group cursor-pointer"
               >
                 <div class="flex items-center space-x-2 text-accent font-semibold text-xs mb-1">
-                  <i class="pi pi-folder text-sm text-accent group-hover:scale-110 transition-transform" />
+                  <Folder class="w-3.5 h-3.5 text-accent group-hover:scale-110 transition-transform" />
                   <span>{{ $t('exportSchemaModal.saveFolderTitle') }}</span>
                 </div>
                 <div class="text-xxs text-dark-300 leading-normal">
@@ -261,7 +261,7 @@
                 class="flex flex-col items-start p-3 rounded-lg border border-dark-700 bg-dark-900/80 hover:bg-dark-800 text-left transition-colors group cursor-pointer"
               >
                 <div class="flex items-center space-x-2 text-dark-200 font-semibold text-xs mb-1">
-                  <i class="pi pi-file text-sm text-dark-400 group-hover:scale-110 transition-transform" />
+                  <FileText class="w-3.5 h-3.5 text-dark-400 group-hover:scale-110 transition-transform" />
                   <span>{{ $t('exportSchemaModal.saveCombinedTitle') }}</span>
                 </div>
                 <div class="text-xxs text-dark-400 leading-normal">
@@ -271,7 +271,7 @@
             </div>
 
             <div class="text-xxs text-dark-400 flex items-center space-x-1 pt-1">
-              <i class="pi pi-info-circle text-[11px] text-dark-500" />
+              <Info class="w-3 h-3 text-dark-500" />
               <span>{{ $t('exportSchemaModal.utf8BomNotice') }}</span>
             </div>
           </div>
@@ -282,7 +282,7 @@
       <template v-else-if="step === 'completed'">
         <div class="space-y-4 text-center py-2">
           <div class="w-12 h-12 rounded-full bg-emerald-500/20 text-ok flex items-center justify-center mx-auto ring-4 ring-emerald-500/10">
-            <i class="pi pi-check text-2xl font-bold" />
+            <Check class="w-6 h-6" />
           </div>
 
           <div class="space-y-1">
@@ -300,7 +300,7 @@
               class="flex items-center justify-between text-xs font-mono py-1 px-1.5 rounded hover:bg-dark-800/60"
             >
               <div class="flex items-center space-x-2 text-dark-200 truncate">
-                <i class="pi pi-file-excel text-ok text-xs flex-shrink-0" />
+                <FileSpreadsheet class="w-3 h-3 text-ok flex-shrink-0" />
                 <span class="truncate">{{ file.fileName }}</span>
               </div>
               <span class="text-xxs text-dark-400 flex-shrink-0 ml-2">
@@ -316,7 +316,7 @@
           <!-- Comparison Tip Box -->
           <div class="text-left bg-dark-850 p-2.5 rounded border border-dark-750 text-xxs text-dark-300 space-y-1 leading-relaxed">
             <div class="font-semibold text-accent flex items-center space-x-1">
-              <i class="pi pi-lightbulb text-warn" />
+              <Lightbulb class="w-3.5 h-3.5 text-warn" />
               <span>{{ $t('exportSchemaModal.diffTipsTitle') }}</span>
             </div>
             <div v-html="$t('exportSchemaModal.diffTipsDesc')">
@@ -398,7 +398,24 @@ import { ref, reactive, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import SqDialog from '@/components/ui/SqDialog.vue';
 import SqButton from '@/components/ui/SqButton.vue';
-import { Check, Download, FileDown, Play, RefreshCw, RotateCcw } from 'lucide-vue-next';
+import {
+  Check,
+  CircleCheck,
+  Download,
+  FileCode,
+  FileDown,
+  FileSpreadsheet,
+  FileText,
+  Folder,
+  FolderOpen,
+  Info,
+  Lightbulb,
+  Loader2,
+  Play,
+  RefreshCw,
+  RotateCcw,
+  X,
+} from 'lucide-vue-next';
 import { queryService } from '@/services/queryService';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useDialogWindow } from '@/composables/useDialogWindow';

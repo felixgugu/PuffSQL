@@ -10,8 +10,8 @@
     >
       <!-- 動畫指示圖示 -->
       <div class="relative flex items-center justify-center">
-        <i
-          class="pi pi-sparkles text-sm text-primary transition-transform"
+        <Sparkles
+          class="w-3.5 h-3.5 text-primary transition-transform"
           :class="{ 'animate-spin': aiChatStore.isGenerating }"
         />
         <span
@@ -76,7 +76,7 @@
 
 <script setup lang="ts">
 import SqButton from '@/components/ui/SqButton.vue';
-import { CircleStop, SquarePlus, X } from 'lucide-vue-next';
+import { CircleStop, Sparkles, SquarePlus, X } from 'lucide-vue-next';
 import SqChip from '@/components/ui/SqChip.vue';
 import { useAiChatStore } from '@/stores/aiChatStore';
 

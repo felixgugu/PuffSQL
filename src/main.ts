@@ -9,7 +9,6 @@ import PrimeVue from 'primevue/config';
 import Aura from '@primevue/themes/aura';
 import ConfirmationService from 'primevue/confirmationservice';
 import Ripple from 'primevue/ripple';
-import 'primeicons/primeicons.css';
 
 import tooltip from './directives/tooltip';
 

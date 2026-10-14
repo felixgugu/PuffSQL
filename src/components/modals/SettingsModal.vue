@@ -118,7 +118,10 @@
             >
               <div class="flex items-center justify-between w-full mb-1">
                 <span class="font-semibold text-xs text-dark-100">{{ preset.label }}</span>
-                <i v-if="settingsStore.themePreset === preset.id" class="pi pi-check-circle text-accent text-xs" />
+                <CircleCheck
+                  v-if="settingsStore.themePreset === preset.id"
+                  class="w-3 h-3 text-accent"
+                />
               </div>
               <span class="text-[11px] text-dark-400 leading-snug">{{ preset.desc }}</span>
             </button>
@@ -150,9 +153,9 @@
                 class="w-4.5 h-4.5 rounded-full flex-shrink-0 flex items-center justify-center text-white text-xxs shadow-xs"
                 :style="{ backgroundColor: color.color }"
               >
-                <i
+                <Check
                   v-if="settingsStore.primaryColor === color.name"
-                  class="pi pi-check"
+                  class="w-3.5 h-3.5"
                   :style="{ color: pickReadableTextColor(color.color) }"
                 />
               </div>
@@ -184,7 +187,10 @@
             >
               <div class="flex items-center justify-between w-full">
                 <span class="text-xxs font-semibold truncate">{{ surface.label.split(' ')[0] }}</span>
-                <i v-if="settingsStore.surfaceColor === surface.name" class="pi pi-check-circle text-accent text-xxs" />
+                <CircleCheck
+                  v-if="settingsStore.surfaceColor === surface.name"
+                  class="w-3 h-3 text-accent"
+                />
               </div>
               <div class="flex items-center space-x-1">
                 <div
@@ -219,7 +225,7 @@
         <div class="space-y-2 p-3.5 rounded-lg border border-dark-750 bg-dark-900/80">
           <div class="flex items-center justify-between">
             <span class="text-xs font-semibold text-dark-200 flex items-center space-x-1.5">
-              <i class="pi pi-eye text-accent" />
+              <Eye class="w-3.5 h-3.5 text-accent" />
               <span>{{ $t('settingsModal.livePreview') }}</span>
             </span>
             <span class="text-xxs text-dark-400">{{ $t('settingsModal.livePreviewDesc') }}</span>
@@ -461,7 +467,7 @@
             <!-- Group 1: 查詢執行與中斷 -->
             <div class="bg-dark-900 p-2.5 rounded border border-dark-800 space-y-2">
               <div class="text-[11px] font-semibold text-ok flex items-center space-x-1.5 pb-1 border-b border-dark-800">
-                <i class="pi pi-play text-xs"></i>
+                <Play class="w-3 h-3"></Play>
                 <span>{{ $t('settingsModal.shortcutGroupRun') }}</span>
               </div>
               <div class="flex justify-between items-center py-0.5">
@@ -481,7 +487,7 @@
             <!-- Group 2: 分頁與檔案操作 -->
             <div class="bg-dark-900 p-2.5 rounded border border-dark-800 space-y-2">
               <div class="text-[11px] font-semibold text-info flex items-center space-x-1.5 pb-1 border-b border-dark-800">
-                <i class="pi pi-folder text-xs"></i>
+                <Folder class="w-3 h-3"></Folder>
                 <span>{{ $t('settingsModal.shortcutGroupTabs') }}</span>
               </div>
               <div class="flex justify-between items-center py-0.5">
@@ -501,7 +507,7 @@
             <!-- Group 3: 編輯器輔助與格式化 -->
             <div class="bg-dark-900 p-2.5 rounded border border-dark-800 space-y-2">
               <div class="text-[11px] font-semibold text-warn flex items-center space-x-1.5 pb-1 border-b border-dark-800">
-                <i class="pi pi-code text-xs"></i>
+                <FileCode class="w-3 h-3"></FileCode>
                 <span>{{ $t('settingsModal.shortcutGroupEditor') }}</span>
               </div>
               <div class="flex justify-between items-center py-0.5">
@@ -529,7 +535,7 @@
             <!-- Group 4: 檢索、結果與圖表 -->
             <div class="bg-dark-900 p-2.5 rounded border border-dark-800 space-y-2">
               <div class="text-[11px] font-semibold text-er flex items-center space-x-1.5 pb-1 border-b border-dark-800">
-                <i class="pi pi-search text-xs"></i>
+                <Search class="w-3 h-3"></Search>
                 <span>{{ $t('settingsModal.shortcutGroupExplore') }}</span>
               </div>
               <div class="flex justify-between items-center py-0.5">
@@ -582,7 +588,21 @@ import { useI18n } from 'vue-i18n';
 import appIcon from '../../../src-tauri/icons/64x64.png';
 import SqDialog from '@/components/ui/SqDialog.vue';
 import SqButton from '@/components/ui/SqButton.vue';
-import { Check, FileCode, Filter, Info, Palette, Settings, Sparkles, Table2 } from 'lucide-vue-next';
+import {
+  Check,
+  CircleCheck,
+  Eye,
+  FileCode,
+  Filter,
+  Folder,
+  Info,
+  Palette,
+  Play,
+  Search,
+  Settings,
+  Sparkles,
+  Table2,
+} from 'lucide-vue-next';
 import SqSelect from '@/components/ui/SqSelect.vue';
 import SqSegmented from '@/components/ui/SqSegmented.vue';
 import SqSwitch from '@/components/ui/SqSwitch.vue';

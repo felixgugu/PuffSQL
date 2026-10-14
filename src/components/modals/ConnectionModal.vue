@@ -20,7 +20,7 @@
       <!-- Quick Environment Preset Ribbon -->
       <div class="flex items-center justify-between px-3 py-2 rounded-xl bg-dark-850/60 border border-dark-750/70">
         <span class="text-xxs font-medium text-dark-400 flex items-center gap-1.5">
-          <i class="pi pi-sparkles text-accent text-xxs" />
+          <Sparkles class="w-3 h-3 text-accent" />
           環境快速範本
         </span>
         <div class="flex items-center space-x-1.5">
@@ -47,7 +47,7 @@
       <div class="rounded-xl bg-dark-850/50 border border-dark-750/80 p-3.5 space-y-3 transition-colors hover:border-dark-700">
         <div class="flex items-center justify-between text-xs font-semibold text-dark-200">
           <div class="flex items-center space-x-1.5">
-            <i class="pi pi-server text-accent text-xs" />
+            <Database class="w-3 h-3 text-accent" />
             <span>{{ $t('connectionModal.serverAndDatabase') }}</span>
           </div>
           <span class="text-xxs font-medium text-dark-500 font-mono">* 為必填欄位</span>
@@ -121,7 +121,7 @@
       <!-- Section 2: Authentication Card -->
       <div class="rounded-xl bg-dark-850/50 border border-dark-750/80 p-3.5 space-y-3 transition-colors hover:border-dark-700">
         <div class="flex items-center space-x-1.5 text-xs font-semibold text-dark-200">
-          <i class="pi pi-lock text-accent text-xs" />
+          <Lock class="w-3 h-3 text-accent" />
           <span>{{ $t('connectionModal.authLegend') }}</span>
         </div>
 
@@ -162,7 +162,7 @@
       <!-- Section 3: Security & Appearance Card -->
       <div class="rounded-xl bg-dark-850/50 border border-dark-750/80 p-3.5 space-y-3 transition-colors hover:border-dark-700">
         <div class="flex items-center space-x-1.5 text-xs font-semibold text-dark-200">
-          <i class="pi pi-shield text-accent text-xs" />
+          <ShieldCheck class="w-3 h-3 text-accent" />
           <span>{{ $t('connectionModal.securityLegend') }}</span>
         </div>
 
@@ -284,9 +284,9 @@
               : 'bg-rose-500/10 border-rose-500/30 text-rose-400'
           ]"
         >
-          <i
-            class="mt-0.5 text-sm flex-shrink-0"
-            :class="testResult.success ? 'pi pi-check-circle text-emerald-400' : 'pi pi-times-circle text-rose-400'"
+          <component
+            :is="testResult.success ? CircleCheck : CircleX"
+            class="mt-0.5 w-3.5 h-3.5 flex-shrink-0"
           />
           <div class="flex-1 min-w-0">
             <span class="font-semibold block text-xs">
@@ -341,7 +341,7 @@ import { reactive, ref, watch, computed } from 'vue';
 import SqDialog from '@/components/ui/SqDialog.vue';
 import { useDialogWindow } from '@/composables/useDialogWindow';
 import SqInput from '@/components/ui/SqInput.vue';
-import { Database, Eye, EyeOff } from 'lucide-vue-next';
+import { CircleCheck, CircleX, Database, Eye, EyeOff, Lock, ShieldCheck, Sparkles } from 'lucide-vue-next';
 import SqSwitch from '@/components/ui/SqSwitch.vue';
 import SqCheckbox from '@/components/ui/SqCheckbox.vue';
 import SqButton from '@/components/ui/SqButton.vue';

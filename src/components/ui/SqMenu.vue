@@ -25,7 +25,7 @@
           :data-menu-index="index"
           @click="select(item)"
         >
-          <component :is="resolveIcon(item.icon)" v-if="item.icon" class="w-3.5 h-3.5 flex-shrink-0" />
+          <component :is="item.icon" v-if="item.icon" class="w-3.5 h-3.5 flex-shrink-0" />
           <span class="truncate">{{ item.label }}</span>
         </button>
       </template>
@@ -36,16 +36,12 @@
 <script setup lang="ts">
 import { computed, ref, watch, nextTick, type Component } from 'vue';
 import SqPopover from '@/components/ui/SqPopover.vue';
-import { piIcon } from '@/components/ui/piIcons';
 import type { RectLike } from '@/utils/popoverPlacement';
 
 export interface SqMenuItem {
   label?: string;
-  /**
-   * Prefer passing a lucide component. PrimeIcons class names (`pi pi-pencil`) still resolve
-   * through `piIcons`, so menu models written before the migration keep working.
-   */
-  icon?: Component | string;
+  /** A lucide component. Menu models are data, so the icon travels as a component reference. */
+  icon?: Component;
   separator?: boolean;
   disabled?: boolean;
   /** Renders in the danger tone: destructive commands must not look like the default action. */
@@ -84,11 +80,6 @@ const resolvedAnchor = computed(() => {
   if (!rect) return null;
   return { getBoundingClientRect: () => rect };
 });
-
-function resolveIcon(icon: Component | string | undefined): Component | undefined {
-  if (!icon) return undefined;
-  return typeof icon === 'string' ? piIcon(icon) : icon;
-}
 
 function enabledItems(): HTMLButtonElement[] {
   const nodes = listRef.value?.querySelectorAll<HTMLButtonElement>('button[role="menuitem"]');

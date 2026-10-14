@@ -3,7 +3,7 @@
     <!-- Header & Notice -->
     <div class="bg-dark-900 border border-dark-750 p-3.5 rounded space-y-1">
       <div class="flex items-center space-x-2">
-        <i class="pi pi-eye-slash text-accent text-sm"></i>
+        <EyeOff class="w-3.5 h-3.5 text-accent" />
         <span class="font-semibold text-dark-100 text-xs">物件過濾規則 (Database & Table Filter Rules)</span>
       </div>
       <p class="text-xxs text-dark-400 leading-relaxed">
@@ -69,7 +69,7 @@
         </div>
       </div>
       <div v-if="patternError" class="text-danger text-xxs flex items-center space-x-1">
-        <i class="pi pi-exclamation-triangle text-xs flex-shrink-0"></i>
+        <TriangleAlert class="w-3 h-3 flex-shrink-0" />
         <span>{{ patternError }}</span>
       </div>
     </div>
@@ -162,7 +162,7 @@
               </div>
             </div>
             <div v-if="editPatternError" class="text-danger text-xxs flex items-center space-x-1">
-              <i class="pi pi-exclamation-triangle text-xs flex-shrink-0"></i>
+              <TriangleAlert class="w-3 h-3 flex-shrink-0" />
               <span>{{ editPatternError }}</span>
             </div>
           </div>
@@ -236,7 +236,7 @@
     <div class="bg-dark-900 border border-dark-800 rounded p-3 space-y-2">
       <div class="flex items-center justify-between">
         <span class="text-xxs font-medium text-dark-300 flex items-center space-x-1.5">
-          <i class="pi pi-filter text-warn text-xs"></i>
+          <Filter class="w-3 h-3 text-warn" />
           <span>即時比對測試器 (Live Tester)</span>
         </span>
         <span class="text-xxs text-dark-500">測試特定資料庫或資料表是否會被隱藏</span>
@@ -287,7 +287,7 @@ import { ref, computed } from 'vue';
 import SqSelect from '@/components/ui/SqSelect.vue';
 import SqInput from '@/components/ui/SqInput.vue';
 import SqButton from '@/components/ui/SqButton.vue';
-import { Check, Pencil, Plus, Trash2, X } from 'lucide-vue-next';
+import { Check, Filter, Pencil, Plus, Trash2, TriangleAlert, X } from 'lucide-vue-next';
 import SqCheckbox from '@/components/ui/SqCheckbox.vue';
 import { Eye, EyeOff } from 'lucide-vue-next';
 import SqChip from '@/components/ui/SqChip.vue';

@@ -28,7 +28,6 @@
     "marked": "^18.0.13",
     "monaco-editor": "^0.56.0",
     "pinia": "^3.0.1",
-    "primeicons": "^7.0.0",
     "primevue": "^4.5.5",
     "sql-formatter": "^15.8.2",
     "tabulator-tables": "^6.5.3",

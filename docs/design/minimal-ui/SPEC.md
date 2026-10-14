@@ -325,6 +325,18 @@ WCAG 1.4.11 的豁免）；分隔步 `#64748B` 對畫布 4.76:1；focus 指示�
   （原本的單槽 `activeToast` 會被後一則蓋掉）；`App.vue` 的 toast 中繼 watcher 因此刪除。
   `main.css` 已無任何 `.p-*` 選擇器，`!important` 降到 128 個。
 
+- **P3／P8 圖示完成（2026-10-15）。** 全站 `pi pi-*` 歸零：72 個 `<i class="pi …">` 標記改成
+  lucide 元件（尺寸依 SPEC §8 的 12／14／16／20 就近換算，例如 `text-xs`→`w-3 h-3`、
+  空狀態的 `text-3xl`／`text-4xl` 收斂為 `w-5 h-5`／`w-6 h-6`），36 個選單模型的 `icon: 'pi pi-…'`
+  改成元件參考；`src/components/ui/piIcons.ts` 與 `SqMenu` 的字串圖示分支一併刪除
+  （`SqMenuItem.icon` 現在只接受元件）。`primeicons` 已從 `main.ts` 與 `package.json` 移除。
+  **產物不再有 284KB 的圖示字型**；CSS 140.6 → 131.2 KB、主 JS 2,640（P0 基線）→ 2,132 KB。
+
+- 補充：P6 的 tooltip 指令在截圖複查時發現一個真實缺陷——對話框開啟時會程式化聚焦第一個控制項，
+  而 focus 事件會立刻顯示提示，於是每個對話框一出現就在關閉鈕上冒出「關閉」提示。已加上鍵鼠模態
+  追蹤：只有鍵盤造成的 focus（Tab）才顯示提示。這件事是靠 headless 實拍與 DOM 傾印發現的，
+  測試與型別檢查都不會抓到。
+
 - [ ] 全站只有一個操作藍 `#2E6F9E`（及其 hover／tint），沒有第二個彩色 CTA。
 - [ ] 淺色為預設：畫布白、外框淺灰、深灰文字；深色為配對變體且對比另行驗證。
 - [ ] 面板與工具列沒有任何陰影；陰影只出現在選單／對話框／tooltip／toast。
@@ -332,7 +344,7 @@ WCAG 1.4.11 的豁免）；分隔步 `#64748B` 對畫布 4.76:1；focus 指示�
 - [ ] 所有數字欄位使用 tabular-nums；SQL 與資料值使用等寬字。
 - [ ] 資料列高 24px、控制項 24–32px、工具列 36px，符合密度表。
 - [ ] 訊息等級、連線狀態、欄位錯誤都有顏色以外的第二指示。
-- [ ] 移除 PrimeIcons 後每個圖示都有等義的 lucide 圖示，且純圖示按鈕具備 `aria-label`。
+- [x] 移除 PrimeIcons 後每個圖示都有等義的 lucide 圖示，且純圖示按鈕具備 `aria-label`。
 - [ ] focus 在淺色與深色都清楚可見（2px `--accent`）。
 - [ ] `prefers-reduced-motion: reduce` 下無位移／淡入動畫。
 - [ ] 文案為繁體中文且 SQL／資料庫術語保留英文（見 §9 對照）。

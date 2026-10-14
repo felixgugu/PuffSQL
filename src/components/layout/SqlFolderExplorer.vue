@@ -295,7 +295,11 @@ import SqDialog from '@/components/ui/SqDialog.vue';
 import SqMenu from '@/components/ui/SqMenu.vue';
 import { useContextMenu } from '@/composables/useContextMenu';
 import {
+  Copy,
+  EyeOff,
+  FileEdit,
   FolderGit2,
+  Pencil,
   RotateCw,
   Folder,
   FolderOpen,
@@ -424,7 +428,7 @@ const contextMenuItems = computed(() => {
 
   const copyPathItem = {
     label: t('sidebar.copyFullPath'),
-    icon: 'pi pi-copy',
+    icon: Copy,
     command: () => {
       try {
         navigator.clipboard.writeText(target.path);
@@ -434,13 +438,13 @@ const contextMenuItems = computed(() => {
 
   const renameMenuItem = {
     label: t('sidebar.rename'),
-    icon: 'pi pi-pencil',
+    icon: Pencil,
     command: () => openRenameModal(target),
   };
 
   const unmonitorMenuItem = {
     label: t('sidebar.unmonitor'),
-    icon: 'pi pi-eye-slash',
+    icon: EyeOff,
     class: '!text-danger',
     command: () => sqlFolderStore.unmonitorItem(target.path, target.name, target.isRoot),
   };
@@ -454,7 +458,7 @@ const contextMenuItems = computed(() => {
       { separator: true },
       {
         label: t('sidebar.refreshThisFolder'),
-        icon: 'pi pi-refresh',
+        icon: RefreshCw,
         command: () => {
           if (target.isRoot) {
             sqlFolderStore.refreshFolder(target.path);
@@ -478,7 +482,7 @@ const contextMenuItems = computed(() => {
     { separator: true },
     {
       label: t('sidebar.openInEditor'),
-      icon: 'pi pi-file-edit',
+      icon: FileEdit,
       command: () => {
         if (target.rawNode) {
           sqlFolderStore.openFile(target.rawNode);

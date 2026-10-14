@@ -242,7 +242,7 @@ import { useI18n } from 'vue-i18n';
 import SqButton from '@/components/ui/SqButton.vue';
 import SqMenu from '@/components/ui/SqMenu.vue';
 import { useContextMenu } from '@/composables/useContextMenu';
-import { CopyPlus, Minus, Pin, Wrench, X } from 'lucide-vue-next';
+import { Bookmark, BookmarkCheck, CopyPlus, Minus, Pencil, Pin, Wrench, X } from 'lucide-vue-next';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useQueryStore } from '@/stores/queryStore';
 import { useSettingsStore } from '@/stores/settingsStore';
@@ -463,23 +463,23 @@ const tabContextMenuItems = computed(() => {
     { separator: true },
     {
       label: t('editor.renameTab'),
-      icon: 'pi pi-pencil',
+      icon: Pencil,
       command: handleContextMenuRename,
     },
     {
       label: tab.isPinned ? t('common.unpin') : t('results.pinTab'),
-      icon: tab.isPinned ? 'pi pi-bookmark-fill' : 'pi pi-bookmark',
+      icon: tab.isPinned ? BookmarkCheck : Bookmark,
       command: handleContextMenuPin,
     },
     {
       label: t('results.closeTab'),
-      icon: 'pi pi-times',
+      icon: X,
       disabled: queryStore.resultTabs.length <= 1,
       command: handleContextMenuClose,
     },
     {
       label: t('results.closeOtherTabs'),
-      icon: 'pi pi-clone',
+      icon: CopyPlus,
       disabled: otherClosableCount === 0,
       command: handleContextMenuCloseOthers,
     },

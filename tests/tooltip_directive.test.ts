@@ -47,6 +47,10 @@ describe('the shared tooltip directive (replaces primevue/tooltip)', () => {
     assert.match(directive, /addEventListener\('pointerenter', onEnter\)/);
     assert.match(directive, /addEventListener\('pointerleave', onLeave\)/);
     assert.match(directive, /addEventListener\('focus', onFocus\)/, 'keyboard users get the hint');
+    // A dialog focuses its first control programmatically; that must not pop a "close" tooltip.
+    assert.match(directive, /if \(keyboardNavigation\) show\(el\);/);
+    assert.match(directive, /addEventListener\('keydown', \(\) => \{ keyboardNavigation = true; \}, true\)/);
+    assert.match(directive, /addEventListener\('pointerdown', \(\) => \{ keyboardNavigation = false; \}, true\)/);
     assert.match(directive, /addEventListener\('blur', onBlur\)/);
     assert.match(directive, /addEventListener\('pointerdown', onActivate\)/);
     assert.match(directive, /removeEventListener\('pointerenter', onEnter\)/, 'every listener is removed');
