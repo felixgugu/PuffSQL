@@ -75,6 +75,8 @@ test('newly added tabs are placed sequentially (oldest -> newest, appended to th
 
 test('queryExecutionSeq increments sequentially and titles follow $SEQ.$Tabname', async () => {
   const store = useQueryStore();
+  // These assertions cover the accumulate path, which is now opt-in (off by default).
+  useSettingsStore().accumulateResultTabs = true;
 
   queryService.executeQuery = async (_connId, _db, sql) => {
     const isOrders = sql.includes('Orders');
@@ -144,6 +146,8 @@ test('queryExecutionSeq increments sequentially and titles follow $SEQ.$Tabname'
 
 test('queryStore aggregates rowCount across multiple resultSets and adds [N sets] to tab title', async () => {
   const store = useQueryStore();
+  // These assertions cover the accumulate path, which is now opt-in (off by default).
+  useSettingsStore().accumulateResultTabs = true;
 
   // Multi-query with 2 result sets (18 and 27 rows)
   queryService.executeQuery = async () => {

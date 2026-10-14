@@ -121,6 +121,20 @@
             class="!w-6 !h-6 !p-0"
           />
 
+          <!-- Result tab retention: accumulate tabs vs. keep only pinned + the newest -->
+          <Button
+            type="button"
+            icon="pi pi-clone"
+            size="small"
+            rounded
+            text
+            :severity="settingsStore.accumulateResultTabs ? 'primary' : 'secondary'"
+            @click="toggleResultTabRetention"
+            :aria-label="settingsStore.accumulateResultTabs ? $t('results.singleResultTab') : $t('results.keepResultTabs')"
+            :v-tooltip.bottom="settingsStore.accumulateResultTabs ? $t('results.keepResultTabsTooltip') : $t('results.singleResultTabTooltip')"
+            class="!w-6 !h-6 !p-0"
+          />
+
           <div class="h-3.5 w-px bg-dark-750 mx-1 flex-shrink-0"></div>
         </template>
 
@@ -266,6 +280,14 @@ const isToolbarHidden = computed(() => {
 
 function toggleToolbarVisibility() {
   gridLayoutStore.toggleToolbarHidden(queryStore.activeResultTabId, toolbarDefaultHidden.value);
+}
+
+/**
+ * Flips the result tab retention mode. The query store watches the flag, so the pruning to
+ * "pinned + currently viewed tab" happens there and stays identical to the settings modal switch.
+ */
+function toggleResultTabRetention() {
+  settingsStore.accumulateResultTabs = !settingsStore.accumulateResultTabs;
 }
 
 const resultsTabsBarRef = ref<HTMLDivElement | null>(null);

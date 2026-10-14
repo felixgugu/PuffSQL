@@ -36,6 +36,11 @@ export interface AppSettings {
   editorTabSize: number;
   editorAutoCompletion: boolean;
   maxResultTabs: number;
+  /**
+   * Result tab retention mode. On: result tabs accumulate up to `maxResultTabs` and the oldest
+   * unpinned one is evicted. Off (default): only pinned tabs and the newest result tab survive.
+   */
+  accumulateResultTabs: boolean;
   defaultMaxRows: number | null;
   editorHighlightColor: string;
   /** PNG data URL painted behind the SQL editor, aligned to its bottom-right corner. */
@@ -74,6 +79,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   editorTabSize: 2,
   editorAutoCompletion: true,
   maxResultTabs: 10,
+  accumulateResultTabs: false,
   defaultMaxRows: 10000,
   editorHighlightColor: '#feffe0',
   editorBackgroundImage: '',
@@ -121,6 +127,7 @@ export const useSettingsStore = defineStore('settings', () => {
   const editorTabSize = ref<number>(initial.editorTabSize);
   const editorAutoCompletion = ref<boolean>(initial.editorAutoCompletion ?? true);
   const maxResultTabs = ref<number>(initial.maxResultTabs);
+  const accumulateResultTabs = ref<boolean>(initial.accumulateResultTabs ?? false);
   const defaultMaxRows = ref<number | null>(initial.defaultMaxRows);
   const editorHighlightColor = ref<string>(initial.editorHighlightColor || '#feffe0');
   const editorBackgroundImage = ref<string>(initial.editorBackgroundImage || '');
@@ -297,6 +304,7 @@ export const useSettingsStore = defineStore('settings', () => {
       editorTabSize: editorTabSize.value,
       editorAutoCompletion: editorAutoCompletion.value,
       maxResultTabs: maxResultTabs.value,
+      accumulateResultTabs: accumulateResultTabs.value,
       defaultMaxRows: defaultMaxRows.value,
       editorHighlightColor: editorHighlightColor.value,
       editorBackgroundImage: editorBackgroundImage.value,
@@ -332,6 +340,7 @@ export const useSettingsStore = defineStore('settings', () => {
       editorTabSize,
       editorAutoCompletion,
       maxResultTabs,
+      accumulateResultTabs,
       defaultMaxRows,
       editorHighlightColor,
       editorBackgroundImage,
@@ -363,6 +372,7 @@ export const useSettingsStore = defineStore('settings', () => {
     editorTabSize.value = DEFAULT_SETTINGS.editorTabSize;
     editorAutoCompletion.value = DEFAULT_SETTINGS.editorAutoCompletion;
     maxResultTabs.value = DEFAULT_SETTINGS.maxResultTabs;
+    accumulateResultTabs.value = DEFAULT_SETTINGS.accumulateResultTabs;
     defaultMaxRows.value = DEFAULT_SETTINGS.defaultMaxRows;
     editorHighlightColor.value = DEFAULT_SETTINGS.editorHighlightColor;
     editorBackgroundImage.value = DEFAULT_SETTINGS.editorBackgroundImage;
@@ -395,6 +405,7 @@ export const useSettingsStore = defineStore('settings', () => {
     editorTabSize,
     editorAutoCompletion,
     maxResultTabs,
+    accumulateResultTabs,
     defaultMaxRows,
     editorHighlightColor,
     editorBackgroundImage,

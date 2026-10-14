@@ -52,6 +52,7 @@ function saveStatsSetting(enabled: boolean) {
 }
 
 export const useQueryStore = defineStore('query', () => {
+  const settingsStore = useSettingsStore();
   const resultTabs = ref<QueryResultTab[]>([]);
   const activeResultTabId = ref<string | null>(null);
 
@@ -229,8 +230,39 @@ export const useQueryStore = defineStore('query', () => {
       resultTabs.value.splice(firstUnpinnedIdx, 0, newTab);
     }
     activeResultTabId.value = newTab.id;
-    enforceResultLimit();
+    applyResultTabRetention(newTab.id);
   }
+
+  /**
+   * Applies the result tab retention mode, keeping `keepId` as the surviving unpinned tab.
+   * With accumulation on the historical behaviour applies: tabs pile up to `maxResultTabs` and
+   * the oldest unpinned one is evicted. With it off (the default) only pinned tabs survive
+   * alongside the tab that was just produced.
+   */
+  function applyResultTabRetention(keepId: string) {
+    if (settingsStore.accumulateResultTabs) {
+      enforceResultLimit();
+    } else {
+      closeOtherResultTabs(keepId);
+    }
+  }
+
+  /** Keeps pinned tabs plus the tab the user is currently looking at. */
+  function pruneResultTabsToActive() {
+    const keepId = activeResultTabId.value ?? resultTabs.value[0]?.id ?? null;
+    if (!keepId) return;
+    closeOtherResultTabs(keepId);
+  }
+
+  // Switching the retention mode off prunes right away, whichever UI flipped it (the panel header
+  // button or the settings modal), so both entry points behave identically. Switching it back on
+  // needs no immediate work: accumulation resumes with the next execution.
+  watch(
+    () => settingsStore.accumulateResultTabs,
+    (accumulate) => {
+      if (!accumulate) pruneResultTabsToActive();
+    }
+  );
 
   async function execute(
     connectionId: string,
@@ -847,6 +879,7 @@ export const useQueryStore = defineStore('query', () => {
     reorderResultTabs,
     deleteResultTab,
     closeOtherResultTabs,
+    pruneResultTabsToActive,
     renameResultTab,
     clearResults,
     clearMessages,

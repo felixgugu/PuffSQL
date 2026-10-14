@@ -394,6 +394,17 @@
           />
         </div>
 
+        <!-- Result Tab Retention Mode -->
+        <div class="flex items-center justify-between pt-2 border-t border-dark-800">
+          <div class="pr-4">
+            <label class="font-medium text-dark-100 block">{{ $t('settingsModal.accumulateResultTabs') }}</label>
+            <span class="text-xxs text-dark-400">
+              {{ $t('settingsModal.accumulateResultTabsDesc') }}
+            </span>
+          </div>
+          <ToggleSwitch v-model="settingsStore.accumulateResultTabs" />
+        </div>
+
         <!-- Default Max Rows -->
         <div class="flex items-center justify-between pt-2 border-t border-dark-800">
           <div class="pr-4">
