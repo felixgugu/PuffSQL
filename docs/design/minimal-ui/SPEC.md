@@ -278,9 +278,15 @@ WCAG 1.4.11 的豁免）；分隔步 `#64748B` 對畫布 4.76:1；focus 指示�
   focus 指示統一為 2px 操作色 outline，勾選／開啟態用 `accent-color` 吃同一個操作色。
   過程中一併移除標籤內的 emoji 圖示、把動態 severity 改為動態 tone，並修掉 SqInput 自身
   width 規則壓過呼叫端工具類的問題。
-  仍待處理：**button(31 檔)**、dialog(10)、select(6)、contextmenu(4)，以及單檔使用的
-  toolbar／message／inputnumber／password／datatable／column／menu／popover
-  （見 PRIMEVUE-EVALUATION.md §3）。
+- 新增第 7 個原語 **`SqButton`**（三變體 × 五語意色 × 四高度、`#icon` slot、載入態與
+  `aria-pressed`），並新增 `src/components/ui/piIcons.ts` 作為 PrimeIcons→lucide 的單一對照表。
+  深色模式原本會讓實心填色與文字色共用 `--color-accent`（淺鋼藍），因此拆出
+  `--color-accent-fill`／`--color-accent-fill-hover`：**填色不算文字色，另以白字對填色的
+  4.5:1 驗證**。
+  **外殼（標題列、編輯器工具列、側邊欄、底部面板、分頁列）已全數改用 SqButton**；
+  仍待處理：results／editor 檢視器與對話框裡約 150 處 Button、dialog(10)、select(6)、
+  contextmenu(4)，以及單檔使用的 toolbar／message／inputnumber／password／datatable／column／
+  menu／popover（見 PRIMEVUE-EVALUATION.md §3）。
 
 - [ ] 全站只有一個操作藍 `#2E6F9E`（及其 hover／tint），沒有第二個彩色 CTA。
 - [ ] 淺色為預設：畫布白、外框淺灰、深灰文字；深色為配對變體且對比另行驗證。
