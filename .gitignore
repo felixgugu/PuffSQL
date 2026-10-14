@@ -16,6 +16,9 @@ src-tauri/gen
 # Agent scaffolding (local tooling, not part of the app)
 .agents/
 
+# Design-review scratch renders (regenerate with the command in docs/design/minimal-ui/README.md)
+.design-preview/
+
 # Editor & OS
 .vscode/*
 !.vscode/extensions.json
