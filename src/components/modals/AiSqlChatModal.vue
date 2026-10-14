@@ -329,7 +329,7 @@ import {
 } from 'lucide-vue-next';
 import SqTextarea from '@/components/ui/SqTextarea.vue';
 import SqChip from '@/components/ui/SqChip.vue';
-import { useToast } from 'primevue/usetoast';
+import { useToastStore } from '@/stores/toastStore';
 import { useAiChatStore } from '@/stores/aiChatStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { aiLoggerService } from '@/services/aiLoggerService';
@@ -340,7 +340,7 @@ import { useWindowResize } from '@/composables/useWindowResize';
 const { t } = useI18n();
 const aiChatStore = useAiChatStore();
 const workspaceStore = useWorkspaceStore();
-const toast = useToast();
+const toast = useToastStore();
 
 async function handleOpenAiLog() {
   try {

@@ -7,7 +7,6 @@ import './styles/tabulatorTheme.css';
 
 import PrimeVue from 'primevue/config';
 import Aura from '@primevue/themes/aura';
-import ToastService from 'primevue/toastservice';
 import ConfirmationService from 'primevue/confirmationservice';
 import Ripple from 'primevue/ripple';
 import 'primeicons/primeicons.css';
@@ -53,7 +52,6 @@ app.use(PrimeVue, {
     }
   }
 });
-app.use(ToastService);
 app.use(ConfirmationService);
 app.directive('tooltip', tooltip);
 app.directive('ripple', Ripple);

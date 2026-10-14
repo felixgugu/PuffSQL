@@ -526,80 +526,6 @@ html.dark .sq-tooltip {
 }
 
 /* ==========================================================================
-   PrimeVue Toast Notification Density & Typography (Compact Bottom-Right)
-   ========================================================================== */
-.p-toast {
-  width: 20rem !important; /* Compact 320px width instead of default 400px */
-  max-width: calc(100vw - 2rem) !important;
-  z-index: 12000 !important;
-}
-
-.p-toast-bottom-right {
-  bottom: 2rem !important; /* Float 32px above the 24px bottom status bar */
-  right: 1rem !important;  /* 16px from right edge */
-}
-
-.p-toast-message {
-  margin: 0 0 0.5rem 0 !important;
-  border-radius: 0.375rem !important;
-  border-width: 1px !important;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.35), 0 8px 10px -6px rgba(0, 0, 0, 0.35) !important;
-}
-
-.p-toast-message-content {
-  padding: 0.5rem 0.625rem !important; /* Compact 8px 10px */
-  gap: 0.5rem !important;
-  align-items: flex-start !important;
-}
-
-.p-toast-message-icon {
-  font-size: 0.875rem !important; /* 14px instead of 18px-24px */
-  width: 0.875rem !important;
-  height: 0.875rem !important;
-  margin-top: 0.125rem !important;
-  flex-shrink: 0 !important;
-}
-
-.p-toast-message-text {
-  gap: 0.125rem !important;
-  flex: 1 1 auto !important;
-  min-width: 0 !important;
-}
-
-.p-toast-summary {
-  font-size: 0.6875rem !important; /* 11px */
-  font-weight: 600 !important;
-  line-height: 1rem !important;
-}
-
-.p-toast-detail {
-  font-size: 0.6875rem !important; /* 11px */
-  line-height: 0.9375rem !important;
-  margin-top: 0 !important;
-  word-break: break-word !important;
-}
-
-/* Toast Close Button: Compact flat rounded rect without circular frame */
-.p-toast-close-button {
-  width: 1.25rem !important;
-  height: 1.25rem !important;
-  border-radius: 0.25rem !important;
-  border: none !important;
-  outline: none !important;
-  box-shadow: none !important;
-  margin: 0 !important;
-  right: 0 !important;
-  flex-shrink: 0 !important;
-  transition: background-color 0.15s ease !important;
-}
-
-.p-toast-close-icon {
-  font-size: 0.6875rem !important; /* 11px */
-  width: 0.6875rem !important;
-  height: 0.6875rem !important;
-}
-
-/* ==========================================================================
    AI SQL Chat Markdown HTML Body Styling (.ai-markdown-body)
    ========================================================================== */
 .ai-markdown-body {
@@ -899,8 +825,8 @@ html:not(.dark) .ai-markdown-table th {
    */
   .sq-dialog-enter-active,
   .sq-dialog-leave-active,
-  .p-toast-message-enter-active,
-  .p-toast-message-leave-active {
+  .sq-toast-item-enter-active,
+  .sq-toast-item-leave-active {
     transition-property: opacity !important;
     transition-duration: 120ms !important;
     transform: none !important;

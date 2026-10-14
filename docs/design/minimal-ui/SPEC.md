@@ -310,6 +310,21 @@ WCAG 1.4.11 的豁免）；分隔步 `#64748B` 對畫布 4.76:1；focus 指示�
   文字因而溢出按鈕方塊——先前只有內建圖示的按鈕看起來正常，所以 P4 的截圖與測試都沒抓到。
   現在 `iconOnly = !slots.default && !slots.label && !props.label?.length`。
 
+- **P6 Tooltip 已完成（2026-10-14）。** 自建 `v-tooltip` 指令（`src/directives/tooltip.ts`），
+  約 150 個使用點完全不需修改（沿用 PrimeVue 的 API：side 修飾詞、字串值、空字串＝不顯示）。
+  全站共用一個 `.sq-tooltip` 元素、400ms 延遲、focus 立即顯示、`pointerleave`／`blur`／按下即收；
+  定位用新增的 `placeTooltip`（`utils/popoverPlacement.ts`）置中與翻轉，並夾在視窗內。
+  樣式依 SPEC §7（`#1F2328` / `#F2F4F7` / 11px / 4px，無箭頭）。同時清掉 P5 之前 Select／
+  ContextMenu／Menu 遺留的 224 行死 CSS：`main.css` 由基線 1,246 行降到 938 行，
+  `!important` 由 300 個降到 168 個。
+
+- **P7a Toast 已完成（2026-10-14）。** 新增 `src/stores/toastStore.ts`（佇列、上限 4 張、
+  `life: 0` 表示常駐）與 `src/components/ui/SqToast.vue`（右下、3px 語意色條 + 圖示 + 標題摘要、
+  `--shadow-raised`、12px、`role="alert"` 用於錯誤、`aria-live="polite"` 其餘）。
+  `workspaceStore.showToast(message, type, duration)` 的簽名與 156 個呼叫點不變，內部改為推入佇列
+  （原本的單槽 `activeToast` 會被後一則蓋掉）；`App.vue` 的 toast 中繼 watcher 因此刪除。
+  `main.css` 已無任何 `.p-*` 選擇器，`!important` 降到 128 個。
+
 - [ ] 全站只有一個操作藍 `#2E6F9E`（及其 hover／tint），沒有第二個彩色 CTA。
 - [ ] 淺色為預設：畫布白、外框淺灰、深灰文字；深色為配對變體且對比另行驗證。
 - [ ] 面板與工具列沒有任何陰影；陰影只出現在選單／對話框／tooltip／toast。

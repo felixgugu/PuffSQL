@@ -112,15 +112,13 @@
     <!-- TSV 匯入精靈 (Explorer 資料表右鍵) -->
     <TsvImportModal />
 
-    <!-- PrimeVue Global Toast Notification -->
-    <Toast position="bottom-right" />
+    <!-- Global Toast Notification -->
+    <SqToast />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
-import Toast from 'primevue/toast';
-import { useToast } from 'primevue/usetoast';
+import { ref, nextTick, onMounted, onBeforeUnmount } from 'vue';
 import AppHeader from '@/components/layout/AppHeader.vue';
 import AppSidebar from '@/components/layout/AppSidebar.vue';
 import AppMain from '@/components/layout/AppMain.vue';
@@ -136,6 +134,7 @@ import AiFloatingPill from '@/components/ai/AiFloatingPill.vue';
 import DataViewModal from '@/components/modals/DataViewModal.vue';
 import DataViewFloatingPill from '@/components/modals/DataViewFloatingPill.vue';
 import TsvImportModal from '@/components/modals/TsvImportModal.vue';
+import SqToast from '@/components/ui/SqToast.vue';
 import { usePrimeVue } from 'primevue/config';
 import { useSplitter } from '@/composables/useSplitter';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
@@ -152,7 +151,6 @@ const queryStore = useQueryStore();
 const settingsStore = useSettingsStore();
 const aiChatStore = useAiChatStore();
 const primevue = usePrimeVue();
-const toast = useToast();
 
 function handleOpenAiChat(sqlOverride?: string, isSelection = false) {
   let targetSql = sqlOverride || '';
@@ -167,32 +165,6 @@ function handleOpenAiChat(sqlOverride?: string, isSelection = false) {
   aiChatStore.openChat(targetSql, isSel);
 }
 
-watch(
-  () => workspaceStore.activeToast,
-  (t) => {
-    if (t) {
-      const severityMap: Record<string, 'info' | 'success' | 'warn' | 'error'> = {
-        info: 'info',
-        success: 'success',
-        warning: 'warn',
-        error: 'error',
-      };
-      toast.add({
-        severity: severityMap[t.type] || 'info',
-        summary:
-          t.type === 'error'
-            ? '錯誤'
-            : t.type === 'warning'
-            ? '警告'
-            : t.type === 'success'
-            ? '成功'
-            : '提示',
-        detail: t.message,
-        life: t.duration || 2500,
-      });
-    }
-  }
-);
 const isConnectionModalOpen = ref(false);
 const isSettingsModalOpen = ref(false);
 const isQuickFinderOpen = ref(false);

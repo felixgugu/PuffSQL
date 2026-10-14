@@ -4,7 +4,16 @@ import type { WorkspaceTab, BottomPanelTab, SqlEditorTab, TableDataTab, TableStr
 import { format as formatSql } from 'sql-formatter';
 import { useConnectionStore } from './connectionStore';
 import { useSqlFolderStore } from './sqlFolderStore';
+import { useToastStore } from './toastStore';
 import { sqlFolderService } from '@/services/sqlFolderService';
+
+/** What each caller-supplied severity is titled with above its own message. */
+const TOAST_SUMMARIES: Record<'info' | 'success' | 'warning' | 'error', string> = {
+  info: '提示',
+  success: '成功',
+  warning: '警告',
+  error: '錯誤',
+};
 
 const STORAGE_TABS_KEY = 'sqlight_workspace_tabs';
 const STORAGE_ACTIVE_TAB_KEY = 'sqlight_active_tab_id';
@@ -96,13 +105,6 @@ function saveActiveTabIdToStorage(id: string) {
   }
 }
 
-export interface ToastMessage {
-  id: string;
-  message: string;
-  type: 'info' | 'success' | 'warning' | 'error';
-  duration?: number;
-}
-
 export const useWorkspaceStore = defineStore('workspace', () => {
   const initialTabs = loadSavedTabs();
   const tabs = ref<WorkspaceTab[]>(initialTabs);
@@ -111,8 +113,7 @@ export const useWorkspaceStore = defineStore('workspace', () => {
   const isBottomPanelOpen = ref<boolean>(true);
   const isSidebarOpen = ref<boolean>(loadSavedSidebarState());
   const pendingColumnToInsert = ref<string | null>(null);
-  const activeToast = ref<ToastMessage | null>(null);
-  let toastTimer: ReturnType<typeof setTimeout> | null = null;
+  const toastStore = useToastStore();
 
   // Watchers to auto-persist changes
   watch(
@@ -712,19 +713,12 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     type: 'info' | 'success' | 'warning' | 'error' = 'info',
     duration = 2500
   ) {
-    if (toastTimer) {
-      clearTimeout(toastTimer);
-    }
-    activeToast.value = {
-      id: String(Date.now()),
-      message,
-      type,
-      duration,
-    };
-    toastTimer = setTimeout(() => {
-      activeToast.value = null;
-      toastTimer = null;
-    }, duration);
+    toastStore.add({
+      severity: type === 'warning' ? 'warn' : type,
+      summary: TOAST_SUMMARIES[type],
+      detail: message,
+      life: duration,
+    });
   }
 
   const AUTO_SAVE_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
@@ -799,7 +793,6 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     isBottomPanelOpen,
     isSidebarOpen,
     pendingColumnToInsert,
-    activeToast,
     setActiveTab,
     ensureActiveTabConnection,
     updateActiveTabConnection,

@@ -9,6 +9,7 @@
 | `preview.html` | 可互動的靜態樣張（單一檔案、無外部資源）：完整 App 外殼 + 元件樣張 + token 對比表。`#dark` 可看深色配對變體。 |
 | `screens/preview-light.png`、`screens/preview-dark.png` | 樣張的渲染截圖（淺色／深色），供快速審閱。 |
 | `screens/dialog-light.png`、`screens/dialog-dark.png`、`screens/dialog-overlay.png` | `SqDialog` 的真實渲染截圖：外框變體、語意強調外框、既有呼叫端元件（淺色／深色），以及疊在真實遮罩上的樣子。 |
+| `screens/toast-light.png` | `SqToast` 的真實渲染截圖：四種語意色同時堆疊的樣子。 |
 | `../../design-system/puffsql/MASTER.md` | ui-ux-pro-max skill 產生的原始設計系統建議（保留備查；衝突時以 `SPEC.md` 為準）。 |
 
 ## 檢視方式
