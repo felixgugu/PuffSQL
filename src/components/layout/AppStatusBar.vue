@@ -56,7 +56,7 @@
       <div class="h-3 w-px bg-dark-750" />
 
       <div class="flex items-center space-x-1">
-        <span class="text-accent flex items-center gap-1"><span>🐡</span> PuffSQL v{{ appVersion }}</span>
+        <span class="text-accent">PuffSQL v{{ appVersion }}</span>
       </div>
     </div>
   </footer>

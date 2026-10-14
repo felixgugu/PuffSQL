@@ -5,23 +5,8 @@
     data-tauri-drag-region="deep"
     class="h-10 bg-dark-850 border-b border-dark-700 px-2.5 flex items-center justify-between gap-2 select-none flex-shrink-0 relative z-30 font-sans text-xs"
   >
-    <!-- Start: Branding & Connection / Database Pickers -->
+    <!-- Start: Connection / Database Pickers -->
     <div class="flex items-center space-x-2 flex-shrink-0">
-        <!-- App Brand: bleeds to the title-bar edges (no top/left/bottom gap) at the full row height.
-             The negative left margin cancels the toolbar's 10px horizontal padding plus its 1px left
-             border, `pr-2` keeps the breathing room before the divider that separates the brand from
-             the connection picker. -->
-        <div
-          class="flex items-center justify-center h-10 min-w-[40px] flex-shrink-0 -ml-[11px] pr-2 border-r border-dark-700"
-        >
-          <img
-            :src="appIcon"
-            alt="PuffSQL"
-            class="h-10 w-10 select-none"
-            draggable="false"
-          />
-        </div>
-
         <!-- Connection Select -->
         <SqSelect
           :model-value="connectionStore.activeConnectionId"
@@ -393,7 +378,6 @@ import SqPopover from '@/components/ui/SqPopover.vue';
 import SqlEditorToolbarActions from '@/components/layout/SqlEditorToolbarActions.vue';
 import WindowControls from '@/components/layout/WindowControls.vue';
 // Single source of truth for the brand mark: the icon set shipped with the Tauri app.
-import appIcon from '../../../src-tauri/icons/64x64.png';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useConnectionStore } from '@/stores/connectionStore';
 import { useQueryStore } from '@/stores/queryStore';
