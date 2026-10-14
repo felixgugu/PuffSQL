@@ -5,7 +5,7 @@
 
 ## 結論（先看這一段）
 
-**建議採「混合式」**：把高頻、純視覺的葉節點元件（Button / Tag / InputText / IconField /
+**當時建議採「混合式」**：把高頻、純視覺的葉節點元件（Button / Tag / InputText / IconField /
 InputIcon / Checkbox / ToggleSwitch / Textarea / SelectButton / Divider / Badge / Card /
 ProgressBar）換成 `src/components/ui/` 底下自建的 Tailwind 元件；**保留 PrimeVue 負責**
 Dialog、ContextMenu、Menu、Popover、Select（浮層與鍵盤導覽）、Toast＋Confirm、Tooltip，
@@ -13,6 +13,11 @@ Dialog、ContextMenu、Menu、Popover、Select（浮層與鍵盤導覽）、Toas
 元件去留無關，屬獨立且高投報率的清理）。
 
 不建議「一次全面移除 PrimeVue」，也不建議「留在 PrimeVue 只調參數」——理由在下面。
+
+> **後記（2026-10-15）：這份評估的結論已經走完，而且比原建議更徹底——PrimeVue 已完全移除。**
+> 混合式是**當時**在沒有自建基礎時的正確答案；等 Dialog／Select／Menu／Popover／ContextMenu／
+> Tooltip／Toast 都有自建替代品並通過驗收後，最後剩下的主題引擎就成了唯一的依賴，於是連它一起
+> 移除。最終結果與量測見文末「9. 最終結果」。
 
 ---
 
@@ -176,3 +181,39 @@ Dialog 就得讓 `!important` 與 `--p-dialog-*` 主題變數永遠留在關鍵�
 PrimeVue 的實心填色另拆 `--color-accent-fill`。第 3 點已在 §5.1 決策為「自建」並完成；
 第 2 點的 preset 旋鈕仍在（P7 範圍），目前只是把預設值指向同一個鋼藍，**尚未移除**。
 若你要走回「使用者可自選主色」，那條路徑會與「單一操作色」的規範衝突，需要你指名其一。
+
+> **已結案（2026-10-15）**：第 1 點採 SPEC 的鋼藍。第 2 點與第 3 點都已完成——第 3 點是自建
+> 浮層元件（§5.1），第 2 點在最後查核後發現 preset 與主色旋鈕只剩 PrimeVue 在讀，
+> 對畫面已無任何影響，因此移除（見 §9）。若你想要「使用者自選主色」，那是新的需求，
+> 與單一操作色的規範衝突，需要重新指名其一。
+
+---
+
+## 9. 最終結果（2026-10-15）
+
+`primevue` 與 `@primevue/themes` 已從 `package.json` 移除，`src/` 內 0 匯入，
+`main.css` 內 0 條 `.p-*` 規則。
+
+| 指標 | P0 基線 | 完成後 |
+|---|---|---|
+| 匯入 `primevue/*` 的檔案 | 35 / 43（81%） | **0** |
+| 使用到的 PrimeVue 元件種類 | 22 | **0** |
+| `pi pi-*` 圖示用法 | 335 | **0** |
+| 圖示字型檔 | 約 284 KB | **0** |
+| `src/assets/main.css` | 1,246 行、300 個 `!important` | **876 行、129 個** |
+| `main.css` 的 `.p-*` 覆寫 | 130 行 | **0** |
+| 產物 CSS | 140.6 KB | **126.9 KB** |
+| 主 JS chunk | 2.64 MB（gzip 700 KB） | **1,598 KB（gzip 476 KB）** |
+| `node_modules` 的 PrimeVue 套件 | primevue 13.3 MB + @primeuix 3.9 MB | **0** |
+| 測試 | 566 項 | **628 項** |
+
+取代 PrimeVue 的是 12 個自建原語（`src/components/ui/`：SqChip、SqInput、SqTextarea、
+SqCheckbox、SqSwitch、SqSegmented、SqButton、SqPopover、SqMenu、SqSelect、SqDialog、SqToast）
+＋ 1 個指令（`v-tooltip`）＋ 3 個純函式工具（`focusTrap`、`popoverPlacement`、`windowGeometry`）。
+葉節點改用原生 `input`／`label`，鍵盤與螢幕閱讀器語意不減；浮層則補上單元測試與契約測試
+（`sq_dialog`、`tooltip_directive`、`toast_queue`、`minimal_ui_primitives`、`minimal_ui_surfaces`）。
+
+**代價與已知限制**：本環境無法在瀏覽器內操作，拖曳、縮放、焦點環繞、點遮罩關閉等互動是靠
+單元測試、原始碼契約測試與 headless 截圖驗證，而非互動測試。`main.css` 仍有 129 個 `!important`，
+但對象已全部是我們自己的元件與 Monaco／Tabulator 的第三方樣式，不再有「與別人的主題引擎對抗」
+那一類。

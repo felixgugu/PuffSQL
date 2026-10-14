@@ -180,7 +180,7 @@
       </div>
     </div>
 
-    <!-- PrimeVue ContextMenu for Folders & Files -->
+    <!-- Context menu for folders & files -->
     <SqMenu
       v-model="nodeMenu.isOpen.value"
       :anchor-rect="nodeMenu.rect.value"

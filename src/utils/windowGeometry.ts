@@ -1,7 +1,7 @@
 /**
  * Geometry rules for every movable window in the app.
  *
- * The 12 PrimeVue dialogs, the two floating tool windows and the grid's pane splitters all have
+ * Every dialog, the two floating tool windows and the grid's pane splitters all have
  * to agree on one definition of "inside the screen"; keeping that definition here is what stops
  * them drifting apart. Pure functions — no DOM, no Vue reactivity — so the rules are testable.
  *

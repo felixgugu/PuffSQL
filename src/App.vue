@@ -99,7 +99,7 @@
       @open-in-new-tab="handleOpenTemplateInNewTab"
     />
 
-    <!-- AI SQL Assistant Chat Modal (PrimeVue Dialog) -->
+    <!-- AI SQL Assistant Chat Modal -->
     <AiSqlChatModal />
 
     <!-- AI Floating Progress Pill (縮小化浮動膠囊) -->
@@ -135,7 +135,6 @@ import DataViewModal from '@/components/modals/DataViewModal.vue';
 import DataViewFloatingPill from '@/components/modals/DataViewFloatingPill.vue';
 import TsvImportModal from '@/components/modals/TsvImportModal.vue';
 import SqToast from '@/components/ui/SqToast.vue';
-import { usePrimeVue } from 'primevue/config';
 import { useSplitter } from '@/composables/useSplitter';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useQueryStore } from '@/stores/queryStore';
@@ -150,7 +149,6 @@ const workspaceStore = useWorkspaceStore();
 const queryStore = useQueryStore();
 const settingsStore = useSettingsStore();
 const aiChatStore = useAiChatStore();
-const primevue = usePrimeVue();
 
 function handleOpenAiChat(sqlOverride?: string, isSelection = false) {
   let targetSql = sqlOverride || '';
@@ -396,7 +394,7 @@ function handleOpenSqlTemplates() {
 }
 
 onMounted(() => {
-  themeManager.initTheme(settingsStore, primevue.config);
+  themeManager.initTheme(settingsStore);
   window.addEventListener('keydown', handleGlobalKeydown);
   window.addEventListener('sqlight:new-query-tab', handleNewQueryTab);
   window.addEventListener('sqlight:open-quick-finder', handleOpenQuickFinder);

@@ -1,6 +1,6 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { execSync } from 'node:child_process';
 
@@ -21,7 +21,9 @@ function readCode(relativePath: string): string {
 function trackedSources(): string[] {
   return execSync('git ls-files "src/*"', { encoding: 'utf-8' })
     .split('\n')
-    .filter((line) => /\.(vue|ts|js|mjs|css)$/.test(line));
+    .filter((line) => /\.(vue|ts|js|mjs|css)$/.test(line))
+    // `git ls-files` still lists a file deleted in the working tree until it is staged.
+    .filter((line) => existsSync(resolve(root, line)));
 }
 
 /**
@@ -160,5 +162,35 @@ describe('no glass, no gradient, no translucent chrome', () => {
     }
 
     assert.deepEqual(offenders, [], 'surfaces use a token colour, not alpha');
+  });
+});
+
+describe('the PrimeVue dependency is gone', () => {
+  test('nothing in src imports it', () => {
+    const offenders: string[] = [];
+    for (const file of trackedSources()) {
+      const source = readSource(file);
+      if (/from '(@?primevue[^']*)'/.test(source)) offenders.push(file);
+    }
+    assert.deepEqual(offenders, [], 'the PrimeVue migration is finished, not paused');
+  });
+
+  test('package.json no longer declares it', () => {
+    const pkg = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf-8')) as {
+      dependencies?: Record<string, string>;
+      devDependencies?: Record<string, string>;
+    };
+    const declared = [
+      ...Object.keys(pkg.dependencies ?? {}),
+      ...Object.keys(pkg.devDependencies ?? {}),
+    ].filter((name) => name.includes('primevue') || name.includes('primeuix'));
+    assert.deepEqual(declared, [], 'no PrimeVue package may stay in the manifest');
+  });
+
+  test('no stylesheet rule targets a PrimeVue component class', () => {
+    // `main.css` used to carry ~130 lines of `.p-*` overrides fighting the theme engine.
+    const css = readSource('src/assets/main.css');
+    const matches = css.match(/^\.[\w-]*\.p-[a-z-]+|^\.p-[a-z-]+/gm) ?? [];
+    assert.deepEqual(matches, [], 'the app owns its own component classes now');
   });
 });

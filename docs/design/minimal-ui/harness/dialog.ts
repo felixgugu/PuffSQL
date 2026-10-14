@@ -12,6 +12,7 @@ import SqChip from '@/components/ui/SqChip.vue';
 import SqToast from '@/components/ui/SqToast.vue';
 import ConfirmModal from '@/components/common/ConfirmModal.vue';
 import DangerousQueryModal from '@/components/modals/DangerousQueryModal.vue';
+import SettingsModal from '@/components/modals/SettingsModal.vue';
 import { useDialogWindow } from '@/composables/useDialogWindow';
 import { useToastStore } from '@/stores/toastStore';
 import { Database, X } from 'lucide-vue-next';
@@ -26,6 +27,7 @@ const isDebug = hash.startsWith('debug');
 const isWindow = hash.startsWith('window');
 const isTooltipDemo = hash.startsWith('tooltip');
 const isToastDemo = hash.startsWith('toast');
+const isSettings = hash.startsWith('settings');
 if (isDark) document.documentElement.classList.add('dark');
 
 /**
@@ -193,6 +195,12 @@ const Harness = defineComponent({
 
     if (isToastDemo) {
       return h('div', { class: 'min-h-screen bg-dark-900' }, [h(SqToast), h(ToastSeeder)]);
+    }
+
+    if (isSettings) {
+      return h('div', { class: 'min-h-screen bg-dark-900' }, [
+        h(SettingsModal, { isOpen: true, onClose: () => {} }),
+      ]);
     }
 
     if (isPair || isDebug) {

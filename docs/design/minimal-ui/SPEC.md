@@ -382,6 +382,29 @@ WCAG 1.4.11 的豁免）；分隔步 `#64748B` 對畫布 4.76:1；focus 指示�
     對比）、`npm run typecheck`、`npm run build` 通過；產物 CSS 130.1 → 127.2 KB。
     截圖：`screens/tabs-light.png`、`screens/tabs-dark.png`（五種類別分頁 + 非 SQL 活動分頁）。
 
+- **P7b PrimeVue 完全移除（2026-10-15）。完成「評估移除 PrimeVue」的最終狀態。**
+  上一輪把 `var(--p-*)` 全部換掉之後做了一次查核，結果顯示設定裡的三個旋鈕已經**沒有作用**：
+  `themePreset`（Aura／Lara／Nora／Material）、`primaryColor`（12 色）與 `ripple` 只餵給
+  PrimeVue 的主題引擎，而全 App 已無任何讀取 `--p-*` 的地方、也無任何 PrimeVue 元件。
+  留著無作用的設定比移除更糟——使用者改了「主要色彩」卻什麼都不會發生——所以移除屬於修錯，
+  不是取捨。移除內容：
+  - `themeManager`：拿掉 `@primevue/themes` 的 preset／palette 機制與 `ThemePresetName`、
+    `PRIMARY_COLOR_OPTIONS`；保留並確認 `surfaceColor`（五種中性表面色盤）、`colorMode`、
+    全域字型這三個真正由我們 token 驅動的設定。
+  - `settingsStore`：移除 `themePreset`／`primaryColor`／`ripple` 與其 setter；`setLocale`
+    不再需要 PrimeVue config。既有使用者存下來的舊值會被忽略（`loadSettings` 以預設值合併）。
+  - `SettingsModal`：外觀頁移除 preset 卡、12 色主色盤與水波紋開關，只留語言、全域字型、
+    深淺模式、表面色盤與即時預覽；選取態也拿掉 `ring-1`（規範不使用 box-shadow ring）。
+  - `main.ts`：不再 `app.use(PrimeVue)`／`ConfirmationService`／`ripple` 指令。
+    `ConfirmationService` 是死碼（`useConfirm` 0 使用點），`ripple` 只影響已不存在的 PrimeVue 元件。
+  - 刪除 `src/i18n/primevue/{zh-TW,en}.ts` 與 `PrimeVue v4` 的介紹文字；
+    `package.json` 移除 `primevue` 與 `@primevue/themes`。
+  - 連線標籤色（`resolveConnectionLabelColor`）與自訂 SQL 分頁色仍保留，個人化沒有全部消失。
+  **產物：主 JS 2,132 → 1,598 KB（gzip 562 → 476 KB）**，主要就是主題引擎與元件的份量；
+  CSS 127.0  → 126.9 KB；`main.css` 已無任何 `.p-*` 選擇器。
+  新增護欄：`src/` 不得再出現 `from 'primevue…'`、`package.json` 不得宣告 PrimeVue 套件、
+  `main.css` 不得再出現 `.p-*` 規則。驗證：628 項測試、`npm run typecheck`、`npm run build` 通過。
+
 - [ ] 全站只有一個操作藍 `#2E6F9E`（及其 hover／tint），沒有第二個彩色 CTA。
 - [ ] 淺色為預設：畫布白、外框淺灰、深灰文字；深色為配對變體且對比另行驗證。
 - [ ] 面板與工具列沒有任何陰影；陰影只出現在選單／對話框／tooltip／toast。

@@ -96,74 +96,6 @@
           />
         </div>
 
-        <!-- 2. Theme Preset (Aura, Lara, Nora, Material) -->
-        <div class="space-y-2 pb-4 border-b border-dark-800">
-          <div class="flex items-center justify-between">
-            <div>
-              <label class="font-medium text-dark-100 block">{{ $t('settingsModal.themePreset') }}</label>
-              <span class="text-xxs text-dark-400">{{ $t('settingsModal.themePresetDesc') }}</span>
-            </div>
-            <span class="text-xxs font-mono text-accent font-semibold">{{ settingsStore.themePreset }}</span>
-          </div>
-          <div class="grid grid-cols-4 gap-2.5">
-            <button
-              v-for="preset in themePresets"
-              :key="preset.id"
-              type="button"
-              class="flex flex-col items-start p-2.5 rounded border text-left transition-all cursor-pointer"
-              :class="settingsStore.themePreset === preset.id
-                ? 'border-brand-500 bg-brand-500/10 text-dark-100 ring-1 ring-brand-500'
-                : 'border-dark-750 bg-dark-900/60 hover:border-dark-600 text-dark-300 hover:text-dark-200'"
-              @click="settingsStore.setThemePreset(preset.id)"
-            >
-              <div class="flex items-center justify-between w-full mb-1">
-                <span class="font-semibold text-xs text-dark-100">{{ preset.label }}</span>
-                <CircleCheck
-                  v-if="settingsStore.themePreset === preset.id"
-                  class="w-3 h-3 text-accent"
-                />
-              </div>
-              <span class="text-[11px] text-dark-400 leading-snug">{{ preset.desc }}</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- 3. Primary Color Palette -->
-        <div class="space-y-2.5 pb-4 border-b border-dark-800">
-          <div class="flex items-center justify-between">
-            <div>
-              <label class="font-medium text-dark-100 block">{{ $t('settingsModal.primaryColor') }}</label>
-              <span class="text-xxs text-dark-400">{{ $t('settingsModal.primaryColorDesc') }}</span>
-            </div>
-            <span class="text-xxs font-mono text-dark-300">{{ currentPrimaryLabel }}</span>
-          </div>
-
-          <div class="grid grid-cols-4 sm:grid-cols-6 gap-2">
-            <button
-              v-for="color in PRIMARY_COLOR_OPTIONS"
-              :key="color.name"
-              type="button"
-              class="flex items-center space-x-2 p-1.5 rounded border transition-all cursor-pointer text-left"
-              :class="settingsStore.primaryColor === color.name
-                ? 'border-brand-500 bg-brand-500/15 ring-1 ring-brand-500 text-dark-100'
-                : 'border-dark-750 bg-dark-900/50 hover:border-dark-600 text-dark-300 hover:text-dark-200'"
-              @click="settingsStore.setPrimaryColor(color.name)"
-            >
-              <div
-                class="w-[18px] h-[18px] rounded-full flex-shrink-0 flex items-center justify-center text-white text-xxs"
-                :style="{ backgroundColor: color.color }"
-              >
-                <Check
-                  v-if="settingsStore.primaryColor === color.name"
-                  class="w-3.5 h-3.5"
-                  :style="{ color: pickReadableTextColor(color.color) }"
-                />
-              </div>
-              <span class="text-xxs truncate">{{ color.label.split(' ')[0] }}</span>
-            </button>
-          </div>
-        </div>
-
         <!-- 4. Surface Palette -->
         <div class="space-y-2.5 pb-4 border-b border-dark-800">
           <div class="flex items-center justify-between">
@@ -181,7 +113,7 @@
               type="button"
               class="flex flex-col p-2 rounded border transition-all cursor-pointer text-left space-y-1.5"
               :class="settingsStore.surfaceColor === surface.name
-                ? 'border-brand-500 bg-brand-500/15 ring-1 ring-brand-500 text-dark-100'
+                ? 'border-brand-500 bg-brand-500/15 text-dark-100'
                 : 'border-dark-750 bg-dark-900/50 hover:border-dark-600 text-dark-300 hover:text-dark-200'"
               @click="settingsStore.setSurfaceColor(surface.name)"
             >
@@ -207,18 +139,6 @@
               </div>
             </button>
           </div>
-        </div>
-
-        <!-- 5. Ripple Effect -->
-        <div class="flex items-center justify-between pb-4 border-b border-dark-800">
-          <div>
-            <label class="font-medium text-dark-100 block">{{ $t('settingsModal.rippleEffect') }}</label>
-            <span class="text-xxs text-dark-400">{{ $t('settingsModal.rippleEffectDesc') }}</span>
-          </div>
-          <SqSwitch
-            :model-value="settingsStore.ripple"
-            @update:model-value="val => handleRippleToggle(val)"
-          />
         </div>
 
         <!-- 6. Live Component Preview -->
@@ -609,16 +529,13 @@ import SqSwitch from '@/components/ui/SqSwitch.vue';
 import SqCheckbox from '@/components/ui/SqCheckbox.vue';
 import SqInput from '@/components/ui/SqInput.vue';
 import SqChip from '@/components/ui/SqChip.vue';
-import { usePrimeVue } from 'primevue/config';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useDialogWindow } from '@/composables/useDialogWindow';
 import { SUPPORTED_LOCALES, type SupportedLocale } from '@/i18n';
 import {
   GLOBAL_FONT_OPTIONS,
   DEFAULT_GLOBAL_FONT_FAMILY,
-  PRIMARY_COLOR_OPTIONS,
   SURFACE_OPTIONS,
-  type ThemePresetName,
 } from '@/services/themeManager';
 import {
   DEFAULT_EDITOR_FONT_FAMILY,
@@ -630,7 +547,6 @@ import FontFamilyPicker from '@/components/common/FontFamilyPicker.vue';
 import TableFilterTab from './TableFilterTab.vue';
 import AiSettingsTab from './settings/AiSettingsTab.vue';
 import EditorBackgroundSettings from './settings/EditorBackgroundSettings.vue';
-import { pickReadableTextColor } from '@/utils/connectionColor';
 
 defineProps<{
   isOpen: boolean;
@@ -641,7 +557,6 @@ defineEmits<{
 }>();
 
 const { t } = useI18n();
-const primevue = usePrimeVue();
 const settingsStore = useSettingsStore();
 const dialogWindow = useDialogWindow();
 const activeTab = ref<'theme' | 'editor' | 'results' | 'table_filter' | 'ai' | 'about'>('theme');
@@ -657,21 +572,9 @@ const tabs = computed(() => [
 
 function handleLocaleChange(val: unknown) {
   if (val && typeof val === 'string') {
-    settingsStore.setLocale(val as SupportedLocale, primevue.config);
+    settingsStore.setLocale(val as SupportedLocale);
   }
 }
-
-const themePresets: { id: ThemePresetName; label: string; desc: string }[] = [
-  { id: 'Aura', label: 'Aura (現代)', desc: '精緻圓角與柔和光澤，PuffSQL 預設推薦' },
-  { id: 'Lara', label: 'Lara (經典)', desc: '經典俐落 Prime 風格，清晰穩健' },
-  { id: 'Nora', label: 'Nora (極簡)', desc: '高對比扁平線條，簡約素雅' },
-  { id: 'Material', label: 'Material (質樸)', desc: 'Google Material 3 規範，流暢現代' },
-];
-
-const currentPrimaryLabel = computed(() => {
-  const match = PRIMARY_COLOR_OPTIONS.find((c) => c.name === settingsStore.primaryColor);
-  return match ? match.label : settingsStore.primaryColor;
-});
 
 const currentSurfaceLabel = computed(() => {
   const match = SURFACE_OPTIONS.find((s) => s.name === settingsStore.surfaceColor);
@@ -691,10 +594,6 @@ function handleGlobalFontChange(fontFamily: unknown) {
   if (typeof fontFamily === 'string' && fontFamily.trim()) {
     settingsStore.setGlobalFontFamily(fontFamily);
   }
-}
-
-function handleRippleToggle(val: boolean) {
-  settingsStore.setRipple(val, primevue.config);
 }
 
 const fontSizeOptions = [

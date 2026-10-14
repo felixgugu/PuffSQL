@@ -10,23 +10,16 @@ import {
   testTablePatternByRules,
 } from '@/utils/tableFilter';
 
-import {
-  DEFAULT_GLOBAL_FONT_FAMILY,
-  themeManager,
-  type ThemePresetName,
-} from '@/services/themeManager';
+import { DEFAULT_GLOBAL_FONT_FAMILY, themeManager } from '@/services/themeManager';
 import { DEFAULT_GRID_FONT_FAMILY } from '@/data/fontOptions';
 import { type SupportedLocale, DEFAULT_LOCALE, setAppLocale } from '@/i18n';
 
-export type { FilterRule, FilterTarget, HiddenTableRule, ThemePresetName, SupportedLocale };
+export type { FilterRule, FilterTarget, HiddenTableRule, SupportedLocale };
 
 export interface AppSettings {
   // Theme & Appearance
   colorMode: 'dark' | 'light';
-  themePreset: ThemePresetName;
-  primaryColor: string;
   surfaceColor: string;
-  ripple: boolean;
   globalFontFamily: string;
   locale: SupportedLocale;
 
@@ -67,10 +60,7 @@ function clampNumber(value: unknown, min: number, max: number, fallback: number)
 const DEFAULT_SETTINGS: AppSettings = {
   // The minimal design is light-first: white canvas, light grey chrome. Dark is the paired variant.
   colorMode: 'light',
-  themePreset: 'Aura',
-  primaryColor: 'blue',
   surfaceColor: 'slate',
-  ripple: true,
   globalFontFamily: DEFAULT_GLOBAL_FONT_FAMILY,
   locale: DEFAULT_LOCALE,
 
@@ -115,10 +105,7 @@ export const useSettingsStore = defineStore('settings', () => {
   const initial = loadSettings();
 
   const colorMode = ref<'dark' | 'light'>(initial.colorMode || 'dark');
-  const themePreset = ref<ThemePresetName>(initial.themePreset || 'Aura');
-  const primaryColor = ref<string>(initial.primaryColor || 'blue');
   const surfaceColor = ref<string>(initial.surfaceColor || 'slate');
-  const ripple = ref<boolean>(initial.ripple ?? true);
   const globalFontFamily = ref<string>(initial.globalFontFamily || DEFAULT_GLOBAL_FONT_FAMILY);
   const locale = ref<SupportedLocale>(initial.locale || DEFAULT_LOCALE);
 
@@ -153,24 +140,9 @@ export const useSettingsStore = defineStore('settings', () => {
     themeManager.applyColorMode(mode);
   }
 
-  function setThemePreset(preset: ThemePresetName) {
-    themePreset.value = preset;
-    themeManager.applyThemePreset(preset, primaryColor.value, surfaceColor.value);
-  }
-
-  function setPrimaryColor(color: string) {
-    primaryColor.value = color;
-    themeManager.applyPrimaryColor(color);
-  }
-
   function setSurfaceColor(surface: string) {
     surfaceColor.value = surface;
     themeManager.applySurfaceColor(surface);
-  }
-
-  function setRipple(enabled: boolean, primevueConfig?: any) {
-    ripple.value = enabled;
-    themeManager.applyRipple(enabled, primevueConfig);
   }
 
   function setGlobalFontFamily(fontFamily: string) {
@@ -178,9 +150,9 @@ export const useSettingsStore = defineStore('settings', () => {
     themeManager.applyGlobalFontFamily(fontFamily);
   }
 
-  function setLocale(newLocale: SupportedLocale, primevueConfig?: any) {
+  function setLocale(newLocale: SupportedLocale) {
     locale.value = newLocale;
-    setAppLocale(newLocale, primevueConfig);
+    setAppLocale(newLocale);
   }
 
   /**
@@ -293,10 +265,7 @@ export const useSettingsStore = defineStore('settings', () => {
   function saveSettings(): boolean {
     const data: AppSettings = {
       colorMode: colorMode.value,
-      themePreset: themePreset.value,
-      primaryColor: primaryColor.value,
       surfaceColor: surfaceColor.value,
-      ripple: ripple.value,
       globalFontFamily: globalFontFamily.value,
       locale: locale.value,
       editorFontSize: editorFontSize.value,
@@ -329,10 +298,7 @@ export const useSettingsStore = defineStore('settings', () => {
   watch(
     [
       colorMode,
-      themePreset,
-      primaryColor,
       surfaceColor,
-      ripple,
       globalFontFamily,
       locale,
       editorFontSize,
@@ -360,10 +326,7 @@ export const useSettingsStore = defineStore('settings', () => {
 
   function resetToDefaults() {
     setColorMode(DEFAULT_SETTINGS.colorMode);
-    setThemePreset(DEFAULT_SETTINGS.themePreset);
-    setPrimaryColor(DEFAULT_SETTINGS.primaryColor);
     setSurfaceColor(DEFAULT_SETTINGS.surfaceColor);
-    setRipple(DEFAULT_SETTINGS.ripple);
     setGlobalFontFamily(DEFAULT_SETTINGS.globalFontFamily);
     setLocale(DEFAULT_SETTINGS.locale);
 
@@ -387,17 +350,11 @@ export const useSettingsStore = defineStore('settings', () => {
 
   return {
     colorMode,
-    themePreset,
-    primaryColor,
     surfaceColor,
-    ripple,
     globalFontFamily,
     locale,
     setColorMode,
-    setThemePreset,
-    setPrimaryColor,
     setSurfaceColor,
-    setRipple,
     setGlobalFontFamily,
     setLocale,
     editorFontSize,

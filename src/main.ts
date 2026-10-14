@@ -5,14 +5,9 @@ import './assets/main.css';
 import 'tabulator-tables/dist/css/tabulator.css';
 import './styles/tabulatorTheme.css';
 
-import PrimeVue from 'primevue/config';
-import Aura from '@primevue/themes/aura';
-import ConfirmationService from 'primevue/confirmationservice';
-import Ripple from 'primevue/ripple';
-
 import tooltip from './directives/tooltip';
 
-import { i18n, primevueZhTW, primevueLocales } from './i18n';
+import { i18n } from './i18n';
 
 // Prevent default browser/system context menu globally for a native desktop feel
 window.addEventListener('contextmenu', (e) => {
@@ -22,7 +17,7 @@ window.addEventListener('contextmenu', (e) => {
 const app = createApp(App);
 const pinia = createPinia();
 
-// Read initial saved locale if present to configure PrimeVue
+// Read initial saved locale before the first render so the app never flashes the wrong language.
 let initialLocale = 'zh-TW';
 try {
   const savedSettings = localStorage.getItem('sqlight_app_settings');
@@ -40,19 +35,6 @@ try {
 
 app.use(pinia);
 app.use(i18n);
-app.use(PrimeVue, {
-  ripple: true,
-  locale: (primevueLocales as any)[initialLocale] || primevueZhTW,
-  theme: {
-    preset: Aura,
-    options: {
-      darkModeSelector: '.dark',
-      cssLayer: false
-    }
-  }
-});
-app.use(ConfirmationService);
 app.directive('tooltip', tooltip);
-app.directive('ripple', Ripple);
 
 app.mount('#app');
