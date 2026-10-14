@@ -436,3 +436,69 @@ failed to read plugin permissions: failed to read file
 - `cargo check --offline --manifest-path src-tauri/Cargo.toml`、`git diff --check`：通過。
 - 已取得 esbuild 開發依賴安裝授權並更新 package-lock。
 - MSVC 工具鏈存在但 link.exe 未安裝；不依賴 MSVC 執行上述已通過的 GNU 核心測試。
+
+## 已實作（2026-10-14）：SQL 自動完成在 FROM／JOIN 之後仍列出大量欄位
+
+症狀：在 `FROM`／`JOIN` 之後開始輸入表名（例如 `FROM Us`）、或把 `FROM` 斷行後在下一行輸入，快選器會退回「一般」情境並倒出全資料庫所有欄位。
+
+根因：`getCursorContext` 只取「當前行」的最後一個 token，且必須緊貼關鍵字才算命中；一旦開始打表名或換行，尾端 token 不再是 `FROM`／`JOIN`，情境即降級為 `general`。`LEFT`／`INNER` 等 JOIN 修飾詞同樣落入 `general`（原本的第二 token 判斷是死碼）。
+
+已實作：
+
+1. `src/utils/sqlParser.ts`：`getCursorContext` 改為接收「游標前全文」，取最後 1000 字元、去註解後由尾端往前掃描最多 6 個 token，命中 table／column／join modifier 觸發詞即決定情境，遇到其他已知關鍵字停止；貼著游標的那個 token 一律視為「正在輸入」，因此 `FROM Order`、`FROM In`（`Inventory` 的前綴）不會被誤判成關鍵字。新增 `join_keyword` 情境與 `joinModifier` 欄位。
+2. `src/utils/sqlCompletionProvider.ts`：改以 `fullSql.slice(0, model.getOffsetAt(position))` 取游標前全文；新增 `left/inner/right/full/cross/outer` 分支，只提示接續關鍵字（LEFT → `OUTER`、`JOIN`，INNER/CROSS/OUTER → `JOIN`）。table 分支維持只輸出 Table／View／schema，不含任何欄位項目。
+3. `scripts/test.mjs`：esbuild 加入 `@` 與 `@/utils/monaco` alias，並新增 `tests/stubs/monaco.ts`，讓 provider 可在 Node 測試中被實際呼叫。
+
+驗收：
+
+- `npm test`：550 個通過（新增 `tests/sql_completion_context.test.ts`：情境判定矩陣、多行 FROM、點號觸發、關鍵字前綴表名，以及 provider 層「FROM／JOIN 之後不得出現 Field 項目」「LEFT／INNER 之後只有 JOIN 關鍵字」「WHERE 之後仍要有欄位」「別名點號只給該表欄位」）。
+- `npm run typecheck`：通過。
+
+已知取捨：游標緊貼的 token 一律視為輸入中，因此 `FROM t ORDER`／`FROM t GROUP`（尚未打 `BY`）會落到 table 情境（只列資料表，不再倒出欄位）。反向的誤判（把正在輸入的表名前綴當成關鍵字）會直接重現本次的回報症狀，故以此為準。
+
+## 已實作（2026-10-14）：結果頁工具列依 DataGrid 數量自動開合、改用工具圖示
+
+需求：查詢結果頁只有一個 DataGrid（只執行一條 SELECT）時自動開啟工具列；兩個以上 DataGrid 時維持隱藏；面板標頭的開合按鈕由眼睛圖示改為工具（扳手）圖示。
+
+已實作：
+
+1. `src/stores/gridLayoutStore.ts`：新增純函式 `defaultToolbarHiddenForCount(resultSetCount)`（`count > 1` 為隱藏，其餘為顯示），作為結果分頁工具列預設值的唯一來源。單一 DataGrid 與「沒有結果集」時的空佔位 DataGrid 都維持工具列開啟（沿用 3fc0f97「查詢結果為空時維持工具列顯示」的決定）。
+2. `src/components/results/ResultGrid.vue`：`toolbarHidden` 改為以 `defaultToolbarHiddenForCount(props.resultSets.length)` 為預設，並移除原本 `(resultSets.length > 1 && …) || …` 的等效重複判斷（該式第二項已使第一項失效）。
+3. `src/components/layout/AppBottomPanel.vue`：標頭按鈕的狀態與切換都改用同一組預設；按鈕改為 `pi pi-wrench`（狀態仍由 severity／tooltip／aria-label 表達）；按鈕顯示條件由「有結果集」放寬為「結果檢視中有資料格面板」，讓空佔位資料格的工具列也能被收合。
+
+驗收：
+
+- `npm test`：551 個通過（`tests/grid_layout.test.ts`：`defaultToolbarHiddenForCount` 的 0／1／2／3 邊界、單一與多結果集分頁的預設與覆寫、標頭與資料格共用同一預設、按鈕圖示為 `pi pi-wrench` 且不再出現 `pi pi-eye`、按鈕顯示條件）。
+- `npm run typecheck`：通過。
+
+## 已實作（2026-10-14）：查詢結果分頁保留模式切換鈕
+
+需求：結果面板工具列新增一個「分頁」圖示的切換鈕（預設關閉）。開啟時結果分頁與原本一樣累積到上限後淘汰最舊的未釘選分頁；關閉時每次查詢只保留釘選分頁與最後一個結果分頁。
+
+已實作：
+
+1. `src/stores/settingsStore.ts`：新增持久化設定 `accumulateResultTabs`（預設 `false`），併入 `saveSettings()` payload、自動持久化 `watch` 清單、`resetToDefaults()` 與 store 回傳值。
+2. `src/stores/queryStore.ts`：`insertNewTab()` 改走 `applyResultTabRetention()`——累積模式開啟時維持 `enforceResultLimit()`，關閉時走既有 `closeOtherResultTabs()`（保留釘選＋最新分頁，並清掉被關閉分頁的 grid layout 快取）；新增 `pruneResultTabsToActive()`，以及監看該設定、切換為關閉時立即清理的 `watch`。標頭按鈕與設定視窗因此共用同一個執行點。
+3. `src/components/layout/AppBottomPanel.vue`：在扳手鈕旁新增 `pi pi-clone` 切換鈕（開啟為 `primary`、關閉為 `secondary`，aria-label 描述動作、tooltip 描述現況）。
+4. `src/components/modals/SettingsModal.vue`：Results 區塊在「Results 歷史分頁保留上限」下方新增同一個 flag 的 `ToggleSwitch`。
+5. `src/i18n/locales/{zh-TW,en}.ts`：新增 `results.keepResultTabs` / `results.keepResultTabsTooltip` / `results.singleResultTab` / `results.singleResultTabTooltip` 與 `settingsModal.accumulateResultTabs` / `settingsModal.accumulateResultTabsDesc`。
+
+驗收：
+
+- `npm test`：559 個通過（新增 `tests/result_tab_retention.test.ts`：預設值與持久化／重置、關閉時只留最新且被關閉分頁的 layout 快取已清、釘選在關閉模式與累積模式都不被淘汰、累積模式仍遵守上限並淘汰最舊未釘選、切成關閉時立即只留釘選＋目前檢視分頁且不跳動、`pruneResultTabsToActive()`、標頭與設定視窗的 UI 契約、兩種語系的文案齊備；`tests/structure_and_tabs.test.ts` 中依賴累積的案例改為明確開啟該設定）。
+- `npm run typecheck`：通過。
+
+## 已實作（2026-10-14）：訊息框套用「執行暫態高亮顏色」
+
+需求：執行 UPDATE／INSERT／DDL 這類沒有查詢結果頁的語法時，訊息框中剛產生的訊息也要套用設定裡的「執行暫態高亮顏色」，數秒後淡出消失，才容易分辨剛剛執行了什麼。
+
+已實作：
+
+1. `src/utils/highlightColor.ts`（新增）：抽出 `hexToRgba()` 與 `transientHighlightColors()`（底色 0.22、左緣 0.85，與編輯器相同），`#rgb` 會展開、無法解析時退回預設 `#feffe0`。`MonacoEditor.vue` 改用它，移除原本的本地副本，兩處高亮數學自此同源。
+2. `src/stores/queryStore.ts` + `src/types/query.ts`：session 訊息新增 `freshAt`（本機時鐘、僅 UI 用、不持久化）。執行結果訊息、取消訊息與錯誤訊息三條路徑都會蓋上抵達時間。
+3. `src/components/results/ResultMessages.vue`：訊息以 `freshAt` 判斷是否「剛抵達」（4 秒視窗，且每個訊息只閃一次），閃爍卡片加 `sq-message-flash`，由卡片背後的偽元素（`isolation: isolate` + `z-index: -1`）上色，因此卡片本身的底色與邊框不受影響；偽元素 2.6 秒「先停住再淡出」，3 秒後由計時器移除 class。`prefers-reduced-motion: reduce` 時不淡出（停住直到移除 class）。面板只在事後才掛載（例如 UPDATE 之後自動切到訊息頁）也會閃，切換面板不會對舊訊息重播。
+
+驗收：
+
+- `npm test`：566 個通過（新增 `tests/result_message_flash.test.ts`：hex→rgba 與三碼／壞值退路、設定預設值、訊息以抵達時間而非掛載順序判定、淡出與 reduced-motion、每個訊息只閃一次、卸載時清除計時器、編輯器與訊息共用同一個色票助手、執行只有訊息的語句會蓋上 `freshAt`；`tests/sql_editor_toolbar_actions.test.ts` 的切片錨點由 `function hexToRgba` 改為 `function updateHighlightStyle`）。
+- `npm run typecheck`：通過。
