@@ -93,8 +93,8 @@ describe('Explorer tree nodes: copy name via hover + Ctrl/Cmd + C', () => {
     );
     assert.match(
       source,
-      /<ContextMenu ref="columnMenuRef" :model="columnMenuItems" \/>/,
-      'the column context menu must be mounted'
+      /:items="columnMenuItems"/,
+      'the column context menu must be mounted (SqMenu since the P5 migration)'
     );
     assert.ok(
       countOccurrences(source, "t('sidebar.copyName')") >= 2,

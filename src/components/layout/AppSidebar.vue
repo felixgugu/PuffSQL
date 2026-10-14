@@ -680,10 +680,10 @@
     />
 
     <!-- PrimeVue Context Menus -->
-    <ContextMenu ref="objectMenuRef" :model="objectMenuItems" />
-    <ContextMenu ref="connMenuRef" :model="connMenuItems" />
-    <ContextMenu ref="dbMenuRef" :model="dbMenuItems" />
-    <ContextMenu ref="columnMenuRef" :model="columnMenuItems" />
+    <SqMenu v-model="objectMenu.isOpen.value" :anchor-rect="objectMenu.rect.value" :items="objectMenuItems" aria-label="物件選單" />
+    <SqMenu v-model="connMenu.isOpen.value" :anchor-rect="connMenu.rect.value" :items="connMenuItems" aria-label="連線選單" />
+    <SqMenu v-model="dbMenu.isOpen.value" :anchor-rect="dbMenu.rect.value" :items="dbMenuItems" aria-label="資料庫選單" />
+    <SqMenu v-model="columnMenu.isOpen.value" :anchor-rect="columnMenu.rect.value" :items="columnMenuItems" aria-label="欄位選單" />
 
     <!-- Export Schema CSV Modal -->
     <ExportSchemaModal
@@ -713,7 +713,8 @@ import { ref, onMounted, onUnmounted, reactive, nextTick, watch, computed } from
 import { useI18n } from 'vue-i18n';
 import SqButton from '@/components/ui/SqButton.vue';
 import SqInput from '@/components/ui/SqInput.vue';
-import ContextMenu from 'primevue/contextmenu';
+import SqMenu from '@/components/ui/SqMenu.vue';
+import { useContextMenu } from '@/composables/useContextMenu';
 import SqChip from '@/components/ui/SqChip.vue';
 import {
   Server,
@@ -1330,10 +1331,10 @@ function getTableColumns(connId: string, db: string, schema: string, tableName: 
   return loadedColumns[tableKey(connId, db, schema, tableName)] ?? [];
 }
 
-const objectMenuRef = ref();
-const connMenuRef = ref();
-const dbMenuRef = ref();
-const columnMenuRef = ref();
+const objectMenu = useContextMenu();
+const connMenu = useContextMenu();
+const dbMenu = useContextMenu();
+const columnMenu = useContextMenu();
 
 const objectMenuItems = computed(() => {
   const isTable = contextMenu.objectType === 'TABLE';
@@ -1485,7 +1486,7 @@ const exportSchemaTarget = reactive<{
 function openDbContextMenu(event: MouseEvent, conn: ConnectionProfile, db: string) {
   dbContextMenu.conn = conn;
   dbContextMenu.database = db;
-  dbMenuRef.value?.show(event);
+  dbMenu.openAt(event);
 }
 
 function handleOpenExportSchemaModal(conn: ConnectionProfile, database: string) {
@@ -1549,7 +1550,7 @@ const columnMenuItems = computed(() => [
 
 function openColumnContextMenu(event: MouseEvent, col: ColumnItem) {
   columnContextMenu.columnName = col.name;
-  columnMenuRef.value?.show(event);
+  columnMenu.openAt(event);
 }
 
 function openContextMenu(
@@ -1565,12 +1566,12 @@ function openContextMenu(
   contextMenu.schema = schema;
   contextMenu.tableName = tableName;
   contextMenu.objectType = objectType;
-  objectMenuRef.value?.show(event);
+  objectMenu.openAt(event);
 }
 
 function openConnContextMenu(event: MouseEvent, conn: ConnectionProfile) {
   connContextMenu.conn = conn;
-  connMenuRef.value?.show(event);
+  connMenu.openAt(event);
 }
 
 async function handleOpenData() {

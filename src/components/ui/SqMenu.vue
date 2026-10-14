@@ -1,7 +1,7 @@
 <template>
   <SqPopover
     :model-value="modelValue"
-    :anchor="anchor"
+    :anchor="resolvedAnchor"
     :align="align"
     :min-width="minWidth"
     role="menu"
@@ -25,7 +25,7 @@
           :data-menu-index="index"
           @click="select(item)"
         >
-          <component :is="item.icon" v-if="item.icon" class="w-3.5 h-3.5 flex-shrink-0" />
+          <component :is="resolveIcon(item.icon)" v-if="item.icon" class="w-3.5 h-3.5 flex-shrink-0" />
           <span class="truncate">{{ item.label }}</span>
         </button>
       </template>
@@ -34,12 +34,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick, type Component } from 'vue';
+import { computed, ref, watch, nextTick, type Component } from 'vue';
 import SqPopover from '@/components/ui/SqPopover.vue';
+import { piIcon } from '@/components/ui/piIcons';
+import type { RectLike } from '@/utils/popoverPlacement';
 
 export interface SqMenuItem {
   label?: string;
-  icon?: Component;
+  /**
+   * Prefer passing a lucide component. PrimeIcons class names (`pi pi-pencil`) still resolve
+   * through `piIcons`, so menu models written before the migration keep working.
+   */
+  icon?: Component | string;
   separator?: boolean;
   disabled?: boolean;
   /** Renders in the danger tone: destructive commands must not look like the default action. */
@@ -57,6 +63,8 @@ const props = withDefaults(
     modelValue: boolean;
     items: SqMenuItem[];
     anchor?: HTMLElement | null;
+    /** Pointer rectangle: used by context menus that open at the cursor. */
+    anchorRect?: RectLike | null;
     align?: 'start' | 'end';
     minWidth?: string;
     ariaLabel?: string;
@@ -69,6 +77,18 @@ const emit = defineEmits<{
 }>();
 
 const listRef = ref<HTMLElement | null>(null);
+
+const resolvedAnchor = computed(() => {
+  if (props.anchor) return props.anchor;
+  const rect = props.anchorRect;
+  if (!rect) return null;
+  return { getBoundingClientRect: () => rect };
+});
+
+function resolveIcon(icon: Component | string | undefined): Component | undefined {
+  if (!icon) return undefined;
+  return typeof icon === 'string' ? piIcon(icon) : icon;
+}
 
 function enabledItems(): HTMLButtonElement[] {
   const nodes = listRef.value?.querySelectorAll<HTMLButtonElement>('button[role="menuitem"]');

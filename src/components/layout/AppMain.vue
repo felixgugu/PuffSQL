@@ -110,7 +110,12 @@
     </div>
 
     <!-- PrimeVue Tab Context Menu -->
-    <ContextMenu ref="tabContextMenuRef" :model="tabContextMenuItems" />
+    <SqMenu
+      v-model="tabMenuIsOpen"
+      :anchor-rect="tabMenuRect"
+      :items="tabContextMenuItems"
+      aria-label="查詢分頁選單"
+    />
 
     <!-- Active Tab Workspace Area (Monaco Editor / Table Data) -->
     <div class="flex-1 relative overflow-hidden bg-dark-900 flex flex-col">
@@ -184,7 +189,8 @@ import { ref, reactive, watch, nextTick, onBeforeUnmount, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import SqButton from '@/components/ui/SqButton.vue';
 import SqChip from '@/components/ui/SqChip.vue';
-import ContextMenu from 'primevue/contextmenu';
+import SqMenu from '@/components/ui/SqMenu.vue';
+import { useContextMenu } from '@/composables/useContextMenu';
 import { FileCode, Table2, TableProperties, Network, Workflow, X, Plus } from 'lucide-vue-next';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useConnectionStore } from '@/stores/connectionStore';
@@ -421,7 +427,7 @@ function cancelRenameTab() {
 // ========================
 // Context Menu
 // ========================
-const tabContextMenuRef = ref();
+const { isOpen: tabMenuIsOpen, rect: tabMenuRect, openAt: openTabMenuAt } = useContextMenu();
 const tabContextMenu = reactive<{
   tab: WorkspaceTab | null;
 }>({
@@ -476,7 +482,7 @@ const tabContextMenuItems = computed(() => {
 
 function openTabContextMenu(e: MouseEvent, tab: WorkspaceTab) {
   tabContextMenu.tab = tab;
-  tabContextMenuRef.value?.show(e);
+  openTabMenuAt(e);
 }
 
 function handleContextMenuRename() {

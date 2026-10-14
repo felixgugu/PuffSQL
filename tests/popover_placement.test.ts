@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { placePanel } from '../src/utils/popoverPlacement';
+import { useContextMenu } from '../src/composables/useContextMenu';
 
 const VIEWPORT = { width: 1440, height: 900 };
 
@@ -91,5 +92,31 @@ describe('popover placement', () => {
     assert.match(source, /focusItem\('first'\)/, 'focus moves into the menu when it opens');
     assert.match(source, /:disabled="item\.disabled"/, 'disabled items are not clickable');
     assert.match(source, /is-danger/, 'destructive items use the danger tone');
+  });
+
+  test('useContextMenu anchors the menu at the pointer', () => {
+    const { isOpen, rect, openAt, close } = useContextMenu();
+
+    assert.equal(isOpen.value, false, 'menus start closed');
+    assert.deepEqual(rect.value, { top: 0, bottom: 0, left: 0, right: 0 });
+
+    openAt({ clientX: 320, clientY: 180 } as MouseEvent);
+    assert.equal(isOpen.value, true);
+    assert.deepEqual(
+      rect.value,
+      { top: 180, bottom: 180, left: 320, right: 320 },
+      'a zero-size anchor at the cursor: placement still clamps it inside the viewport'
+    );
+
+    close();
+    assert.equal(isOpen.value, false);
+  });
+
+  test('SqMenu accepts both lucide components and legacy pi-* icon names', () => {
+    const source = readFileSync(resolve(process.cwd(), 'src/components/ui/SqMenu.vue'), 'utf-8');
+
+    assert.match(source, /icon\?: Component \| string/, 'the item model accepts both');
+    assert.match(source, /typeof icon === 'string' \? piIcon\(icon\) : icon/, 'pi-* strings resolve through the map');
+    assert.match(source, /anchorRect/, 'pointer-anchored menus are supported');
   });
 });

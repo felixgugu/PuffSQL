@@ -181,7 +181,12 @@
     </div>
 
     <!-- PrimeVue ContextMenu for Folders & Files -->
-    <ContextMenu ref="contextMenuRef" :model="contextMenuItems" />
+    <SqMenu
+      v-model="nodeMenu.isOpen.value"
+      :anchor-rect="nodeMenu.rect.value"
+      :items="contextMenuItems"
+      aria-label="資料夾與檔案選單"
+    />
 
     <!-- Rename Modal -->
     <Dialog
@@ -289,7 +294,8 @@ import { useI18n } from 'vue-i18n';
 import SqButton from '@/components/ui/SqButton.vue';
 import SqInput from '@/components/ui/SqInput.vue';
 import Dialog from 'primevue/dialog';
-import ContextMenu from 'primevue/contextmenu';
+import SqMenu from '@/components/ui/SqMenu.vue';
+import { useContextMenu } from '@/composables/useContextMenu';
 import {
   FolderGit2,
   RotateCw,
@@ -325,7 +331,7 @@ interface ContextMenuTarget {
 const { t } = useI18n();
 const sqlFolderStore = useSqlFolderStore();
 
-const contextMenuRef = ref();
+const nodeMenu = useContextMenu();
 const targetNode = ref<ContextMenuTarget | null>(null);
 
 const isRenameModalOpen = ref(false);
@@ -348,7 +354,7 @@ function openNodeContextMenu(event: MouseEvent, node: SqlFileNode, isRoot = fals
     isRoot,
     rawNode: node,
   };
-  contextMenuRef.value?.show(event);
+  nodeMenu.openAt(event);
 }
 
 provide('openSqlNodeContextMenu', openNodeContextMenu);

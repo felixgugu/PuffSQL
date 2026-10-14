@@ -101,7 +101,12 @@
       </div>
 
       <!-- PrimeVue Result Tab Context Menu -->
-      <ContextMenu ref="tabContextMenuRef" :model="tabContextMenuItems" />
+      <SqMenu
+        v-model="tabMenuIsOpen"
+        :anchor-rect="tabMenuRect"
+        :items="tabContextMenuItems"
+        aria-label="查詢結果分頁選單"
+      />
 
       <!-- Right: Grid Actions + Panel View Switcher + Panel Minimize Control -->
       <div class="flex items-center space-x-1 pl-2 flex-shrink-0 text-xs">
@@ -235,7 +240,8 @@
 import { ref, computed, reactive, nextTick, onBeforeUnmount } from 'vue';
 import { useI18n } from 'vue-i18n';
 import SqButton from '@/components/ui/SqButton.vue';
-import ContextMenu from 'primevue/contextmenu';
+import SqMenu from '@/components/ui/SqMenu.vue';
+import { useContextMenu } from '@/composables/useContextMenu';
 import { CopyPlus, Minus, Pin, Wrench, X } from 'lucide-vue-next';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useQueryStore } from '@/stores/queryStore';
@@ -437,7 +443,7 @@ function cancelRenameTab() {
 // ========================
 // Tab Context Menu
 // ========================
-const tabContextMenuRef = ref();
+const { isOpen: tabMenuIsOpen, rect: tabMenuRect, openAt: openTabMenuAt } = useContextMenu();
 const tabContextMenu = reactive<{
   tab: QueryResultTab | null;
 }>({
@@ -482,7 +488,7 @@ const tabContextMenuItems = computed(() => {
 
 function openTabContextMenu(e: MouseEvent, tab: QueryResultTab) {
   tabContextMenu.tab = tab;
-  tabContextMenuRef.value?.show(e);
+  openTabMenuAt(e);
 }
 
 function handleContextMenuRename() {

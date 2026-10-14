@@ -17,6 +17,16 @@
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { placePanel } from '@/utils/popoverPlacement';
+import type { RectLike } from '@/utils/popoverPlacement';
+
+/**
+ * Anything that can report the rectangle the panel should hang off. A real element satisfies this,
+ * and so does a virtual anchor built from a pointer position (context menus).
+ */
+export interface SqPopoverAnchor {
+  getBoundingClientRect(): RectLike;
+  contains?(node: Node): boolean;
+}
 
 /**
  * Minimal floating panel (replaces PrimeVue Popover / Menu overlays).
@@ -30,7 +40,7 @@ const props = withDefaults(
   defineProps<{
     modelValue: boolean;
     /** Element the panel is anchored to; its rect drives the position. */
-    anchor?: HTMLElement | null;
+    anchor?: SqPopoverAnchor | null;
     align?: 'start' | 'end';
     /** Rendered as `min-width`, e.g. `16rem`. */
     minWidth?: string;
@@ -74,7 +84,7 @@ function onPointerDown(event: PointerEvent) {
   const target = event.target as Node | null;
   if (!target) return;
   if (panelRef.value?.contains(target)) return;
-  if (props.anchor?.contains(target)) return;
+  if (props.anchor?.contains?.(target)) return;
   close();
 }
 
