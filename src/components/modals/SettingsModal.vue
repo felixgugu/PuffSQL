@@ -20,17 +20,20 @@
 
     <!-- Navigation Tabs -->
     <div class="flex border-b border-dark-750 bg-dark-850 px-5 pt-2 space-x-2 flex-shrink-0 text-xs">
-      <Button
+      <SqButton
         v-for="tab in tabs"
         :key="tab.id"
         :label="tab.label"
-        :icon="tab.icon"
-        size="small"
-        :severity="activeTab === tab.id ? 'primary' : 'secondary'"
-        :text="activeTab !== tab.id"
-        class="!text-xs !py-1 !px-2.5"
+        size="sm"
+        :tone="activeTab === tab.id ? 'accent' : 'neutral'"
+        :variant="activeTab === tab.id ? 'solid' : 'ghost'"
+        :active="activeTab === tab.id"
         @click="activeTab = tab.id"
-      />
+      >
+        <template #icon>
+          <component :is="tab.icon" class="w-3.5 h-3.5" />
+        </template>
+      </SqButton>
     </div>
 
     <!-- Modal Body -->
@@ -226,9 +229,11 @@
             <span class="text-xxs text-dark-400">{{ $t('settingsModal.livePreviewDesc') }}</span>
           </div>
           <div class="flex flex-wrap items-center gap-2.5 pt-1">
-            <Button label="主要按鈕" icon="pi pi-check" size="small" />
-            <Button label="次要外框" severity="secondary" outlined size="small" />
-            <Button label="文字按鈕" text size="small" />
+            <SqButton label="主要按鈕" tone="accent" variant="solid" size="sm">
+              <template #icon><Check class="w-3.5 h-3.5" /></template>
+            </SqButton>
+            <SqButton label="次要外框" variant="outline" size="sm" />
+            <SqButton label="文字按鈕" size="sm" />
             <SqChip label="狀態標籤" />
             <SqChip tone="accent" label="12" />
             <SqInput placeholder="輸入框預覽..." size="sm" class="w-32" />
@@ -556,20 +561,18 @@
     <!-- Modal Footer -->
     <template #footer>
       <div class="px-5 py-2.5 border-t border-dark-750 bg-dark-800/80 flex items-center justify-between w-full">
-        <Button
+        <SqButton
           type="button"
           :label="$t('settingsModal.resetDefaults')"
-          severity="danger"
-          size="small"
-          text
-          class="!text-xxs"
+          size="sm"
+          tone="danger"
           @click="handleReset"
         />
-        <Button
+        <SqButton
           type="button"
           :label="$t('settingsModal.done')"
-          severity="primary"
-          size="small"
+          tone="accent"
+          variant="solid"
           @click="$emit('close')"
         />
       </div>
@@ -582,7 +585,8 @@ import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import appIcon from '../../../src-tauri/icons/64x64.png';
 import Dialog from 'primevue/dialog';
-import Button from 'primevue/button';
+import SqButton from '@/components/ui/SqButton.vue';
+import { Check, FileCode, Filter, Info, Palette, Sparkles, Table2 } from 'lucide-vue-next';
 import Select from 'primevue/select';
 import SqSegmented from '@/components/ui/SqSegmented.vue';
 import SqSwitch from '@/components/ui/SqSwitch.vue';
@@ -627,12 +631,12 @@ const dialogWindow = useDialogWindow();
 const activeTab = ref<'theme' | 'editor' | 'results' | 'table_filter' | 'ai' | 'about'>('theme');
 
 const tabs = computed(() => [
-  { id: 'theme' as const, label: t('settingsModal.tabs.appearance'), icon: 'pi pi-palette' },
-  { id: 'editor' as const, label: t('settingsModal.tabs.editor'), icon: 'pi pi-code' },
-  { id: 'results' as const, label: t('settingsModal.tabs.results'), icon: 'pi pi-table' },
-  { id: 'table_filter' as const, label: t('settingsModal.tabs.filter'), icon: 'pi pi-filter' },
-  { id: 'ai' as const, label: t('settingsModal.tabs.ai'), icon: 'pi pi-sparkles' },
-  { id: 'about' as const, label: t('settingsModal.tabs.about'), icon: 'pi pi-info-circle' },
+  { id: 'theme' as const, label: t('settingsModal.tabs.appearance'), icon: Palette },
+  { id: 'editor' as const, label: t('settingsModal.tabs.editor'), icon: FileCode },
+  { id: 'results' as const, label: t('settingsModal.tabs.results'), icon: Table2 },
+  { id: 'table_filter' as const, label: t('settingsModal.tabs.filter'), icon: Filter },
+  { id: 'ai' as const, label: t('settingsModal.tabs.ai'), icon: Sparkles },
+  { id: 'about' as const, label: t('settingsModal.tabs.about'), icon: Info },
 ]);
 
 function handleLocaleChange(val: unknown) {

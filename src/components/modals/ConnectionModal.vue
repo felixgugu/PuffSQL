@@ -253,13 +253,10 @@
                   :style="{ backgroundColor: form.color || '#64748b' }"
                 />
               </label>
-              <Button
+              <SqButton
                 v-if="form.color"
                 :label="$t('common.clear')"
-                size="small"
-                text
-                severity="secondary"
-                class="!text-xxs !py-0 !px-1.5 !text-dark-400 hover:!text-dark-200"
+                size="sm"
                 @click="form.color = ''"
               />
             </div>
@@ -315,39 +312,33 @@
     <!-- Modal Footer Actions -->
     <template #footer>
       <div class="flex items-center justify-between w-full">
-        <Button
+        <SqButton
           type="button"
           :label="$t('connectionModal.testButton')"
-          icon="pi pi-bolt"
-          severity="secondary"
-          size="small"
-          outlined
-          class="!text-xs !py-1.5 !px-3 hover:!bg-dark-750"
+          variant="outline"
           :loading="isTesting"
           @click="handleTest"
-        />
+        >
+          <template #icon><Zap class="w-3.5 h-3.5" /></template>
+        </SqButton>
 
         <div class="flex items-center space-x-2">
-          <Button
+          <SqButton
             type="button"
             :label="$t('connectionModal.cancelButton')"
-            severity="secondary"
-            size="small"
-            text
-            class="!text-xs !py-1.5 !px-3 hover:!bg-dark-750"
             @click="close"
           />
-          <Button
+          <SqButton
             type="button"
             :label="$t('connectionModal.saveAndConnectButton')"
-            icon="pi pi-check"
-            severity="primary"
-            size="small"
-            class="!text-xs !py-1.5 !px-3.5 shadow-md shadow-brand-500/20"
+            tone="accent"
+            variant="solid"
             :loading="isSaving"
             :disabled="isDuplicateName || !form.name.trim()"
             @click="handleSave"
-          />
+          >
+            <template #icon><Check class="w-3.5 h-3.5" /></template>
+          </SqButton>
         </div>
       </div>
     </template>
@@ -363,7 +354,8 @@ import InputNumber from 'primevue/inputnumber';
 import Password from 'primevue/password';
 import SqSwitch from '@/components/ui/SqSwitch.vue';
 import SqCheckbox from '@/components/ui/SqCheckbox.vue';
-import Button from 'primevue/button';
+import SqButton from '@/components/ui/SqButton.vue';
+import { Check, Zap } from 'lucide-vue-next';
 import SqChip from '@/components/ui/SqChip.vue';
 import type { ConnectionProfile } from '@/types/connection';
 import { useConnectionStore } from '@/stores/connectionStore';

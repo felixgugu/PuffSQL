@@ -34,41 +34,38 @@
         </div>
 
         <div class="flex items-center space-x-1.5 flex-shrink-0">
-          <Button
+          <SqButton
             type="button"
-            icon="pi pi-sparkles"
             :label="$t('stats.aiAdvice')"
-            size="small"
-            severity="help"
-            outlined
+            size="sm"
+            tone="accent"
+            variant="outline"
             @click="requestAiStatsTuning"
             v-tooltip.top="$t('stats.aiAdviceTooltip')"
-            class="!text-xxs !py-1 !px-2 text-plan border-purple-500/40 hover:bg-purple-950/30"
-          />
+          >
+            <template #icon><Sparkles class="w-3.5 h-3.5" /></template>
+          </SqButton>
 
-          <Button
+          <SqButton
             type="button"
-            icon="pi pi-copy"
             :label="$t('stats.copyReport')"
-            size="small"
-            severity="secondary"
-            outlined
+            size="sm"
+            variant="outline"
             @click="copyStatsMarkdown"
             v-tooltip.top="$t('stats.copyReportTooltip')"
-            class="!text-xxs !py-1 !px-2"
-          />
+          >
+            <template #icon><Copy class="w-3.5 h-3.5" /></template>
+          </SqButton>
 
-          <Button
+          <SqButton
             type="button"
-            icon="pi pi-trash"
-            text
-            rounded
-            size="small"
-            severity="danger"
+            tone="danger"
+            :aria-label="$t('stats.clearReportTooltip')"
             @click="queryStore.clearExecutionStats()"
             v-tooltip.top="$t('stats.clearReportTooltip')"
-            class="!w-7 !h-7 !p-0"
-          />
+          >
+            <template #icon><Trash2 class="w-3.5 h-3.5" /></template>
+          </SqButton>
         </div>
       </div>
 
@@ -291,7 +288,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import Button from 'primevue/button';
+import SqButton from '@/components/ui/SqButton.vue';
+import { Copy, Sparkles, Trash2 } from 'lucide-vue-next';
 import SqChip from '@/components/ui/SqChip.vue';
 import Message from 'primevue/message';
 import SqInput from '@/components/ui/SqInput.vue';

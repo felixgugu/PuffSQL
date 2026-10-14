@@ -94,35 +94,33 @@
     <!-- Modal Footer -->
     <template #footer>
       <div class="flex items-center justify-between w-full pt-2">
-        <Button
+        <SqButton
           type="button"
           :label="step === 2 ? $t('dangerousQuery.abort') : $t('dangerousQuery.cancel')"
-          severity="secondary"
-          size="small"
-          text
           @click="$emit('cancel')"
         />
 
-        <Button
+        <SqButton
           v-if="step === 1"
           type="button"
           :label="$t('dangerousQuery.proceedStep1')"
-          icon="pi pi-arrow-right"
-          iconPos="right"
-          severity="warn"
-          size="small"
+          tone="warn"
+          variant="outline"
           @click="$emit('proceed')"
-        />
+        >
+          <template #icon><ArrowRight class="w-3.5 h-3.5" /></template>
+        </SqButton>
 
-        <Button
+        <SqButton
           v-else
           type="button"
           :label="$t('dangerousQuery.execute')"
-          icon="pi pi-exclamation-triangle"
-          severity="danger"
-          size="small"
+          tone="danger"
+          variant="solid"
           @click="$emit('proceed')"
-        />
+        >
+          <template #icon><TriangleAlert class="w-3.5 h-3.5" /></template>
+        </SqButton>
       </div>
     </template>
   </Dialog>
@@ -130,7 +128,8 @@
 
 <script setup lang="ts">
 import Dialog from 'primevue/dialog';
-import Button from 'primevue/button';
+import SqButton from '@/components/ui/SqButton.vue';
+import { ArrowRight, TriangleAlert } from 'lucide-vue-next';
 import SqChip from '@/components/ui/SqChip.vue';
 import { useDialogWindow } from '@/composables/useDialogWindow';
 

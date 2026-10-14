@@ -225,17 +225,15 @@
                 </div>
 
                 <!-- Individual Save Button -->
-                <Button
+                <SqButton
                   type="button"
-                  size="small"
-                  text
-                  severity="secondary"
-                  class="!p-1 text-dark-300 hover:text-dark-100"
-                  :title="$t('exportSchemaModal.saveSingleTooltip')"
+                  size="sm"
+                  :aria-label="$t('exportSchemaModal.saveSingleTooltip')"
+                  v-tooltip.top="$t('exportSchemaModal.saveSingleTooltip')"
                   @click="handleSaveSingle(item)"
                 >
-                  <i class="pi pi-download text-xs" />
-                </Button>
+                  <template #icon><Download class="w-3.5 h-3.5" /></template>
+                </SqButton>
               </div>
             </div>
           </div>
@@ -342,66 +340,62 @@
       <div class="flex items-center justify-between w-full pt-2">
         <!-- Left button -->
         <div>
-          <Button
+          <SqButton
             v-if="step === 'confirm'"
             type="button"
             :label="$t('exportSchemaModal.cancel')"
-            severity="secondary"
-            size="small"
-            text
             @click="handleClose"
           />
-          <Button
+          <SqButton
             v-else-if="step === 'save_prompt'"
             type="button"
             :label="$t('exportSchemaModal.rerun')"
-            icon="pi pi-refresh"
-            severity="secondary"
-            size="small"
-            text
             @click="startExecution"
-          />
-          <Button
+          >
+            <template #icon><RefreshCw class="w-3.5 h-3.5" /></template>
+          </SqButton>
+          <SqButton
             v-else-if="step === 'completed'"
             type="button"
             :label="$t('exportSchemaModal.saveAnother')"
-            icon="pi pi-replay"
-            severity="secondary"
-            size="small"
-            text
             @click="step = 'save_prompt'"
-          />
+          >
+            <template #icon><RotateCcw class="w-3.5 h-3.5" /></template>
+          </SqButton>
         </div>
 
         <!-- Right button -->
         <div>
-          <Button
+          <SqButton
             v-if="step === 'confirm'"
             type="button"
             :label="$t('exportSchemaModal.startExport')"
-            icon="pi pi-play"
-            severity="warn"
-            size="small"
+            tone="accent"
+            variant="solid"
             @click="startExecution"
-          />
-          <Button
+          >
+            <template #icon><Play class="w-3.5 h-3.5" /></template>
+          </SqButton>
+          <SqButton
             v-else-if="step === 'running' && hasError"
             type="button"
             :label="$t('exportSchemaModal.retry')"
-            icon="pi pi-refresh"
-            severity="warn"
-            size="small"
+            tone="warn"
+            variant="outline"
             @click="startExecution"
-          />
-          <Button
+          >
+            <template #icon><RefreshCw class="w-3.5 h-3.5" /></template>
+          </SqButton>
+          <SqButton
             v-else-if="step === 'completed'"
             type="button"
             :label="$t('exportSchemaModal.finish')"
-            icon="pi pi-check"
-            severity="primary"
-            size="small"
+            tone="accent"
+            variant="solid"
             @click="handleClose"
-          />
+          >
+            <template #icon><Check class="w-3.5 h-3.5" /></template>
+          </SqButton>
         </div>
       </div>
     </template>
@@ -412,7 +406,8 @@
 import { ref, reactive, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import Dialog from 'primevue/dialog';
-import Button from 'primevue/button';
+import SqButton from '@/components/ui/SqButton.vue';
+import { Check, Download, Play, RefreshCw, RotateCcw } from 'lucide-vue-next';
 import { queryService } from '@/services/queryService';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useDialogWindow } from '@/composables/useDialogWindow';

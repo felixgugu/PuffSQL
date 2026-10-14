@@ -4,38 +4,31 @@
     <div class="h-6 bg-dark-850 border-b border-dark-750 flex items-center justify-between px-3 text-xxs text-dark-400 select-none flex-shrink-0">
       <span>{{ history.length }} queries executed in this session</span>
       <div class="flex items-center space-x-2">
-        <Button
+        <SqButton
           type="button"
-          icon="pi pi-file"
           :label="$t('results.physicalLog')"
-          size="small"
-          text
-          severity="secondary"
+          size="sm"
           @click="handleOpenLog"
           :v-tooltip.top="$t('results.openLogTooltip')"
-          class="!text-xxs !p-0"
-        />
+        >
+          <template #icon><FileText class="w-3.5 h-3.5" /></template>
+        </SqButton>
         <span v-if="history.length > 0" class="text-dark-600">|</span>
-        <Button
+        <SqButton
           v-if="history.length > 0"
           type="button"
           :label="isAllExpanded ? $t('common.collapseAll') : $t('common.expandAll')"
-          size="small"
-          text
-          severity="secondary"
+          size="sm"
           @click="toggleExpandAll"
-          class="!text-xxs !p-0"
         />
         <span v-if="history.length > 0" class="text-dark-600">|</span>
-        <Button
+        <SqButton
           v-if="history.length > 0"
           type="button"
           :label="$t('history.clearHistory')"
-          size="small"
-          text
-          severity="danger"
+          size="sm"
+          tone="danger"
           @click="$emit('clear')"
-          class="!text-xxs !p-0"
         />
       </div>
     </div>
@@ -88,29 +81,33 @@
 
           <!-- 右上角操作按鈕：展開|收合 與 複製 -->
           <div class="flex items-center space-x-1 flex-shrink-0 select-none">
-            <Button
+            <SqButton
               type="button"
-              :icon="isExpanded(item.id ?? idx) ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
-              text
-              rounded
-              size="small"
-              severity="secondary"
+              size="sm"
+              class="opacity-0 group-hover:opacity-100"
+              :aria-label="isExpanded(item.id ?? idx) ? $t('common.collapse') : $t('common.expand')"
               @click.stop="toggleExpand(item.id ?? idx)"
               :v-tooltip.top="isExpanded(item.id ?? idx) ? $t('common.collapse') : $t('common.expand')"
-              class="opacity-0 group-hover:opacity-100 !w-6 !h-6 !p-0"
-            />
+            >
+              <template #icon>
+                <ChevronUp v-if="isExpanded(item.id ?? idx)" class="w-3.5 h-3.5" />
+                <ChevronDown v-else class="w-3.5 h-3.5" />
+              </template>
+            </SqButton>
 
-            <Button
+            <SqButton
               type="button"
-              :icon="copiedKey === (item.id ?? idx) ? 'pi pi-check text-ok' : 'pi pi-copy'"
-              text
-              rounded
-              size="small"
-              severity="secondary"
+              size="sm"
+              class="opacity-0 group-hover:opacity-100"
+              :aria-label="copiedKey === (item.id ?? idx) ? $t('common.copied') : 'Copy SQL'"
               @click.stop="copySql(item.sql, item.id ?? idx)"
               :v-tooltip.top="copiedKey === (item.id ?? idx) ? $t('common.copied') : 'Copy SQL'"
-              class="opacity-0 group-hover:opacity-100 !w-6 !h-6 !p-0"
-            />
+            >
+              <template #icon>
+                <Check v-if="copiedKey === (item.id ?? idx)" class="w-3.5 h-3.5 text-ok" />
+                <Copy v-else class="w-3.5 h-3.5" />
+              </template>
+            </SqButton>
           </div>
         </div>
 
@@ -141,7 +138,8 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import Button from 'primevue/button';
+import SqButton from '@/components/ui/SqButton.vue';
+import { Check, ChevronDown, ChevronUp, Copy, FileText } from 'lucide-vue-next';
 import SqChip from '@/components/ui/SqChip.vue';
 import type { QueryHistoryItem } from '@/types/query';
 import { queryService } from '@/services/queryService';

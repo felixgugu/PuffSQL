@@ -35,24 +35,22 @@
 
       <div class="flex-1 min-w-0 space-y-1.5">
         <div class="flex items-center flex-wrap gap-2">
-          <Button
+          <SqButton
             :label="hasImage ? $t('settingsModal.editorBackgroundImageReplace') : $t('settingsModal.editorBackgroundImageChoose')"
-            icon="pi pi-image"
-            size="small"
-            class="!h-7 !text-xs"
+            variant="outline"
             :loading="isProcessing"
             @click="openPicker"
-          />
-          <Button
+          >
+            <template #icon><Image class="w-3.5 h-3.5" /></template>
+          </SqButton>
+          <SqButton
             v-if="hasImage"
             :label="$t('settingsModal.editorBackgroundImageRemove')"
-            icon="pi pi-trash"
-            severity="danger"
-            text
-            size="small"
-            class="!h-7 !text-xs"
+            tone="danger"
             @click="clearImage"
-          />
+          >
+            <template #icon><Trash2 class="w-3.5 h-3.5" /></template>
+          </SqButton>
         </div>
         <span class="text-xxs text-dark-500 block leading-relaxed">{{ statusText }}</span>
       </div>
@@ -110,7 +108,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import Button from 'primevue/button';
+import SqButton from '@/components/ui/SqButton.vue';
+import { Image, Trash2 } from 'lucide-vue-next';
 import SqSwitch from '@/components/ui/SqSwitch.vue';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';

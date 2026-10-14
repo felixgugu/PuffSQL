@@ -55,15 +55,17 @@
 
         <!-- Add Button -->
         <div class="col-span-2">
-          <Button
+          <SqButton
             type="button"
-            icon="pi pi-plus"
             label="新增"
-            size="small"
+            tone="accent"
+            variant="solid"
+            class="w-full"
             @click="handleAddRule"
             :disabled="!newPattern.trim() || !!patternError"
-            class="w-full !h-7 !text-xs !py-0"
-          />
+          >
+            <template #icon><Plus class="w-3.5 h-3.5" /></template>
+          </SqButton>
         </div>
       </div>
       <div v-if="patternError" class="text-danger text-xxs flex items-center space-x-1">
@@ -138,23 +140,25 @@
 
               <!-- Action Buttons: Save & Cancel -->
               <div class="col-span-2 flex items-center justify-end space-x-1.5">
-                <Button
+                <SqButton
                   type="button"
-                  icon="pi pi-check"
                   label="儲存"
-                  size="small"
+                  tone="accent"
+                  variant="solid"
                   @click="saveEditing"
                   :disabled="!!editPatternError"
                   v-tooltip.top="'儲存修改 (Enter)'"
-                />
-                <Button
+                >
+                  <template #icon><Check class="w-3.5 h-3.5" /></template>
+                </SqButton>
+                <SqButton
                   type="button"
-                  icon="pi pi-times"
-                  size="small"
-                  severity="secondary"
+                  aria-label="取消 (Esc)"
                   @click="cancelEditing"
                   v-tooltip.top="'取消 (Esc)'"
-                />
+                >
+                  <template #icon><X class="w-3.5 h-3.5" /></template>
+                </SqButton>
               </div>
             </div>
             <div v-if="editPatternError" class="text-danger text-xxs flex items-center space-x-1">
@@ -204,28 +208,24 @@
 
             <!-- Actions: Edit & Delete -->
             <div class="flex items-center space-x-1 flex-shrink-0 opacity-80 group-hover:opacity-100 transition-opacity">
-              <Button
+              <SqButton
                 type="button"
-                icon="pi pi-pencil"
-                text
-                rounded
-                size="small"
-                severity="secondary"
+                :aria-label="'編輯此規則 (雙擊亦可)'"
                 @click="startEditing(rule)"
                 v-tooltip.top="'編輯此規則 (雙擊亦可)'"
-                class="!p-1 !w-7 !h-7"
+              >
+                <template #icon><Pencil class="w-3.5 h-3.5" /></template>
+              </SqButton>
               />
-              <Button
+              <SqButton
                 type="button"
-                icon="pi pi-trash"
-                text
-                rounded
-                size="small"
-                severity="danger"
+                tone="danger"
+                aria-label="刪除此規則"
                 @click="settingsStore.removeFilterRule(rule.id)"
                 v-tooltip.top="'刪除此規則'"
-                class="!p-1 !w-7 !h-7"
-              />
+              >
+                <template #icon><Trash2 class="w-3.5 h-3.5" /></template>
+              </SqButton>
             </div>
           </div>
         </div>
@@ -286,7 +286,8 @@
 import { ref, computed } from 'vue';
 import Select from 'primevue/select';
 import SqInput from '@/components/ui/SqInput.vue';
-import Button from 'primevue/button';
+import SqButton from '@/components/ui/SqButton.vue';
+import { Check, Pencil, Plus, Trash2, X } from 'lucide-vue-next';
 import SqCheckbox from '@/components/ui/SqCheckbox.vue';
 import { Eye, EyeOff } from 'lucide-vue-next';
 import SqChip from '@/components/ui/SqChip.vue';

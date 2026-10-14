@@ -60,16 +60,15 @@
         <!-- File picker -->
         <div v-if="store.sourceMode === 'file'" class="space-y-2">
           <div class="flex items-center space-x-2">
-            <Button
+            <SqButton
               type="button"
               :label="$t('tsvImportModal.pickFileBtn')"
-              icon="pi pi-upload"
-              size="small"
-              severity="secondary"
-              outlined
-              class="!text-xxs"
+              size="sm"
+              variant="outline"
               @click="pickFile"
-            />
+            >
+              <template #icon><ArrowUpFromLine class="w-3.5 h-3.5" /></template>
+            </SqButton>
             <span v-if="store.fileName" class="text-xs font-mono text-dark-200 truncate">
               {{ store.fileName }}
             </span>
@@ -198,27 +197,23 @@
 
     <!-- Footer -->
     <div class="h-12 px-4 border-t border-dark-750 bg-dark-850 flex items-center justify-end space-x-2 flex-shrink-0">
-      <Button
+      <SqButton
         type="button"
         :label="$t('common.cancel')"
-        size="small"
-        severity="secondary"
-        text
-        class="!text-xs"
         @click="emit('cancel')"
       />
-      <Button
+      <SqButton
         type="button"
         :label="store.isValidating ? $t('tsvImportModal.validatingBtn') : $t('tsvImportModal.nextBtn')"
-        icon="pi pi-arrow-right"
-        icon-pos="right"
-        size="small"
+        tone="accent"
+        variant="solid"
         :loading="store.isValidating"
         :disabled="!store.canValidate || store.isValidating"
         v-tooltip.top="store.canValidate ? '' : $t('tsvImportModal.provideSourceHint')"
-        class="!text-xs"
         @click="emit('next')"
-      />
+      >
+        <template #icon><ArrowRight class="w-3.5 h-3.5" /></template>
+      </SqButton>
     </div>
   </div>
 </template>
@@ -226,7 +221,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import Button from 'primevue/button';
+import SqButton from '@/components/ui/SqButton.vue';
+import { ArrowRight, ArrowUpFromLine } from 'lucide-vue-next';
 import { checkUtf8File, openTsvFile } from '@/utils/fileStorage';
 import { countUtf8Bytes, MAX_SOURCE_BYTES } from '@/utils/tsvImport';
 import { useTsvImportStore } from '@/stores/tsvImportStore';

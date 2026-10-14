@@ -24,17 +24,14 @@
 
     <template #footer>
       <div class="flex items-center justify-end space-x-2 pt-2">
-        <Button
+        <SqButton
           :label="cancelText || 'Cancel'"
-          severity="secondary"
-          size="small"
-          text
           @click="$emit('cancel')"
         />
-        <Button
+        <SqButton
           :label="confirmText || 'Confirm'"
-          :severity="isDanger ? 'danger' : 'primary'"
-          size="small"
+          :tone="isDanger ? 'danger' : 'accent'"
+          variant="solid"
           @click="$emit('confirm')"
         />
       </div>
@@ -44,7 +41,7 @@
 
 <script setup lang="ts">
 import Dialog from 'primevue/dialog';
-import Button from 'primevue/button';
+import SqButton from '@/components/ui/SqButton.vue';
 import { useDialogWindow } from '@/composables/useDialogWindow';
 
 const dialogWindow = useDialogWindow();

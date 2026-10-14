@@ -213,49 +213,43 @@
         <span v-else-if="!store.importResult">{{ $t('tsvImportModal.appendModeNotice') }}</span>
       </div>
       <div class="flex items-center space-x-2">
-        <Button
+        <SqButton
           type="button"
           :label="$t('tsvImportModal.backBtn')"
-          icon="pi pi-arrow-left"
-          size="small"
-          severity="secondary"
-          text
           :disabled="store.isImporting"
-          class="!text-xs"
           @click="emit('back')"
-        />
-        <Button
+        >
+          <template #icon><ArrowLeft class="w-3.5 h-3.5" /></template>
+        </SqButton>
+        <SqButton
           type="button"
           :label="$t('common.cancel')"
-          size="small"
-          severity="secondary"
-          text
           :disabled="store.isImporting"
-          class="!text-xs"
           @click="emit('cancel')"
         />
-        <Button
+        <SqButton
           v-if="!store.importResult || store.importResult.rolledBack"
           type="button"
           :label="store.isImporting ? $t('tsvImportModal.importingBtn') : $t('tsvImportModal.startImport')"
-          icon="pi pi-database"
-          size="small"
+          tone="accent"
+          variant="solid"
           :loading="store.isImporting"
           :disabled="!store.canImport"
           v-tooltip.top="store.hasBlockingErrors ? $t('tsvImportModal.fixValidationHint') : ''"
-          class="!text-xs"
           @click="store.startImport()"
-        />
-        <Button
+        >
+          <template #icon><Database class="w-3.5 h-3.5" /></template>
+        </SqButton>
+        <SqButton
           v-else
           type="button"
           :label="$t('tsvImportModal.close')"
-          icon="pi pi-check"
-          size="small"
-          severity="success"
-          class="!text-xs"
+          tone="ok"
+          variant="solid"
           @click="emit('cancel')"
-        />
+        >
+          <template #icon><Check class="w-3.5 h-3.5" /></template>
+        </SqButton>
       </div>
     </div>
   </div>
@@ -263,7 +257,8 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import Button from 'primevue/button';
+import SqButton from '@/components/ui/SqButton.vue';
+import { ArrowLeft, Check, Database } from 'lucide-vue-next';
 import { MAX_DISPLAYED_ERRORS, NULL_SENTINEL } from '@/utils/tsvImport';
 import { useTsvImportStore } from '@/stores/tsvImportStore';
 

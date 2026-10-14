@@ -25,18 +25,16 @@
             />
             <span class="text-xxs text-dark-400">{{ $t('tsvImportModal.stepProgress', { step: store.step }) }}</span>
           </div>
-          <Button
+          <SqButton
             type="button"
-            icon="pi pi-times"
-            severity="secondary"
-            text
-            rounded
-            size="small"
+            tone="danger"
             :disabled="store.isImporting"
+            :aria-label="store.isImporting ? $t('tsvImportModal.cannotCloseWhileImporting') : $t('tsvImportModal.closeTooltip')"
             v-tooltip.top="store.isImporting ? $t('tsvImportModal.cannotCloseWhileImporting') : $t('tsvImportModal.closeTooltip')"
-            class="!w-7 !h-7 !p-0"
             @click="store.close()"
-          />
+          >
+            <template #icon><X class="w-3.5 h-3.5" /></template>
+          </SqButton>
         </div>
 
         <!-- Body -->
@@ -52,7 +50,8 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted } from 'vue';
 import { Upload } from 'lucide-vue-next';
-import Button from 'primevue/button';
+import SqButton from '@/components/ui/SqButton.vue';
+import { X } from 'lucide-vue-next';
 import SqChip from '@/components/ui/SqChip.vue';
 import TsvImportSourceStep from '@/components/modals/tsvImport/TsvImportSourceStep.vue';
 import TsvImportPreviewStep from '@/components/modals/tsvImport/TsvImportPreviewStep.vue';
