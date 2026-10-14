@@ -66,17 +66,17 @@
             <span class="text-accent font-bold font-mono">[{{ '#' + (item.seq ?? (history.length - idx)) }}]</span>
             <span class="text-dark-400 font-mono">[{{ item.executedAt }}]</span>
             <span class="text-accent font-medium">{{ item.executionTimeMs }}ms</span>
-            <Tag
+            <SqChip
               v-if="item.status === 'cancelled'"
-              severity="warn"
-              value="Cancelled"
-              class="!text-xxs !px-1.5 !py-0.2 uppercase"
+              tone="warn"
+              label="Cancelled"
+              class="uppercase"
             />
-            <Tag
+            <SqChip
               v-else-if="item.status === 'error'"
-              severity="danger"
-              value="Error"
-              class="!text-xxs !px-1.5 !py-0.2 uppercase"
+              tone="danger"
+              label="Error"
+              class="uppercase"
             />
             <span v-else-if="item.affectedRows !== undefined" class="text-ok font-mono">
               {{ item.affectedRows }} row(s)
@@ -142,7 +142,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import Button from 'primevue/button';
-import Tag from 'primevue/tag';
+import SqChip from '@/components/ui/SqChip.vue';
 import type { QueryHistoryItem } from '@/types/query';
 import { queryService } from '@/services/queryService';
 import { useWorkspaceStore } from '@/stores/workspaceStore';

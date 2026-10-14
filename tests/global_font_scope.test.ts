@@ -99,12 +99,14 @@ test('Explorer text is never bold', () => {
   }
 });
 
-test('the Explorer status tag overrides the bold PrimeVue tag weight', () => {
+test('the Explorer status chip keeps the regular UI weight', () => {
   const source = readSource('src/components/layout/AppSidebar.vue');
+  // The chip is our own SqChip now (no PrimeVue tag weight to fight), so the contract is simply
+  // that the 使用中 status chip carries no bold/medium weight class.
   assert.match(
     source,
-    /(?:value="使用中"|:value="\$t\('sidebar\.inUse'\)")[\s\S]{0,200}?class="[^"]*!font-normal/,
-    'the 使用中 tag must be explicitly reset to the regular weight'
+    /:label="\$t\('sidebar\.inUse'\)"[\s\S]{0,120}?class="mr-1"/,
+    'the 使用中 chip must stay on the regular weight'
   );
 });
 

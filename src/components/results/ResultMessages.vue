@@ -78,10 +78,10 @@
           <div class="flex items-center space-x-2 flex-wrap min-w-0">
             <span class="text-accent font-bold font-mono">[{{ '#' + (msg.seq ?? (messages.length - idx)) }}]</span>
             <span class="text-dark-400 font-mono">[{{ formatTime(msg.timestamp) }}]</span>
-            <Tag
-              :severity="msg.level === 'error' ? 'danger' : msg.level === 'warning' ? 'warn' : 'secondary'"
-              :value="msg.level"
-              class="!text-xxs !px-1.5 !py-0.2 uppercase tracking-wide font-semibold"
+            <SqChip
+              :tone="msg.level === 'error' ? 'danger' : msg.level === 'warning' ? 'warn' : 'neutral'"
+              :label="msg.level"
+              class="uppercase tracking-wide font-semibold"
             />
             <span v-if="msg.code !== undefined && msg.code !== null" class="text-dark-400">
               Msg {{ msg.code }}
@@ -152,7 +152,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onBeforeUnmount } from 'vue';
 import Button from 'primevue/button';
-import Tag from 'primevue/tag';
+import SqChip from '@/components/ui/SqChip.vue';
 import type { SessionMessageItem, QueryMessage } from '@/types/query';
 import type { SqlEditorTab } from '@/types/workspace';
 import { queryService } from '@/services/queryService';

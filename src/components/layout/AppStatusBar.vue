@@ -18,7 +18,7 @@
       <div class="h-3 w-px bg-dark-750" />
 
       <div class="flex items-center space-x-1">
-        <i class="pi pi-database text-warn text-xxs" />
+        <Database class="w-3 h-3 text-dark-400" />
         <span class="text-warn font-mono font-medium">{{ connectionStore.activeDatabase }}</span>
       </div>
 
@@ -26,7 +26,7 @@
         <div class="h-3 w-px bg-dark-750" />
         <div class="flex items-center space-x-1" :title="$t('statusBar.spid', { spid: connectionStore.activeSpid })">
           <span class="text-dark-500">SPID:</span>
-          <Tag severity="info" :value="String(connectionStore.activeSpid)" class="!text-xxs !px-1.5 !py-0 font-mono font-medium" />
+          <SqChip tone="neutral" :label="String(connectionStore.activeSpid)" class="font-mono font-medium" />
         </div>
       </template>
     </div>
@@ -36,13 +36,13 @@
       <div class="flex items-center space-x-1.5">
         <span class="text-dark-500">{{ $t('common.status') }}:</span>
         <template v-if="queryStore.isCancelling">
-          <Tag severity="danger" :value="$t('common.running')" class="!text-xxs !font-medium !px-1.5 !py-0 animate-pulse" />
+          <SqChip tone="danger" :label="$t('common.running')" class="font-medium" />
         </template>
         <template v-else-if="queryStore.isExecuting">
-          <Tag severity="warn" :value="`${$t('statusBar.executing')} (${formattedElapsedTime})`" class="!text-xxs !font-medium !px-1.5 !py-0 animate-pulse" />
+          <SqChip tone="warn" :label="`${$t('statusBar.executing')} (${formattedElapsedTime})`" class="font-medium" />
         </template>
         <template v-else>
-          <Tag severity="success" :value="$t('statusBar.ready')" class="!text-xxs !font-medium !px-1.5 !py-0" />
+          <SqChip tone="ok" :label="$t('statusBar.ready')" class="font-medium" />
         </template>
       </div>
 
@@ -64,7 +64,8 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import Tag from 'primevue/tag';
+import { Database } from 'lucide-vue-next';
+import SqChip from '@/components/ui/SqChip.vue';
 import { useConnectionStore } from '@/stores/connectionStore';
 import { useQueryStore } from '@/stores/queryStore';
 

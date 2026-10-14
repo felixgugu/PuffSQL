@@ -48,11 +48,11 @@
               >
                 {{ connectionStore.activeConnection.name }}
               </span>
-              <Tag
+              <SqChip
                 v-if="connectionStore.activeConnection.alias"
-                severity="secondary"
-                :value="connectionStore.activeConnection.alias"
-                class="!text-xxs !font-medium !px-1.5 !py-0 flex-shrink-0"
+                tone="neutral"
+                :label="connectionStore.activeConnection.alias"
+                class="font-medium"
               />
             </div>
             <span v-else class="text-dark-400 text-xs">{{ $t('sidebar.connections') }}...</span>
@@ -71,11 +71,11 @@
                     class="font-medium text-xs truncate"
                     :style="getConnectionLabelStyle(slotProps.option)"
                   >{{ slotProps.option.name }}</span>
-                  <Tag
+                  <SqChip
                     v-if="slotProps.option.alias"
-                    severity="secondary"
-                    :value="slotProps.option.alias"
-                    class="!text-xxs !font-medium !px-1.5 !py-0"
+                    tone="neutral"
+                    :label="slotProps.option.alias"
+                    class="font-medium"
                   />
                 </div>
                 <span class="text-xxs text-dark-400 font-mono truncate">
@@ -114,7 +114,7 @@
         >
           <template #value="slotProps">
             <div class="flex items-center space-x-1.5 min-w-0">
-              <i class="pi pi-database text-dark-400 text-xs flex-shrink-0" />
+              <Database class="w-3.5 h-3.5 text-dark-400 flex-shrink-0" />
               <span class="font-mono text-xs truncate text-warn font-semibold">
                 {{ slotProps.value || $t('header.selectDatabase') + '...' }}
               </span>
@@ -123,7 +123,7 @@
 
           <template #option="slotProps">
             <div class="flex items-center space-x-1.5 font-mono text-xs py-0.5">
-              <i class="pi pi-database text-warn text-xs flex-shrink-0" />
+              <Database class="w-3.5 h-3.5 text-dark-400 flex-shrink-0" />
               <span class="truncate text-dark-200">{{ slotProps.option }}</span>
             </div>
           </template>
@@ -254,20 +254,24 @@
 
         <!-- DBA Diagnostics Toolbox Button & Popover -->
         <Button
-          icon="pi pi-chart-line"
           severity="secondary"
           size="small"
           text
           class="!h-7 !w-7 !p-0"
+          aria-label="DBA 常用診斷維護工具箱"
           v-tooltip.bottom="'DBA 常用診斷維護工具箱'"
           @click="toggleDbaPopover"
-        />
+        >
+          <template #icon>
+            <ChartLine class="w-3.5 h-3.5" />
+          </template>
+        </Button>
 
         <Popover ref="dbaPopoverRef">
           <div class="w-72 font-sans text-xs select-none">
             <div class="px-2 py-1.5 text-xxs font-semibold uppercase tracking-wider text-dark-400 flex items-center justify-between border-b border-dark-750 mb-1">
               <div class="flex items-center space-x-1.5">
-                <i class="pi pi-chart-line text-danger text-xs" />
+                <ChartLine class="w-3.5 h-3.5 text-accent" />
                 <span>DBA 診斷與維護指令庫</span>
               </div>
               <span class="text-dark-500 font-mono">{{ DBA_QUERIES.length }} 項</span>
@@ -403,7 +407,8 @@ import { ref, computed } from 'vue';
 import Toolbar from 'primevue/toolbar';
 import Button from 'primevue/button';
 import Select from 'primevue/select';
-import Tag from 'primevue/tag';
+import { ChartLine, Database } from 'lucide-vue-next';
+import SqChip from '@/components/ui/SqChip.vue';
 import Divider from 'primevue/divider';
 import Popover from 'primevue/popover';
 import SqlEditorToolbarActions from '@/components/layout/SqlEditorToolbarActions.vue';

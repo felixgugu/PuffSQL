@@ -53,7 +53,7 @@
     <!-- Filter Search Box with ComboBox & Clear Button -->
     <div ref="filterContainerRef" class="p-2 border-b border-dark-700 flex-shrink-0 relative">
       <div class="relative flex items-center">
-        <i class="pi pi-search text-dark-500 absolute left-2 pointer-events-none text-xs" />
+        <Search class="w-3.5 h-3.5 text-dark-500 absolute left-2 pointer-events-none" />
         <InputText
           ref="filterInputRef"
           v-model="filterQuery"
@@ -212,11 +212,11 @@
           >{{ conn.name }}</span>
 
           <!-- Status indicator (when active in workspace) -->
-          <Tag
+          <SqChip
             v-if="connectionStore.activeConnectionId === conn.id && connectionStore.status === 'connected'"
-            severity="success"
-            :value="$t('sidebar.inUse')"
-            class="!text-xxs !font-normal !px-1.5 !py-0 flex-shrink-0 mr-1"
+            tone="ok"
+            :label="$t('sidebar.inUse')"
+            class="mr-1"
             :title="$t('sidebar.currentActiveConn')"
           />
 
@@ -718,7 +718,7 @@ import { useI18n } from 'vue-i18n';
 import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
 import ContextMenu from 'primevue/contextmenu';
-import Tag from 'primevue/tag';
+import SqChip from '@/components/ui/SqChip.vue';
 import {
   Server,
   RotateCw,
@@ -737,6 +737,7 @@ import {
   Code2,
   History,
   Clock,
+  Search,
 } from 'lucide-vue-next';
 import ConfirmModal from '@/components/common/ConfirmModal.vue';
 import ExportSchemaModal from '@/components/modals/ExportSchemaModal.vue';

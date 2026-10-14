@@ -8,16 +8,15 @@
       <!-- Left: Result Set Label & Quick Filter -->
       <div class="flex items-center space-x-2 min-w-0">
         <!-- Multiple Result Set Index Badge -->
-        <Tag
+        <SqChip
           v-if="totalSets > 1"
-          severity="info"
-          :value="`Result #${setIndex + 1} (${resultSet.rowCount ?? resultSet.rows.length})`"
-          class="!text-xxs !font-normal !px-2 !py-0.5 flex-shrink-0"
+          tone="neutral"
+          :label="`Result #${setIndex + 1} (${resultSet.rowCount ?? resultSet.rows.length})`"
         >
           <template #icon>
-            <i class="pi pi-table mr-1 text-xs"></i>
+            <Table2 class="w-3 h-3" />
           </template>
-        </Tag>
+        </SqChip>
 
         <!-- Quick Filter Input (PrimeVue InputText has no built-in clear, so the icon is overlaid) -->
         <IconField class="w-44 sm:w-56">
@@ -42,28 +41,28 @@
         </IconField>
 
         <!-- Truncation Warning Badge (when max rows limit reached) -->
-        <Tag
+        <SqChip
           v-if="resultSet.isTruncated"
-          severity="warn"
-          :value="$t('results.truncatedWarning', { count: resultSet.rowCount.toLocaleString(), total: (resultSet.totalCount ?? resultSet.rowCount).toLocaleString() })"
-          class="hidden md:flex !text-xxs font-sans truncate"
+          tone="warn"
+          :label="$t('results.truncatedWarning', { count: resultSet.rowCount.toLocaleString(), total: (resultSet.totalCount ?? resultSet.rowCount).toLocaleString() })"
+          class="hidden md:inline-flex"
         >
           <template #icon>
-            <i class="pi pi-exclamation-triangle mr-1 text-xs"></i>
+            <TriangleAlert class="w-3 h-3" />
           </template>
-        </Tag>
+        </SqChip>
 
         <!-- Estimated Plan Badge -->
-        <Tag
+        <SqChip
           v-if="queryStore.activeResultTab?.isShowplan"
-          severity="info"
-          :value="$t('results.estimatedPlan')"
-          class="hidden md:flex !text-xxs font-sans truncate"
+          tone="plan"
+          :label="$t('results.estimatedPlan')"
+          class="hidden md:inline-flex"
         >
           <template #icon>
-            <i class="pi pi-sitemap mr-1 text-xs"></i>
+            <Network class="w-3 h-3" />
           </template>
-        </Tag>
+        </SqChip>
 
         <div class="h-3.5 w-px bg-dark-750 mx-1 flex-shrink-0"></div>
 
@@ -100,16 +99,16 @@
 
           <!-- Read-only Indicator when editing is not supported -->
           <template v-else>
-            <Tag
-              severity="secondary"
-              :value="editability.shortReason || $t('results.readOnly')"
+            <SqChip
+              tone="neutral"
+              :label="editability.shortReason || $t('results.readOnly')"
               v-tooltip.top="editability.reason"
-              class="!text-xxs select-none"
+              class="select-none"
             >
               <template #icon>
-                <i class="pi pi-lock mr-1 text-xs text-dark-500"></i>
+                <Lock class="w-3 h-3" />
               </template>
-            </Tag>
+            </SqChip>
           </template>
         </div>
       </div>
@@ -602,7 +601,7 @@ import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
 import IconField from 'primevue/iconfield';
 import InputIcon from 'primevue/inputicon';
-import Tag from 'primevue/tag';
+import SqChip from '@/components/ui/SqChip.vue';
 import Dialog from 'primevue/dialog';
 import {
   Copy,
@@ -616,6 +615,10 @@ import {
   Eye,
   Heading,
   X,
+  Table2,
+  TriangleAlert,
+  Network,
+  Lock,
 } from 'lucide-vue-next';
 import type {
   TabulatorCellComponent,
