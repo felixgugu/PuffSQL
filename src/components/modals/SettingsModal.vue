@@ -1,21 +1,17 @@
 <template>
-  <Dialog
+  <SqDialog
     :visible="isOpen"
-    modal
-    :dismissable-mask="true"
-    :closable="true"
+    dismissable-mask
     :class="dialogWindow.marker"
-    class="w-[860px] h-[80vh] max-w-[95vw] max-h-[92vh] font-sans"
+    class="w-[860px] h-[80vh] max-w-[95vw] max-h-[92vh]"
     content-class="!p-0 flex flex-col overflow-hidden h-full"
     @show="dialogWindow.onShow"
     @hide="dialogWindow.onHide"
     @update:visible="val => !val && $emit('close')"
   >
     <template #header>
-      <div class="flex items-center space-x-2">
-        <i class="pi pi-cog text-accent text-base" />
-        <span class="text-sm font-semibold text-dark-100">{{ $t('settingsModal.title') }}</span>
-      </div>
+      <Settings class="w-4 h-4 text-accent" />
+      <span>{{ $t('settingsModal.title') }}</span>
     </template>
 
     <!-- Navigation Tabs -->
@@ -577,16 +573,16 @@
         />
       </div>
     </template>
-  </Dialog>
+  </SqDialog>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import appIcon from '../../../src-tauri/icons/64x64.png';
-import Dialog from 'primevue/dialog';
+import SqDialog from '@/components/ui/SqDialog.vue';
 import SqButton from '@/components/ui/SqButton.vue';
-import { Check, FileCode, Filter, Info, Palette, Sparkles, Table2 } from 'lucide-vue-next';
+import { Check, FileCode, Filter, Info, Palette, Settings, Sparkles, Table2 } from 'lucide-vue-next';
 import SqSelect from '@/components/ui/SqSelect.vue';
 import SqSegmented from '@/components/ui/SqSegmented.vue';
 import SqSwitch from '@/components/ui/SqSwitch.vue';

@@ -172,10 +172,9 @@
     </div>
 
     <!-- 新增 / 修改 快捷提問對話框 -->
-    <Dialog
+    <SqDialog
       v-model:visible="isPromptDialogVisible"
       :header="editingPromptId ? '修改快捷提問選項' : '新增快捷提問選項'"
-      modal
       :class="dialogWindow.marker"
       :style="{ width: '520px' }"
       @show="dialogWindow.onShow"
@@ -217,7 +216,7 @@
           </SqButton>
         </div>
       </template>
-    </Dialog>
+    </SqDialog>
   </div>
 </template>
 
@@ -227,7 +226,7 @@ import SqInput from '@/components/ui/SqInput.vue';
 import SqButton from '@/components/ui/SqButton.vue';
 import { ArrowUpRight, Check, Pencil, Plus, Trash2, Zap } from 'lucide-vue-next';
 import SqTextarea from '@/components/ui/SqTextarea.vue';
-import Dialog from 'primevue/dialog';
+import SqDialog from '@/components/ui/SqDialog.vue';
 import { useAiChatStore } from '@/stores/aiChatStore';
 import { curlAiService } from '@/services/ai/curlAiService';
 import { aiLoggerService } from '@/services/aiLoggerService';

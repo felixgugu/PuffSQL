@@ -70,10 +70,17 @@ Dialog、ContextMenu、Menu、Popover、Select（浮層與鍵盤導覽）、Toas
 | `selectbutton` | 3 | `<SqSegmented>` | 面板檢視切換用（結果｜訊息｜歷程｜統計） |
 | `divider` / `badge` / `card` / `progressbar` | 各 1 | CSS 邊框 / `<SqChip>` / 純容器 / 2px 進度條 | 都是純視覺，成本最低 |
 
-**保留給 PrimeVue 的（直到有等價替代）**：`dialog`（10 處）、`contextmenu`（4）、`select`（6）、
-`menu`（1）、`popover`（1）、`toast` + `confirmationservice`（含 `useToast`）、`tooltip`、
-`inputnumber`（1）、`password`（1）、`ripple`。這些仍套用 SPEC 的 token（透過 `definePreset`
-與 `.p-*` 覆寫，但覆寫量會隨葉節點替換而下降）。
+**已完成退場**（B 路線實際走完的範圍）：`button`、`tag`、`inputtext`／`textarea`、
+`iconfield`／`inputicon`、`checkbox`／`toggleswitch`、`selectbutton`、`divider`／`badge`／`card`／
+`progressbar`、`toolbar`／`message`、`inputnumber`／`password`、`datatable`／`column`、
+`select`、`popover`／`menu`、`contextmenu`、**`dialog`**。自建原語在 `src/components/ui/`：
+`SqChip`、`SqInput`、`SqTextarea`、`SqCheckbox`、`SqSwitch`、`SqSegmented`、`SqButton`、
+`SqPopover`、`SqMenu`、`SqSelect`、`SqDialog`，加上 `piIcons.ts` 與 `focusTrap.ts` 兩個工具。
+
+**仍保留 PrimeVue 的部分（P6 之後的範圍）**：`tooltip`（1 個指令、約 150 個 `v-tooltip` 使用點）、
+`toast` + `toastservice` + `usetoast`（`App.vue`、`AiSqlChatModal.vue`）、`config`（含 `ripple`、
+`confirmationservice`，其中 `useConfirm` 已確認 0 使用點，屬可直接移除的死碼）、`@primevue/themes`
+（`settingsStore` 的 themePreset／primaryColor 旋鈕）與 `primeicons`（仍有 121 處 `pi pi-*`）。
 
 **圖示（獨立於 PrimeVue，先做）**：335 處 `pi pi-*` → `lucide-vue-next`。
 做法：建立 `src/utils/iconMap.ts` 對照表（`pi-table` → `Table2`、`pi-database` → `Database`、
@@ -108,10 +115,40 @@ Dialog、ContextMenu、Menu、Popover、Select（浮層與鍵盤導覽）、Toas
 | **P2 外殼** | 標題列、側邊欄、分頁列、工具列、底部面板、狀態列套用 SPEC §7；移除面板陰影與裝飾 | 螢幕截圖與 SPEC 對照；無回歸（現有 566 測試） |
 | **P3 圖示** | lucide 對照表 + 全數替換、移除 primeicons | `rg "pi pi-" src` 為 0；產物不再有 primeicons 字型檔 |
 | **P4 葉節點元件** | 建立 `src/components/ui/` 並逐一替換 §3 表格元件 | 各元件的鍵盤／對比／密度符合 SPEC §11；`!important` 數量較基線下降 |
-| **P5 浮層評估** | 自建 Dialog/Select/Menu/Toast 的可行性複評（此時已有自建基礎） | 決策紀錄更新於本文件 |
+| **P5 浮層元件** | 自建 Dialog／Select／Menu／Popover／ContextMenu 並逐一替換（此時已有自建基礎） | 決策紀錄見 §5.1 |
+| **P6 Tooltip／Toast** | 自建 `v-tooltip` 指令與 toast 服務，移除 `primevue/tooltip`／`toast*` | 使用點全部改指自建實作 |
+| **P7 主題與套件** | 移除 `@primevue/themes` preset 旋鈕與 `primevue/config`／`ripple`／`confirmationservice`，`package.json` 不再有 `primevue` | `rg "primevue" src package.json` 為 0 |
+| **P8 PrimeIcons** | 121 處 `pi pi-*` 換成 lucide、移除 `primeicons` 與其 314 條字形規則 | `rg "pi pi-" src` 為 0；產物無 primeicons 字型 |
 
 每階段結束都跑 `npm test`（566 項）與 `npm run typecheck`，並且**只提交該階段**，
 讓任何一階段都能單獨 revert。
+
+### 5.1 P5 決策紀錄：自建 Dialog（2026-10-14）
+
+**決策：自建 `SqDialog` 取代 PrimeVue Dialog，已於 10 個檔案、13 個渲染點完成。**
+
+複評時列的風險是「焦點鎖定、Esc、點遮罩關閉、捲動鎖、定位」這些壞掉不容易發現的行為。實際盤點後
+收斂成這樣處理：
+
+| PrimeVue Dialog 的職責 | 實際使用情況 | SqDialog 的處理 |
+|---|---|---|
+| Teleport + 遮罩 | 全部 `modal` | `<Teleport to="body">` + 固定遮罩（`rgba(16,24,40,.32)`，無模糊） |
+| 焦點鎖定／`focusOnShow` | 未設過參數，全用預設 | `utils/focusTrap.ts`：可聚焦清單 + `nextTrapIndex` 純函式環繞，關閉後焦點歸還原控制項 |
+| Esc（`closeOnEscape`） | 預設 true；`ExportSchemaModal` 執行中其實不該關 | 獨立 `closeOnEscape` 開關，`ExportSchemaModal` 傳 `step !== 'running'` |
+| 點遮罩關閉 | 8 處顯式開啟、2 處未開（維持原行為） | `dismissableMask`，且須「在遮罩上按下」才成立 |
+| `header` / `#header` / `#footer` / `closable` | 全數使用 | 同名 prop 與 slot，`closable` 只管標題列按鈕 |
+| `:pt` | 僅 `ConnectionModal` 1 處，用來在 PrimeVue 內部結構上覆寫內距與底色 | 直接移除：外框統一由 `.sq-dialog-surface` 決定，`contentClass` 保留給自帶版面的對話框 |
+| 疊層 z-index | 巢狀對話框（範本庫）需要 | 模組層堆疊計數，1100 + 深度 |
+| 進場轉場 | 有 | 僅透明度，150ms 內；`prefers-reduced-motion` 下 120ms。**不使用位移或縮放**，`show` 事件因此能拿到未變形的 `getBoundingClientRect` |
+| 捲動鎖 | PrimeVue `blockScroll` 預設 false，本專案從未開啟 | 不實作，維持現狀 |
+
+**為什麼最後決定自己做**：清單裡真正困難的只有焦點環繞，而它是 40 行純函式可測的邏輯；其餘都是
+這個 App 已經在 `useDialogWindow`、`windowDrag`、`SqPopover` 裡走過的路。相對地，留著 PrimeVue
+Dialog 就得讓 `!important` 與 `--p-dialog-*` 主題變數永遠留在關鍵路徑上。**這次沒有引入任何新依賴。**
+
+**已知限制**：本環境無法在瀏覽器裡操作（只有 headless 截圖），所以拖曳、縮放、焦點環繞、Esc、
+點遮罩關閉都是靠**純函式單元測試 + 原始碼契約測試 + headless 實拍**驗證（含 `useDialogWindow`
+在 `show` 之後確實注入 8 個縮放區的 DOM 檢查），而不是互動測試。
 
 ---
 
@@ -132,3 +169,10 @@ Dialog、ContextMenu、Menu、Popover、Select（浮層與鍵盤導覽）、Toas
    `#0369A1`（飽和度較高）。
 2. **設定旋鈕**：同意「移除 4 個 PrimeVue preset，保留淺/深 + 中性表面色盤，固定操作色」嗎？
 3. **浮層元件**：同意 B 路線（保留 PrimeVue 的 Dialog/Select/Menu/Toast 直到有替代）嗎？
+
+### 目前狀態
+
+實作已依 §4 的建議先走：操作色固定為 SPEC 鋼藍（`#2A6791`，深色 `#8CB8DA`），
+PrimeVue 的實心填色另拆 `--color-accent-fill`。第 3 點已在 §5.1 決策為「自建」並完成；
+第 2 點的 preset 旋鈕仍在（P7 範圍），目前只是把預設值指向同一個鋼藍，**尚未移除**。
+若你要走回「使用者可自選主色」，那條路徑會與「單一操作色」的規範衝突，需要你指名其一。

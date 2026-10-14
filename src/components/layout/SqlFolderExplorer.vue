@@ -189,12 +189,11 @@
     />
 
     <!-- Rename Modal -->
-    <Dialog
+    <SqDialog
       v-model:visible="isRenameModalOpen"
-      modal
       :header="targetNode?.isDir ? $t('sidebar.renameFolder') : $t('sidebar.renameFile')"
       :class="renameDialogWindow.marker"
-      class="w-full max-w-md font-sans"
+      class="w-full max-w-md"
       @show="renameDialogWindow.onShow"
       @hide="renameDialogWindow.onHide"
     >
@@ -238,15 +237,14 @@
           </SqButton>
         </div>
       </template>
-    </Dialog>
+    </SqDialog>
 
     <!-- Manual Path Input Modal (Alternative to native picker) -->
-    <Dialog
+    <SqDialog
       v-model:visible="isManualPathModalOpen"
-      modal
       :header="$t('sidebar.addFolderTitle')"
       :class="pathDialogWindow.marker"
-      class="w-full max-w-md font-sans"
+      class="w-full max-w-md"
       @show="pathDialogWindow.onShow"
       @hide="pathDialogWindow.onHide"
     >
@@ -284,7 +282,7 @@
           </SqButton>
         </div>
       </template>
-    </Dialog>
+    </SqDialog>
   </div>
 </template>
 
@@ -293,7 +291,7 @@ import { ref, computed, onMounted, provide, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import SqButton from '@/components/ui/SqButton.vue';
 import SqInput from '@/components/ui/SqInput.vue';
-import Dialog from 'primevue/dialog';
+import SqDialog from '@/components/ui/SqDialog.vue';
 import SqMenu from '@/components/ui/SqMenu.vue';
 import { useContextMenu } from '@/composables/useContextMenu';
 import {

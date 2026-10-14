@@ -8,6 +8,7 @@
 | `PRIMEVUE-EVALUATION.md` | 「是否移除 PrimeVue 改用 Tailwind」的量化評估、選項比較、建議與分階段計畫。 |
 | `preview.html` | 可互動的靜態樣張（單一檔案、無外部資源）：完整 App 外殼 + 元件樣張 + token 對比表。`#dark` 可看深色配對變體。 |
 | `screens/preview-light.png`、`screens/preview-dark.png` | 樣張的渲染截圖（淺色／深色），供快速審閱。 |
+| `screens/dialog-light.png`、`screens/dialog-dark.png`、`screens/dialog-overlay.png` | `SqDialog` 的真實渲染截圖：外框變體、語意強調外框、既有呼叫端元件（淺色／深色），以及疊在真實遮罩上的樣子。 |
 | `../../design-system/puffsql/MASTER.md` | ui-ux-pro-max skill 產生的原始設計系統建議（保留備查；衝突時以 `SPEC.md` 為準）。 |
 
 ## 檢視方式
@@ -23,6 +24,18 @@
 # 深色：把網址改成 ...preview.html#dark，輸出檔名改成 preview-dark.png
 ```
 
+對話框截圖另外用一個 dev-only 的 scratch harness（`.design-preview/`，已 gitignore）拍攝，
+它掛載的是**真實的** `SqDialog` 與呼叫端元件：
+
+```powershell
+npm run dev   # 另一個視窗
+& "C:\Program Files\Google\Chrome\Application\chrome.exe" --headless=new --disable-gpu --hide-scrollbars `
+  --user-data-dir=".design-preview\chrome" --virtual-time-budget=9000 --window-size=1120,1900 `
+  --screenshot="docs\design\minimal-ui\screens\dialog-light.png" `
+  "http://localhost:1420/.design-preview/dialog.html"
+# #dark 為深色、#overlay 為真實遮罩、#pair/#window/#debug 為單一對話框與拖曳縮放整合的檢查視圖
+```
+
 ## 設計決策摘要
 
 - 淺色為預設：白畫布 + 淺灰外框 + 深灰文字；深色是配對變體（中性碳黑，非反相）。
@@ -32,14 +45,16 @@
 - 密度優先：控制項 24–32px、資料列 24px、工具列 36px、狀態列 24px；**不刪減任何既有資訊**。
 - 介面繁體中文，SQL／資料庫術語保留英文；SQL 與資料值一律等寬字，數字 tabular-nums。
 
-## 待你拍板（詳見 PRIMEVUE-EVALUATION.md §7）
+## 進度與未定事項（詳見 PRIMEVUE-EVALUATION.md §5、§7）
 
-1. **操作色**：採 SPEC 的 `#2E6F9E`（低飽和），或 skill 建議的 `#0369A1`（較鮮豔）。
-2. **設定旋鈕**：是否同意「移除 4 個 PrimeVue preset、保留淺/深 + 中性表面色盤、固定操作色」。
-3. **PrimeVue 去留**：是否同意 B 路線（先換葉節點元件與圖示，Dialog／Select／Menu／Toast 暫留 PrimeVue）。
+已完成：P1 token 層、P2 外殼、P4 葉節點元件（Tag／Input／Checkbox／Switch／Segmented／Button …）、
+P5 浮層元件（Select／Menu／Popover／ContextMenu／**Dialog**）。`primevue/dialog` 在 `src/` 已 0 匯入。
 
-## 下一步（拿到上面三個答案後）
+尚未完成：**P3 圖示**（仍有 121 處 `pi pi-*` 與 primeicons 字型 284KB）、
+**P6 Tooltip／Toast**（約 150 個 `v-tooltip` 使用點與 2 處 toast）、
+**P7 主題與套件**（`@primevue/themes` 的 preset 旋鈕、`primevue/config`、`ripple`、
+`confirmationservice`，之後才可能把 `primevue` 從 `package.json` 移除）。
 
-依 `PRIMEVUE-EVALUATION.md` §5 的 P1 → P4 分階段實作：先落 token 層（`main.css` + `tailwind.config.js`），
-再改外殼，再換圖示，最後逐個葉節點元件。每階段都跑 `npm test`（566 項）與 `npm run typecheck`，
-並只提交該階段，確保任一階段可單獨回退。
+需要你決定的只剩一項：**設定裡是否保留 PrimeVue 的 theme preset／主色旋鈕**。
+保留就等於允許第二個操作色，與「單一低飽和藍」的規範衝突；移除則可讓淺／深 + 中性表面色盤
+成為唯一的外觀選項（詳見 §7）。

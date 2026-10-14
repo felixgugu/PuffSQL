@@ -43,7 +43,7 @@ describe('Motion honours the operating system preferences', () => {
     assert.match(block, /animation: none !important/);
 
     // Overlays cross-fade instead of scaling and sliding.
-    assert.match(block, /\.p-dialog-enter-active/);
+    assert.match(block, /\.sq-dialog-enter-active/);
     assert.match(block, /transition-property: opacity !important/);
   });
 
@@ -73,7 +73,7 @@ describe('Motion honours the operating system preferences', () => {
     const block =
       /@media \(prefers-reduced-motion: no-preference\) \{([\s\S]*?)\n\}/.exec(css)?.[1] ?? '';
     assert.ok(block, 'the press-feedback block must be locatable');
-    assert.match(block, /\.p-button:not\(:disabled\):not\(\.p-disabled\):active/);
+    assert.match(block, /\.sq-btn:not\(:disabled\):active/);
     assert.match(block, /transform: scale\(/);
   });
 });

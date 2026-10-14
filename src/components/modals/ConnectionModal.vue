@@ -1,37 +1,19 @@
 <template>
-  <Dialog
+  <SqDialog
     :visible="isOpen"
-    modal
-    :dismissable-mask="true"
-    :closable="true"
+    dismissable-mask
     :class="dialogWindow.marker"
-    class="w-full max-w-xl h-[80vh] font-sans !bg-dark-900 overflow-hidden flex flex-col"
-    :pt="{
-      // The frame itself comes from the shared dialog surface; only the fill is local.
-      root: { class: '!bg-dark-900 flex flex-col' },
-      header: { class: '!bg-dark-850/90 !border-b !border-dark-750 !px-5 !py-3.5 flex-shrink-0' },
-      content: { class: '!bg-dark-900 !px-5 !py-4 flex-1 overflow-y-auto' },
-      footer: { class: '!bg-dark-850/80 !border-t !border-dark-750 !px-5 !py-3 flex-shrink-0' }
-    }"
+    class="w-full max-w-xl h-[80vh]"
     @show="dialogWindow.onShow"
     @hide="dialogWindow.onHide"
     @update:visible="val => !val && close()"
   >
-    <!-- Custom Modern Header -->
     <template #header>
-      <div class="flex items-center space-x-3">
-        <div class="w-9 h-9 rounded-xl bg-accent/15 border border-accent/30 flex items-center justify-center text-accent shadow-sm shadow-accent/10 flex-shrink-0">
-          <i class="pi pi-database text-base" />
-        </div>
-        <div>
-          <h3 class="font-semibold text-sm text-dark-100 leading-tight">
-            {{ editProfile ? $t('connectionModal.editTitle') : (initialProfile ? $t('connectionModal.duplicateTitle') : $t('connectionModal.newTitle')) }}
-          </h3>
-          <p class="text-xxs text-dark-400 mt-0.5 font-mono">
-            Microsoft SQL Server · TDS Protocol
-          </p>
-        </div>
-      </div>
+      <Database class="w-4 h-4 text-accent" />
+      <span>
+        {{ editProfile ? $t('connectionModal.editTitle') : (initialProfile ? $t('connectionModal.duplicateTitle') : $t('connectionModal.newTitle')) }}
+      </span>
+      <span class="text-xxs font-normal text-dark-400 font-mono">Microsoft SQL Server · TDS</span>
     </template>
 
     <form @submit.prevent="handleSave" class="space-y-4 text-xs">
@@ -351,15 +333,15 @@
         </div>
       </div>
     </template>
-  </Dialog>
+  </SqDialog>
 </template>
 
 <script setup lang="ts">
 import { reactive, ref, watch, computed } from 'vue';
-import Dialog from 'primevue/dialog';
+import SqDialog from '@/components/ui/SqDialog.vue';
 import { useDialogWindow } from '@/composables/useDialogWindow';
 import SqInput from '@/components/ui/SqInput.vue';
-import { Eye, EyeOff } from 'lucide-vue-next';
+import { Database, Eye, EyeOff } from 'lucide-vue-next';
 import SqSwitch from '@/components/ui/SqSwitch.vue';
 import SqCheckbox from '@/components/ui/SqCheckbox.vue';
 import SqButton from '@/components/ui/SqButton.vue';

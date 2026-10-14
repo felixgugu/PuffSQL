@@ -1,9 +1,7 @@
 <template>
-  <Dialog
+  <SqDialog
     :visible="isOpen"
-    modal
-    :closable="true"
-    :dismissable-mask="true"
+    dismissable-mask
     :class="dialogWindow.marker"
     class="w-full max-w-md"
     @show="dialogWindow.onShow"
@@ -12,9 +10,9 @@
   >
     <template #header>
       <div class="flex items-center space-x-2">
-        <i v-if="isDanger" class="pi pi-exclamation-triangle text-danger text-base" />
-        <i v-else class="pi pi-info-circle text-accent text-base" />
-        <span class="font-semibold text-sm text-dark-100">{{ title }}</span>
+        <TriangleAlert v-if="isDanger" class="w-3.5 h-3.5 text-danger" />
+        <Info v-else class="w-3.5 h-3.5 text-accent" />
+        <span>{{ title }}</span>
       </div>
     </template>
 
@@ -36,11 +34,12 @@
         />
       </div>
     </template>
-  </Dialog>
+  </SqDialog>
 </template>
 
 <script setup lang="ts">
-import Dialog from 'primevue/dialog';
+import { Info, TriangleAlert } from 'lucide-vue-next';
+import SqDialog from '@/components/ui/SqDialog.vue';
 import SqButton from '@/components/ui/SqButton.vue';
 import { useDialogWindow } from '@/composables/useDialogWindow';
 

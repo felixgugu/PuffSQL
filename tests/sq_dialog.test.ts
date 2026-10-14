@@ -1,0 +1,121 @@
+import { test, describe } from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { FOCUSABLE_SELECTOR, nextTrapIndex } from '../src/utils/focusTrap';
+
+const root = process.cwd();
+
+function readSource(relativePath: string): string {
+  return readFileSync(resolve(root, relativePath), 'utf-8');
+}
+
+const DIALOG_FILES = [
+  'src/components/common/ConfirmModal.vue',
+  'src/components/modals/ConnectionModal.vue',
+  'src/components/modals/DangerousQueryModal.vue',
+  'src/components/modals/ExportSchemaModal.vue',
+  'src/components/modals/QuickObjectFinderModal.vue',
+  'src/components/modals/SettingsModal.vue',
+  'src/components/modals/SqlTemplateModal.vue',
+  'src/components/modals/settings/AiSettingsTab.vue',
+  'src/components/layout/SqlFolderExplorer.vue',
+  'src/components/results/ResultGridItem.vue',
+];
+
+describe('dialog focus ring', () => {
+  test('Tab wraps in both directions instead of escaping the dialog', () => {
+    assert.equal(nextTrapIndex(3, 0, false), 1, 'forward');
+    assert.equal(nextTrapIndex(3, 2, false), 0, 'forward wraps to the first stop');
+    assert.equal(nextTrapIndex(3, 0, true), 2, 'backward wraps to the last stop');
+    assert.equal(nextTrapIndex(3, 1, true), 0, 'backward');
+  });
+
+  test('focus sitting on the panel itself enters the ring from the right end', () => {
+    assert.equal(nextTrapIndex(4, -1, false), 0, 'Tab starts at the first stop');
+    assert.equal(nextTrapIndex(4, -1, true), 3, 'Shift+Tab starts at the last stop');
+  });
+
+  test('a dialog with no controls has nothing to trap', () => {
+    assert.equal(nextTrapIndex(0, -1, false), -1);
+    assert.equal(nextTrapIndex(0, 0, true), -1);
+  });
+
+  test('the stop list excludes disabled controls and programmatic targets', () => {
+    assert.match(FOCUSABLE_SELECTOR, /button:not\(\[disabled\]\)/);
+    assert.match(FOCUSABLE_SELECTOR, /input:not\(\[disabled\]\):not\(\[type="hidden"\]\)/);
+    assert.match(FOCUSABLE_SELECTOR, /\[tabindex\]:not\(\[tabindex="-1"\]\)/);
+    assert.match(FOCUSABLE_SELECTOR, /a\[href\]/, 'a link without href is not a stop');
+  });
+});
+
+describe('SqDialog owns the modal contract', () => {
+  const source = readSource('src/components/ui/SqDialog.vue');
+
+  test('it is the app own primitive, not a PrimeVue wrapper', () => {
+    assert.doesNotMatch(source, /primevue/, 'the primitive must not depend on PrimeVue');
+    assert.match(source, /<Teleport to="body">/, 'a dialog escapes every stacking context');
+    assert.match(source, /role="dialog"/);
+    assert.match(source, /aria-modal="true"/);
+    assert.match(source, /:aria-labelledby="hasTitle \? titleId : undefined"/, 'the title names the dialog');
+  });
+
+  test('the scrim is the spec scrim, without blur', () => {
+    assert.match(source, /background-color: rgba\(16, 24, 40, 0\.32\);/, 'SPEC §7 scrim colour');
+    assert.doesNotMatch(source, /backdrop-filter/, 'no glass effect');
+  });
+
+  test('the drag and resize hand-off waits for a settled element', () => {
+    // useDialogWindow measures the panel on `show`; firing it before the enter transition ends
+    // would pin the geometry mid-fade.
+    assert.match(source, /@after-enter="onAfterEnter"/);
+    assert.match(source, /@after-leave="onAfterLeave"/);
+    assert.match(source, /function onAfterEnter\(\)[\s\S]*?emit\('show'\)/);
+    assert.match(source, /function onAfterLeave\(\)[\s\S]*?emit\('hide'\)/);
+    // Without `appear` a dialog that mounts already visible never enters, so `show` never fires
+    // and the window comes up without its drag and resize zones.
+    assert.match(source, /<Transition name="sq-dialog" appear/);
+  });
+
+  test('Escape, the scrim and the close button are three separate switches', () => {
+    assert.match(source, /if \(!props\.closeOnEscape\) return;/, 'Escape honours its own flag');
+    assert.match(source, /if \(!props\.dismissableMask\) return;/, 'the scrim honours its own flag');
+    assert.match(source, /v-if="closable"/, 'the close button honours its own flag');
+    // A drag that starts on a control and ends on the scrim must not dismiss the dialog.
+    assert.match(source, /const startedOnMask = pressedOnMask;/);
+    assert.match(source, /event\.target !== maskEl\.value \|\| !startedOnMask/);
+  });
+
+  test('Tab is trapped and focus returns to whatever opened the dialog', () => {
+    assert.match(source, /nextTrapIndex\(stops\.length, current, event\.shiftKey\)/);
+    assert.match(source, /focusFirstWithin\(panel\)/, 'focus lands inside on open');
+    assert.match(source, /target\.isConnected\) target\.focus/, 'focus is handed back on close');
+  });
+
+  test('stacked dialogs still stack', () => {
+    // The template library opens a second dialog on top of itself.
+    assert.match(source, /const openDialogs: number\[\] = \[\];/);
+    assert.match(source, /zIndex\.value = Z_BASE \+ openDialogs\.length;/);
+  });
+});
+
+describe('every dialog in the app is built on SqDialog', () => {
+  test('no component imports PrimeVue Dialog any more', () => {
+    for (const file of [...DIALOG_FILES, 'src/components/modals/TsvImportModal.vue']) {
+      assert.doesNotMatch(
+        readSource(file),
+        /primevue\/dialog/,
+        `${file} still imports PrimeVue Dialog`
+      );
+    }
+  });
+
+  test('each dialog file renders SqDialog and never the retired Dialog tag', () => {
+    for (const file of DIALOG_FILES) {
+      const source = readSource(file);
+      assert.match(source, /components\/ui\/SqDialog\.vue/, `${file} must import SqDialog`);
+      assert.doesNotMatch(source, /<Dialog[\s>]/, `${file} must not render <Dialog>`);
+      assert.doesNotMatch(source, /<\/Dialog>/, `${file} must not close </Dialog>`);
+    }
+  });
+});

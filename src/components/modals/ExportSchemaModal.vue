@@ -1,28 +1,19 @@
 <template>
-  <Dialog
+  <SqDialog
     :visible="isOpen"
-    modal
     :closable="step !== 'running'"
     :dismissable-mask="step !== 'running'"
+    :close-on-escape="step !== 'running'"
     :class="dialogWindow.marker"
-    class="w-full max-w-xl h-[80vh] font-sans flex flex-col"
-    content-class="flex-1 overflow-y-auto"
+    class="w-full max-w-xl h-[80vh]"
     @show="dialogWindow.onShow"
     @hide="dialogWindow.onHide"
     @update:visible="val => !val && handleClose()"
   >
     <template #header>
-      <div class="flex items-center space-x-2">
-        <div class="w-7 h-7 rounded-lg bg-brand-500/15 flex items-center justify-center text-accent">
-          <i class="pi pi-file-export text-sm" />
-        </div>
-        <div>
-          <span class="font-semibold text-sm text-dark-100">{{ $t('exportSchemaModal.title') }}</span>
-          <span class="ml-2 text-xxs text-dark-400 font-normal">
-            {{ stepTitle }}
-          </span>
-        </div>
-      </div>
+      <FileDown class="w-4 h-4 text-accent" />
+      <span>{{ $t('exportSchemaModal.title') }}</span>
+      <span class="text-xxs font-normal text-dark-400">{{ stepTitle }}</span>
     </template>
 
     <!-- Modal Body -->
@@ -399,15 +390,15 @@
         </div>
       </div>
     </template>
-  </Dialog>
+  </SqDialog>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import Dialog from 'primevue/dialog';
+import SqDialog from '@/components/ui/SqDialog.vue';
 import SqButton from '@/components/ui/SqButton.vue';
-import { Check, Download, Play, RefreshCw, RotateCcw } from 'lucide-vue-next';
+import { Check, Download, FileDown, Play, RefreshCw, RotateCcw } from 'lucide-vue-next';
 import { queryService } from '@/services/queryService';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useDialogWindow } from '@/composables/useDialogWindow';

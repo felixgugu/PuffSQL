@@ -36,7 +36,9 @@ import { Loader2 } from 'lucide-vue-next';
  * slot (lucide), so no icon font and no `!w-7 !h-7 !p-0` class soup is needed: an icon-only
  * button is simply a button without a label.
  */
-withDefaults(
+defineOptions({ inheritAttrs: false });
+
+const props = withDefaults(
   defineProps<{
     label?: string;
     tone?: 'neutral' | 'accent' | 'danger' | 'warn' | 'ok' | 'plan';
@@ -57,7 +59,12 @@ defineEmits<{
 }>();
 
 const slots = useSlots();
-const iconOnly = computed(() => !slots.default && !slots.label);
+/**
+ * An icon-only button is one with an icon and nothing to say. The `label` prop counts as text:
+ * omitting it here is what once laid every labelled button out as a 28px square with its text
+ * spilling out of the box.
+ */
+const iconOnly = computed(() => !slots.default && !slots.label && !props.label?.length);
 </script>
 
 <style scoped>

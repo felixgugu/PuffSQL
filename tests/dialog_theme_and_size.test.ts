@@ -8,24 +8,25 @@ function readSource(relPath: string): string {
 }
 
 describe('Dialog theme styling and dimension consistency', () => {
-  test('main.css enforces theme-aware border radius on all non-maximized Dialogs', () => {
+  test('main.css owns the one dialog frame its callers must not re-declare', () => {
     const css = readSource('src/assets/main.css');
-    // The canonical frame is shared by PrimeVue dialogs and the hand-rolled surfaces, so the
-    // selector list names both.
+    // The canonical frame is shared by SqDialog panels and the hand-rolled tool windows alike, so
+    // it is declared once against `.sq-dialog-surface` and nowhere else.
     assert.match(
       css,
-      /\.p-dialog:not\(\.p-dialog-maximized\),\s*\n\.sq-dialog-surface\s*\{\s*border-radius:\s*var\(--p-dialog-border-radius/,
-      'main.css must enforce theme-aware border radius for .p-dialog'
+      /\.sq-dialog-surface \{\s*\n\s*border-radius: 6px !important;\s*\n\s*border: 1px solid rgb\(var\(--color-dark-700\)\) !important;\s*\n\s*box-shadow: var\(--shadow-overlay\) !important;\s*\n\s*overflow: hidden !important;\s*\n\}/,
+      'main.css must own the dialog radius, border and shadow'
+    );
+    assert.doesNotMatch(css, /\.p-dialog/, 'no PrimeVue dialog selector may survive in main.css');
+    assert.match(
+      css,
+      /\.sq-dialog-surface \.sq-dialog-header \{\s*\n\s*border-top-left-radius: inherit !important;/,
+      'the dialog header must inherit the frame radius'
     );
     assert.match(
       css,
-      /\.p-dialog:not\(\.p-dialog-maximized\)\s*\.p-dialog-header\s*\{\s*border-top-left-radius:\s*inherit/,
-      'Dialog header must inherit border radius from parent'
-    );
-    assert.match(
-      css,
-      /\.p-dialog:not\(\.p-dialog-maximized\)\s*\.p-dialog-footer\s*\{\s*border-bottom-left-radius:\s*inherit/,
-      'Dialog footer must inherit border radius from parent'
+      /\.sq-dialog-surface \.sq-dialog-footer \{\s*\n\s*border-bottom-left-radius: inherit !important;/,
+      'the dialog footer must inherit the frame radius'
     );
   });
 

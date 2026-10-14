@@ -1,15 +1,14 @@
 <template>
   <!-- Main Template Explorer Dialog -->
-  <Dialog
+  <SqDialog
     :visible="isOpen"
     @update:visible="(val) => !val && closeModal()"
-    modal
     :closable="false"
     :dismissableMask="true"
     :showHeader="false"
     :class="dialogWindow.marker"
-    class="w-full max-w-5xl h-[80vh] !bg-dark-850 overflow-hidden"
-    contentClass="!p-0 !bg-dark-850 h-full flex flex-col"
+    class="w-full max-w-5xl h-[80vh] overflow-hidden"
+    contentClass="!p-0 h-full flex flex-col"
     @show="dialogWindow.onShow"
     @hide="dialogWindow.onHide"
   >
@@ -382,15 +381,14 @@
         <span><kbd class="px-1 py-0.5 bg-dark-800 border border-dark-700 rounded text-dark-300 font-mono">Esc</kbd> {{ $t('sqlTemplates.closeKbd') }}</span>
       </div>
     </div>
-  </Dialog>
+  </SqDialog>
 
   <!-- Add / Edit Custom Template Dialog -->
-  <Dialog
+  <SqDialog
     v-model:visible="isCustomFormOpen"
-    modal
     :header="editingTemplateId ? $t('sqlTemplates.editModalTitle') : $t('sqlTemplates.addModalTitle')"
     :class="formDialogWindow.marker"
-    class="w-full max-w-xl !bg-dark-850"
+    class="w-full max-w-xl"
     @show="formDialogWindow.onShow"
     @hide="formDialogWindow.onHide"
   >
@@ -478,13 +476,13 @@
         </div>
       </div>
     </form>
-  </Dialog>
+  </SqDialog>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
-import Dialog from 'primevue/dialog';
+import SqDialog from '@/components/ui/SqDialog.vue';
 import SqInput from '@/components/ui/SqInput.vue';
 import SqTextarea from '@/components/ui/SqTextarea.vue';
 import SqButton from '@/components/ui/SqButton.vue';

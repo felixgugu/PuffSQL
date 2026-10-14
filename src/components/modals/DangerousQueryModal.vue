@@ -1,26 +1,19 @@
 <template>
-  <Dialog
+  <SqDialog
     :visible="isOpen"
-    modal
-    :closable="true"
-    :dismissable-mask="true"
+    dismissable-mask
     :class="dialogWindow.marker"
-    class="w-full max-w-lg font-sans"
+    class="w-full max-w-lg"
     @show="dialogWindow.onShow"
     @hide="dialogWindow.onHide"
     @update:visible="val => !val && $emit('cancel')"
   >
     <template #header>
-      <div class="flex items-center space-x-2">
-        <i
-          v-if="step === 2"
-          class="pi pi-shield text-danger text-lg animate-pulse"
-        />
-        <i v-else class="pi pi-exclamation-triangle text-warn text-lg" />
-        <span class="font-semibold text-sm text-dark-100">
-          {{ step === 2 ? $t('dangerousQuery.step2Title') : $t('dangerousQuery.step1Title') }}
-        </span>
-      </div>
+      <ShieldCheck v-if="step === 2" class="w-4 h-4 text-danger animate-pulse" />
+      <TriangleAlert v-else class="w-4 h-4 text-warn" />
+      <span>
+        {{ step === 2 ? $t('dangerousQuery.step2Title') : $t('dangerousQuery.step1Title') }}
+      </span>
     </template>
 
     <!-- Modal Body -->
@@ -60,7 +53,7 @@
         <!-- SQL Code Preview -->
         <div class="space-y-1">
           <div class="text-dark-400 text-xxs flex items-center space-x-1">
-            <i class="pi pi-code text-dark-400" />
+            <FileCode class="w-3 h-3" />
             <span>{{ $t('dangerousQuery.sqlPreview') }}</span>
           </div>
           <pre class="bg-dark-950 p-2.5 rounded border border-dark-800 font-mono text-xxs text-dark-200 overflow-auto max-h-32 whitespace-pre-wrap select-text leading-relaxed">{{ sql }}</pre>
@@ -76,7 +69,7 @@
         <!-- Dangerous Alert Box -->
         <div class="bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-600/60 p-3.5 rounded-lg space-y-2 text-danger leading-relaxed">
           <div class="flex items-center space-x-2 text-danger font-bold text-xs">
-            <i class="pi pi-ban text-danger text-base flex-shrink-0" />
+            <Ban class="w-4 h-4 flex-shrink-0" />
             <span>{{ $t('dangerousQuery.dangerAlertTitle') }}</span>
           </div>
           <p class="text-xxs text-danger/90 leading-relaxed" v-html="$t('dangerousQuery.dangerAlertDesc', { connection: connectionName, database: databaseName, keywords: detectedKeywords.join('、') })">
@@ -123,13 +116,13 @@
         </SqButton>
       </div>
     </template>
-  </Dialog>
+  </SqDialog>
 </template>
 
 <script setup lang="ts">
-import Dialog from 'primevue/dialog';
+import { ArrowRight, Ban, FileCode, ShieldCheck, TriangleAlert } from 'lucide-vue-next';
+import SqDialog from '@/components/ui/SqDialog.vue';
 import SqButton from '@/components/ui/SqButton.vue';
-import { ArrowRight, TriangleAlert } from 'lucide-vue-next';
 import SqChip from '@/components/ui/SqChip.vue';
 import { useDialogWindow } from '@/composables/useDialogWindow';
 

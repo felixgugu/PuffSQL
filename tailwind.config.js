@@ -43,6 +43,9 @@ export default {
         // and icons stay >= 4.5:1 in light and dark mode. See services/themeManager.ts.
         raised: withOpacity('--color-raised'), // Menus, popovers, tooltips: the one surface above the canvas
         accent: withOpacity('--color-accent'),
+        // Solid fills: the darker step that keeps white label text legible in both modes.
+        'accent-fill': withOpacity('--color-accent-fill'),
+        'accent-fill-hover': withOpacity('--color-accent-fill-hover'),
         ok: withOpacity('--color-ok'),
         danger: withOpacity('--color-danger'),
         warn: withOpacity('--color-warn'),

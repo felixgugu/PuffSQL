@@ -15,16 +15,15 @@ type ResizeHandle = (typeof HANDLES)[number];
 const SHARED_CLASS = 'sq-dialog-window';
 const READY_ATTRIBUTE = 'data-sq-window';
 /**
- * The dialog root is `.p-dialog`, the header is `.p-dialog-header`. PrimeVue only merges the
- * caller's fallthrough attributes (`class`, `style`, listeners) into the root section, which is
- * why the marker class below reliably lands on `.p-dialog` and not on the overlay mask.
+ * The dialog root is the `.sq-dialog-panel` inside `SqDialog`, and the marker class below lands
+ * there rather than on the scrim because `SqDialog` forwards the caller's fallthrough attributes
+ * to the panel only.
  *
- * Dialogs built with `:showHeader="false"` render their own title bar instead of PrimeVue's, so
- * they opt that bar in by adding the `sq-dialog-drag-handle` class.
+ * Dialogs built with `show-header="false"` render their own title bar instead of the shared one,
+ * so they opt that bar in by adding the `sq-dialog-drag-handle` class.
  */
-const HEADER_SELECTOR = '.p-dialog-header, .sq-dialog-drag-handle';
-const INTERACTIVE_SELECTOR =
-  'button, a, input, select, textarea, [data-pc-section="headeractions"]';
+const HEADER_SELECTOR = '.sq-dialog-header, .sq-dialog-drag-handle';
+const INTERACTIVE_SELECTOR = 'button, a, input, select, textarea, [role="button"]';
 
 const DEFAULT_MIN_WIDTH = 360;
 const DEFAULT_MIN_HEIGHT = 220;
@@ -44,7 +43,7 @@ let instanceCount = 0;
  *
  * Usage:
  *   const dialogWindow = useDialogWindow();
- *   <Dialog :class="dialogWindow.marker" @show="dialogWindow.onShow" @hide="dialogWindow.onHide" …>
+ *   <SqDialog :class="dialogWindow.marker" @show="dialogWindow.onShow" @hide="dialogWindow.onHide" …>
  */
 export function useDialogWindow(options: UseDialogWindowOptions = {}) {
   const minWidth = options.minWidth ?? DEFAULT_MIN_WIDTH;

@@ -53,7 +53,7 @@ describe('Every dialog shares one frame and one window behaviour', () => {
   test('no dialog paints a border, shadow or ring of its own', () => {
     for (const [file] of DIALOGS) {
       const source = readSource(file);
-      const dialogClasses = source.match(/<Dialog[\s\S]*?>/g) ?? [];
+      const dialogClasses = source.match(/<SqDialog[\s\S]*?>/g) ?? [];
 
       for (const tag of dialogClasses) {
         // Only the frame counts. `!border-b` / `!border-dark-750` on a header or footer divider
@@ -130,7 +130,7 @@ describe('Every dialog shares one frame and one window behaviour', () => {
   });
 
   test('dialogs that build their own header opt it in as the drag handle', () => {
-    // These render :showHeader="false", so they have no .p-dialog-header for the composable to
+    // These render :show-header="false", so they have no shared title bar for the composable to
     // find; without the marker they would not be draggable at all.
     for (const file of [
       'src/components/modals/QuickObjectFinderModal.vue',
@@ -146,7 +146,7 @@ describe('Every dialog shares one frame and one window behaviour', () => {
 
     assert.match(
       readSource('src/composables/useDialogWindow.ts'),
-      /const HEADER_SELECTOR = '\.p-dialog-header, \.sq-dialog-drag-handle'/,
+      /const HEADER_SELECTOR = '\.sq-dialog-header, \.sq-dialog-drag-handle'/,
       'the composable must accept both header shapes'
     );
   });

@@ -290,6 +290,26 @@ WCAG 1.4.11 的豁免）；分隔步 `#64748B` 對畫布 4.76:1；focus 指示�
   inputnumber(1)、password(1)、datatable(1)、column(1)，以及工具類的 tooltip／toast／config／ripple
   （見 PRIMEVUE-EVALUATION.md §3、§5 的 P5 複評）。
 
+- **P5 浮層元件：Dialog 已完成（2026-10-14）。** 新增第 8 個原語 **`SqDialog`**
+  （`src/components/ui/SqDialog.vue`）＋ 純函式 `src/utils/focusTrap.ts`，10 個對話框（含
+  `SqlTemplateModal` 與 `SqlFolderExplorer` 各 2 個、`AiSettingsTab` 內嵌 1 個，共 13 個渲染點）
+  全數改用它；`primevue/dialog` 在 `src/` 已 0 匯入。它自有的行為契約：Teleport 到 body、
+  `rgba(16,24,40,.32)` 純色遮罩（無模糊）、焦點鎖定（Tab 環繞）與關閉後焦點歸還、Escape、
+  點遮罩關閉（需在遮罩上按下才成立，避免拖曳誤關）、標題列 40px + 14px/600 標題 + 右上關閉、
+  頁尾右對齊；`closable`／`closeOnEscape`／`dismissableMask` 三個開關彼此獨立，
+  `ExportSchemaModal` 因此在執行中仍顯示關閉鈕但拒絕 Esc 與遮罩關閉。**`show`／`hide` 於
+  enter／leave 轉場結束後才發出**，`useDialogWindow` 的拖曳與 8 向縮放接著在同一個已定版元素上
+  建立；`appear` 讓「掛載時就已開啟」的對話框也能取得拖曳區。外框（6px 圓角、1px 邊、
+  `--shadow-overlay`）統一由 `main.css` 的 `.sq-dialog-surface` 提供，PrimeVue 主題變數
+  `--p-dialog-border-radius` 與相關 `.p-dialog*` 覆寫全部移除（`main.css` 再少 130 行對抗式規則）。
+  驗證：597 項測試（新增 `tests/sq_dialog.test.ts`）、`npm run typecheck`、`npm run build` 通過，
+  並以 headless Chrome 實拍淺／深色外框表、真實遮罩與 `useDialogWindow` 掛載後的 8 個縮放區。
+
+- **順帶修掉一個既有缺陷：`SqButton` 的 `iconOnly` 判斷漏了 `label` prop。** 由於標籤是靠 prop
+  而非 slot 傳入，所有帶文字按鈕都被套上 `sq-btn--icon-only`（`width: 28px; padding: 0`），
+  文字因而溢出按鈕方塊——先前只有內建圖示的按鈕看起來正常，所以 P4 的截圖與測試都沒抓到。
+  現在 `iconOnly = !slots.default && !slots.label && !props.label?.length`。
+
 - [ ] 全站只有一個操作藍 `#2E6F9E`（及其 hover／tint），沒有第二個彩色 CTA。
 - [ ] 淺色為預設：畫布白、外框淺灰、深灰文字；深色為配對變體且對比另行驗證。
 - [ ] 面板與工具列沒有任何陰影；陰影只出現在選單／對話框／tooltip／toast。

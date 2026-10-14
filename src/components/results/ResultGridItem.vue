@@ -417,21 +417,20 @@
     </div>
 
     <!-- Commit Confirmation Modal -->
-    <Dialog
+    <SqDialog
       :visible="commitModal.visible"
       @update:visible="(val) => !val && closeCommitModal()"
-      modal
       :closable="false"
       :dismissableMask="true"
       :showHeader="false"
-      class="w-[92vw] max-w-5xl h-[88vh] max-h-[850px] !bg-dark-850 overflow-hidden flex flex-col"
+      class="w-[92vw] max-w-5xl h-[88vh] max-h-[850px]"
       :class="[
         dialogWindow.marker,
         requiresModificationPrompt
           ? (commitModal.confirmStep === 2 ? 'sq-dialog-accent-danger' : 'sq-dialog-accent-warn')
           : ''
       ]"
-      contentClass="!p-0 !bg-dark-850 h-full flex flex-col"
+      contentClass="!p-0 h-full flex flex-col"
       @show="dialogWindow.onShow"
       @hide="dialogWindow.onHide"
     >
@@ -595,7 +594,7 @@
           </SqButton>
         </div>
       </div>
-    </Dialog>
+    </SqDialog>
   </div>
 </template>
 
@@ -605,7 +604,7 @@ import { ref, computed, reactive, watch, toRaw, nextTick, onMounted, onBeforeUnm
 import SqButton from '@/components/ui/SqButton.vue';
 import SqInput from '@/components/ui/SqInput.vue';
 import SqChip from '@/components/ui/SqChip.vue';
-import Dialog from 'primevue/dialog';
+import SqDialog from '@/components/ui/SqDialog.vue';
 import {
   Copy,
   FileText,

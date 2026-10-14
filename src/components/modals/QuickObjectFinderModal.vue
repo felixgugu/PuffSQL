@@ -1,14 +1,13 @@
 <template>
-  <Dialog
+  <SqDialog
     :visible="isOpen"
     @update:visible="(val) => !val && closeModal()"
-    modal
     :closable="false"
     :dismissableMask="true"
     :showHeader="false"
     :class="dialogWindow.marker"
-    class="w-full max-w-2xl h-[80vh] !bg-dark-850 overflow-hidden flex flex-col"
-    contentClass="!p-0 !bg-dark-850 h-full flex flex-col overflow-hidden"
+    class="w-full max-w-2xl h-[80vh] overflow-hidden"
+    contentClass="!p-0 h-full flex flex-col overflow-hidden"
     @show="dialogWindow.onShow"
     @hide="dialogWindow.onHide"
   >
@@ -328,13 +327,13 @@
         {{ $t('quickFinder.displayCount', { shown: scoredResults.length, total: totalMatchingCount }) }}
       </div>
     </div>
-  </Dialog>
+  </SqDialog>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
-import Dialog from 'primevue/dialog';
+import SqDialog from '@/components/ui/SqDialog.vue';
 import SqInput from '@/components/ui/SqInput.vue';
 import SqButton from '@/components/ui/SqButton.vue';
 import SqSelect from '@/components/ui/SqSelect.vue';
