@@ -122,7 +122,7 @@ html:not(.dark) .tabulator {
 }
 
 .tabulator .tabulator-header .tabulator-col {
-  min-height: 30px;
+  min-height: 28px;
   border-right: 1px solid var(--sq-grid-border);
   background-color: var(--sq-grid-header-bg);
   /* Tabulator leaves the header title at the top of the column; centre it like the cells. */
@@ -235,9 +235,9 @@ html:not(.dark) .tabulator {
   padding: 0 6px;
   border-right: 1px solid var(--sq-grid-line);
   color: inherit;
-  /* Rows have a fixed 28px height (the `rowHeight` grid option), so matching the line box to
+  /* Rows have a fixed 24px height (the `rowHeight` grid option), so matching the line box to
      that height is what keeps single-line cell content vertically centred. */
-  line-height: 28px;
+  line-height: 24px;
 }
 
 .tabulator-row .tabulator-cell:last-child {

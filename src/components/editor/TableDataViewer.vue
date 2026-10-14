@@ -520,7 +520,7 @@ const grid = useTabulatorTable({
     headerSortClickElement: 'icon',
     tooltipDelay: 150,
     index: '__sqlightRowId',
-    rowHeight: 28,
+    rowHeight: 24,
     columns: buildColumnDefinitions(),
   }),
   onReady: (table) => {

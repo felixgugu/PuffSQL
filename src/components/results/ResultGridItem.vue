@@ -230,7 +230,7 @@
     <!-- Excel-Grade Live Aggregate Bar -->
     <div
       v-if="!hideToolbar"
-      class="h-6 bg-dark-850 border-t border-dark-700 flex items-center justify-between px-3 text-xxs font-sans text-dark-300 flex-shrink-0 select-none"
+      class="h-6 bg-dark-850 border-t border-dark-700 flex items-center justify-between px-3 text-xxs font-sans tabular-nums text-dark-300 flex-shrink-0 select-none"
     >
       <!-- Left: Statistics or Default Summary -->
       <div class="flex items-center space-x-2.5 overflow-x-auto min-w-0">
@@ -1583,7 +1583,7 @@ const grid = useTabulatorTable({
     headerSortClickElement: 'icon',
     tooltipDelay: 150,
     index: '__sqlightRowId',
-    rowHeight: 28,
+    rowHeight: 24,
     columns: buildColumnDefinitions(),
   }),
   onReady: (table) => {

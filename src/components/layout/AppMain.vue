@@ -26,7 +26,7 @@
           @drop.stop.prevent="handleTabItemDrop($event, tab)"
           :data-flip-key="tab.id"
           :class="[
-            'query-tab-item h-7 px-2.5 flex items-center space-x-2 text-xs border cursor-grab active:cursor-grabbing transition-all duration-100 group max-w-[280px] select-none touch-none flex-shrink-0 relative',
+            'query-tab-item h-7 px-2.5 flex items-center space-x-2 text-xs tabular-nums border cursor-grab active:cursor-grabbing transition-all duration-100 group max-w-[280px] select-none touch-none flex-shrink-0 relative',
             workspaceStore.activeTabId === tab.id ? 'font-medium active-tab' : 'inactive-tab',
             isPointerDragging && dragSourceIndex === idx ? 'opacity-35 border-dashed border-brand-400 scale-95' : '',
             dropHoverIndex === idx && isPointerDragging && dropHoverIndex !== dragSourceIndex ? 'border-brand-400 bg-brand-500/25 ring-1 ring-brand-400 scale-105' : '',

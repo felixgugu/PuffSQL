@@ -251,6 +251,20 @@ describe('type and imagery follow the brief', () => {
     }
   });
 
+  test('numeric chrome uses tabular figures so counts do not jitter as they change', () => {
+    // The grid strips out its data as monospace, so the numbers that still live in the UI font are
+    // the ones that need this: a status bar whose SPID and latency reflow on every keystroke, a
+    // results footer whose row count ticks up during a query, and the tab strips' counters.
+    for (const [file, marker] of [
+      ['src/components/layout/AppStatusBar.vue', 'tabular-nums'],
+      ['src/components/results/ResultGridItem.vue', 'tabular-nums'],
+      ['src/components/layout/AppBottomPanel.vue', 'tabular-nums'],
+      ['src/components/layout/AppMain.vue', 'tabular-nums'],
+    ] as const) {
+      assert.match(readSource(file), new RegExp(marker), `${file} shows changing numbers`);
+    }
+  });
+
   test('the only gradient-like rules left are functional patterns', () => {
     const offenders: string[] = [];
     for (const file of trackedSources()) {

@@ -1,0 +1,82 @@
+<!doctype html>
+<!-- Design-package harness: boots the real app in an iframe with a seeded SQL tab and runs the
+     query, so a headless screenshot can show the results grid with real rows (the browser mock
+     answers a plain SELECT with eight rows). Served by `npm run dev` at
+     http://localhost:1420/docs/design/minimal-ui/harness/workspace.html?tab=results -->
+<html lang="zh-TW">
+  <head>
+    <meta charset="utf-8" />
+    <title>seed workspace</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #ffffff;
+      }
+      #app-frame {
+        border: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <script>
+      const params = new URLSearchParams(location.search);
+      const panel = params.get('tab') || 'results';
+
+      const conn = { connectionId: 'conn-demo-1', database: 'AdventureWorks2022' };
+      const tabs = [
+        {
+          id: 'sql_editor',
+          type: 'sql_editor',
+          title: 'Orders.sql',
+          ...conn,
+          query: 'SELECT * FROM dbo.Users;',
+        },
+      ];
+      localStorage.setItem('sqlight_workspace_tabs', JSON.stringify(tabs));
+      localStorage.setItem('sqlight_active_tab_id', 'sql_editor');
+      localStorage.setItem('sqlight_sidebar_open', 'true');
+      if (params.get('dark') === '1') {
+        const raw = localStorage.getItem('sqlight_app_settings');
+        const settings = raw ? JSON.parse(raw) : {};
+        settings.colorMode = 'dark';
+        settings.locale = 'zh-TW';
+        localStorage.setItem('sqlight_app_settings', JSON.stringify(settings));
+      }
+
+      const frame = document.createElement('iframe');
+      frame.id = 'app-frame';
+      frame.src = '/';
+      document.body.appendChild(frame);
+
+      // Give the app time to mount, then drive the same shortcut a user would press.
+      frame.addEventListener('load', () => {
+        setTimeout(() => {
+          const win = frame.contentWindow;
+          win.dispatchEvent(
+            new KeyboardEvent('keydown', { key: 'Enter', ctrlKey: true, bubbles: true })
+          );
+          setTimeout(() => {
+            // Switch the bottom panel to the requested view (results | messages | history | stats).
+            const doc = win.document;
+            const labels = {
+              results: '結果',
+              messages: '訊息',
+              history: '歷程',
+              stats: '統計',
+            };
+            const wanted = labels[panel];
+            const tab = [...doc.querySelectorAll('.sq-view-tab')].find(
+              (node) => node.textContent.trim() === wanted
+            );
+            tab?.click();
+          }, 600);
+        }, 900);
+      });
+    </script>
+  </body>
+</html>

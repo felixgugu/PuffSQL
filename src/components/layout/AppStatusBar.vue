@@ -1,5 +1,5 @@
 <template>
-  <footer class="h-6 bg-dark-900 border-t border-dark-700 flex items-center justify-between px-3 text-xxs text-dark-400 select-none flex-shrink-0 font-sans">
+  <footer class="h-6 bg-dark-900 border-t border-dark-700 flex items-center justify-between px-3 text-xxs text-dark-400 select-none flex-shrink-0 font-sans tabular-nums">
     <!-- Left: Connection & Server Info -->
     <div class="flex items-center space-x-2.5">
       <div class="flex items-center space-x-1.5">

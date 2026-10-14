@@ -29,7 +29,7 @@
           @contextmenu.prevent="openTabContextMenu($event, rtab)"
           :data-flip-key="rtab.id"
           :class="[
-            'result-tab-item h-7 px-2 flex items-center space-x-1.5 text-xxs cursor-grab active:cursor-grabbing transition-all duration-100 group max-w-[220px] border flex-shrink-0 select-none touch-none relative',
+            'result-tab-item h-7 px-2 flex items-center space-x-1.5 text-xxs tabular-nums cursor-grab active:cursor-grabbing transition-all duration-100 group max-w-[220px] border flex-shrink-0 select-none touch-none relative',
             queryStore.activeResultTabId === rtab.id
               ? 'font-medium border-primary active-tab'
               : 'bg-dark-850/60 border-dark-750/70 hover:border-dark-600 hover:bg-dark-800',

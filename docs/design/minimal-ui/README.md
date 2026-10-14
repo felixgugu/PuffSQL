@@ -13,6 +13,7 @@
 | `screens/tabs-light.png`、`screens/tabs-dark.png` | 五種類別的工作區分頁列（淺色／深色）：中性外框 + 活動分頁的類別頂線，並含一個非 SQL 的活動分頁。 |
 | `screens/settings-appearance.png` | 設定對話框的外觀頁：語言、全域字型、深淺模式、中性表面色盤與即時預覽。 |
 | `screens/dialog-connection.png` | 連線設定對話框：三張分組卡片、無陰影、1px 邊、6px 圓角（用來核對「避免過多卡片」這條）。 |
+| `screens/workspace-results.png`、`screens/workspace-results-dark.png` | **真實執行過的查詢結果**（淺色／深色）：8 列 × 7 欄、24px 資料列、等寬資料值、`TRUE`／`FALSE` 與 `NULL` 的圖示化呈現、結果工具列與頁尾統計。 |
 | `../../design-system/puffsql/MASTER.md` | ui-ux-pro-max skill 產生的原始設計系統建議（保留備查；衝突時以 `SPEC.md` 為準）。 |
 
 ## 檢視方式
@@ -59,6 +60,15 @@ npm run dev   # 另一個視窗
   "http://localhost:1420/docs/design/minimal-ui/harness/dialog.html"
 # #dark 為深色、#overlay 為真實遮罩、#pair/#window/#debug 為單一對話框與拖曳縮放整合的檢查視圖，
 # #toast 為通知堆疊、#tooltip 以合成 hover 觸發真實提示
+# #settings 為設定對話框、#connection 為連線對話框
+
+# 工作區（含真實查詢結果）：workspace.html 在 iframe 內啟動真正的 App，送出 Ctrl+Enter 的
+# keydown 讓它執行 seeded 的 SELECT，再把下方面板切到 ?tab=（results | messages | history | stats）
+& "C:\Program Files\Google\Chrome\Application\chrome.exe" --headless=new --disable-gpu --hide-scrollbars `
+  --user-data-dir=".design-preview\ws" --virtual-time-budget=25000 --run-all-compositor-stages-before-draw `
+  --window-size=1500,900 --screenshot="docs\design\minimal-ui\screens\workspace-results.png" `
+  "http://localhost:1420/docs/design/minimal-ui/harness/workspace.html?tab=results"
+# 深色：網址加上 &dark=1
 
 # 分頁列：tabs.html 會寫入五種類別的分頁並可指定活動分頁（#sql_editor | #data | #struct | #plan | #er，
 # 加 -dark 走深色）

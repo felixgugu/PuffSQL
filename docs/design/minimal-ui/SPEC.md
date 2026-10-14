@@ -144,12 +144,14 @@ WCAG 1.4.11 的豁免）；分隔步 `#64748B` 對畫布 4.76:1；focus 指示�
 |---|---|
 | 標題列（含視窗控制） | 40px |
 | 工具列 / 編輯器工具列 | 36px |
-| 分頁列（SQL 分頁、結果分頁） | 30px |
+| 分頁（SQL 分頁、結果分頁） | 28px（活動分頁 29px，含 1px 疊邊以併入畫布） |
 | 控制項（sm / md / lg） | 24 / 28 / 32px |
 | 資料格表頭 / 資料列 | 28 / 24px |
-| 樹狀節點 / 訊息列 | 24px |
+| 樹狀節點 | 24px |
+| 訊息列 | 標題列 24px + 內容列（12px 等寬，`leading-normal`；展開為多行） |
 | 狀態列 | 24px |
 | 對話框表頭 / 頁尾 | 40 / 48px |
+| 檢視器子標題列（資料／結構／執行計畫） | 32px |
 
 水平內距：面板 `12px`、密集列 `8px`、對話框內容 `16px`、按鈕 `10px`（圖示按鈕為正方形）。
 
@@ -405,14 +407,43 @@ WCAG 1.4.11 的豁免）；分隔步 `#64748B` 對畫布 4.76:1；focus 指示�
   新增護欄：`src/` 不得再出現 `from 'primevue…'`、`package.json` 不得宣告 PrimeVue 套件、
   `main.css` 不得再出現 `.p-*` 規則。驗證：628 項測試、`npm run typecheck`、`npm run build` 通過。
 
-- [ ] 全站只有一個操作藍 `#2E6F9E`（及其 hover／tint），沒有第二個彩色 CTA。
-- [ ] 淺色為預設：畫布白、外框淺灰、深灰文字；深色為配對變體且對比另行驗證。
-- [ ] 面板與工具列沒有任何陰影；陰影只出現在選單／對話框／tooltip／toast。
-- [ ] 圓角只有 3／4／6px 三種；沒有膠囊按鈕。
-- [ ] 所有數字欄位使用 tabular-nums；SQL 與資料值使用等寬字。
-- [ ] 資料列高 24px、控制項 24–32px、工具列 36px，符合密度表。
-- [ ] 訊息等級、連線狀態、欄位錯誤都有顏色以外的第二指示。
+- **P11 密度對齊與驗收清單（2026-10-15）。** 逐條核對 §13 的清單時，用 §5 的密度表對照實作，
+  發現兩個真實落差：
+  - **資料格列高是 28px，密度表承諾 24px。** 這是核心資料面，也是本簡報「以資料與操作效率為中心」
+    最直接可量測的一條。三個檢視（資料、結構、結果）的 `rowHeight` 與 cell `line-height`
+    一起改為 24px、表頭 30 → 28px；`grid_scroll_perf` 的「line-height 必須等於 rowHeight」
+    斷言因此同時守住新的值。**實拍驗證：同樣高度下可見列數由 4 列增加到 5 列（+25%）。**
+    12px 等寬字在 24px 列中仍有 2× 行距，`TRUE`／`FALSE` 標籤與 `NULL` 標籤都沒有被裁切。
+  - **數字只有一處用 tabular figures。** 資料面本來就是等寬（數字自然對齊），但狀態列的 SPID／延遲、
+    結果頁尾的列數／時長、以及兩條分頁列的計數都在 UI 字型裡，數值變動時會左右跳動。
+    這四處加上 `tabular-nums`。
+  - 密度表另外修正了兩列與實作不符的描述（分頁實際是 28px／活動 29px；訊息列是「標題列 24px +
+    內容列」而非單列 24px），並補上檢視器子標題列 32px。
+  - §13 的驗收清單全數逐條核對並標記，每一條都指向支撐它的測試或量測；順手修正清單裡過時的
+    操作色數值（`#2E6F9E` → 實作的 `#2A6791`）。
+
+- [x] 全站只有一個操作藍 `#2A6791`（及其 hover／tint）：`--color-accent` 與 `--color-info` 同色，
+  破壞性動作用 `--color-danger`（§3 允許的語意色，非第二個主要操作色）。
+  `minimal_ui_surfaces` 擋住 `text-*-400` 這類寫死色階，`theme_contrast` 驗證 4.5:1。
+- [x] 淺色為預設：`settingsStore.DEFAULT_SETTINGS.colorMode = 'light'` 與 `index.html` 首繪腳本；
+  畫布白、外框淺灰、深灰文字見 `main.css` 的 `:root`，深色為 `neutralizeRgb` 去飽和配對變體，
+  兩態由 `theme_contrast` 逐階驗證。
+- [x] 面板與工具列沒有任何陰影；陰影只出現在選單／對話框／tooltip／toast
+  （`minimal_ui_surfaces` 只允許 `shadow-raised`／`shadow-overlay`，且灰階以外的畫布內容另列）。
+- [x] 圓角只有 3／4／6px 三種；沒有膠囊按鈕（`minimal_ui_surfaces` 禁止 `rounded-sm/lg/xl/2xl/3xl`；
+  `rounded-full` 僅保留給狀態點、頭像與 spinner）。
+- [x] 數字使用 tabular figures 或等寬：資料格、訊息面板、SQL 預覽、IO 統計為等寬；
+  狀態列／結果頁尾／分頁計數為 `tabular-nums`（兩者皆有 `minimal_ui_surfaces` 斷言）。
+- [x] 資料列高 24px、控制項 24–32px、工具列 36px，符合 §5 密度表
+  （`grid_scroll_perf` 綁定 `rowHeight` 與 cell line-height；`minimal_ui_primitives` 綁定按鈕高度）。
+- [x] 訊息等級、連線狀態、欄位錯誤都有顏色以外的第二指示：訊息列為色條 + 圖示 + 文字、
+  連線狀態為色點 + 文字、價值標籤用 `SqChip`（tone + label）、`NULL` 為斜體加虛線底。
 - [x] 移除 PrimeIcons 後每個圖示都有等義的 lucide 圖示，且純圖示按鈕具備 `aria-label`。
-- [ ] focus 在淺色與深色都清楚可見（2px `--accent`）。
-- [ ] `prefers-reduced-motion: reduce` 下無位移／淡入動畫。
-- [ ] 文案為繁體中文且 SQL／資料庫術語保留英文（見 §9 對照）。
+- [x] focus 在淺色與深色都清楚可見：`outline: 2px solid rgb(var(--color-accent))`，而
+  `--color-accent` 逐模式定義（`minimal_ui_primitives` 斷言 SqButton／SqInput 的 focus 規則）。
+- [x] `prefers-reduced-motion: reduce` 下無位移／淡入動畫（`motion_accessibility`）。
+- [x] 文案為繁體中文且 SQL／資料庫術語保留英文（見 §9 對照）；`zh-TW` 為預設字典，
+  `i18n` 測試驗證兩語系鍵值對等。
+
+> 以上每一條都由 `tests/` 內的原始碼契約測試或量測支撐，不是靠人工目視。唯一的視覺驗證是
+> `screens/` 底下的 headless 截圖（本環境無法在瀏覽器內操作）。
