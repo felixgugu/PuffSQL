@@ -14,6 +14,7 @@
 | `screens/settings-appearance.png` | 設定對話框的外觀頁：語言、全域字型、深淺模式、中性表面色盤與即時預覽。 |
 | `screens/dialog-connection.png` | 連線設定對話框：三張分組卡片、無陰影、1px 邊、6px 圓角（用來核對「避免過多卡片」這條）。 |
 | `screens/workspace-results.png`、`screens/workspace-results-dark.png` | **真實執行過的查詢結果**（淺色／深色）：8 列 × 7 欄、24px 資料列、等寬資料值、`TRUE`／`FALSE` 與 `NULL` 的圖示化呈現、結果工具列與頁尾統計。 |
+| `screens/panel-messages.png`、`screens/panel-history.png` | 執行訊息（等級晶片 + `Msg`／`Line` 編號）與查詢歷程（`[#n] [時間] 時長 筆數 資料庫` + SQL）——產品用途「檢視結果」與「追蹤查詢紀錄」的直接證據。 |
 | `../../design-system/puffsql/MASTER.md` | ui-ux-pro-max skill 產生的原始設計系統建議（保留備查；衝突時以 `SPEC.md` 為準）。 |
 
 ## 檢視方式

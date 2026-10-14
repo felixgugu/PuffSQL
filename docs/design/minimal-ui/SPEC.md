@@ -187,7 +187,8 @@ WCAG 1.4.11 的豁免）；分隔步 `#64748B` 對畫布 4.76:1；focus 指示�
   儲存格左右 6px；斑馬列 `--surface-panel`、hover `--surface-hover`、選取 `--accent-tint`；
   僅有橫向 1px 分隔線（固定 `#` 欄右側例外）；數值右對齊 + tabular-nums；`NULL` 為斜體 `--text-muted`
   加虛線底；釘選欄右側 1px `--border-control`。
-- **訊息列**：24px、等寬 12px；等級以 **4px 左側色條 + 圖示 + 文字** 三重表示（不可只靠顏色）；
+- **訊息列**：標題列 24px + 內容列（等寬 12px）；等級用**語意色晶片（tone + 文字標籤）**，
+  再加上 `Msg` 編號與 `Line` 行號——狀態一律有文字，不靠顏色單獨傳達；
   剛執行的訊息以 `--accent-tint` 淡入淡出（沿用現行 3 秒暫態高亮，顏色改綁 `--accent`）。
 - **對話框**：白底、圓角 6、1px 邊、`--shadow-overlay`、遮罩 `rgba(16,24,40,.32)`（**不使用模糊**）；
   表頭 40px + 標題 14px/600 + 右上關閉；頁尾右對齊「文字鈕 + 主要鈕」，破壞性動作在左並用 `--danger`。
@@ -436,8 +437,9 @@ WCAG 1.4.11 的豁免）；分隔步 `#64748B` 對畫布 4.76:1；focus 指示�
   狀態列／結果頁尾／分頁計數為 `tabular-nums`（兩者皆有 `minimal_ui_surfaces` 斷言）。
 - [x] 資料列高 24px、控制項 24–32px、工具列 36px，符合 §5 密度表
   （`grid_scroll_perf` 綁定 `rowHeight` 與 cell line-height；`minimal_ui_primitives` 綁定按鈕高度）。
-- [x] 訊息等級、連線狀態、欄位錯誤都有顏色以外的第二指示：訊息列為色條 + 圖示 + 文字、
-  連線狀態為色點 + 文字、價值標籤用 `SqChip`（tone + label）、`NULL` 為斜體加虛線底。
+- [x] 訊息等級、連線狀態、欄位錯誤都有顏色以外的第二指示：訊息等級是語意色晶片 + 文字標籤
+  （另有 `Msg`／`Line` 編號）、連線狀態為色點 + 文字、`TRUE`／`FALSE` 與 `NULL` 都有文字、
+  `NULL` 另加斜體與虛線底。
 - [x] 移除 PrimeIcons 後每個圖示都有等義的 lucide 圖示，且純圖示按鈕具備 `aria-label`。
 - [x] focus 在淺色與深色都清楚可見：`outline: 2px solid rgb(var(--color-accent))`，而
   `--color-accent` 逐模式定義（`minimal_ui_primitives` 斷言 SqButton／SqInput 的 focus 規則）。
