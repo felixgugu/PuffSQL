@@ -270,8 +270,9 @@ WCAG 1.4.11 的豁免）；分隔步 `#64748B` 對畫布 4.76:1；focus 指示�
   `aria-label`）。仍待處理：62 處 `<i class="pi ...">` 元素（主要在對話框與檢視器）與 128 個
   PrimeVue `icon="pi ..."` prop（依賴 P4 換掉元件後改用 `#icon` slot），完成後才移除 primeicons。
 - **P4 葉節點元件：部分完成。** 已建立 `src/components/ui/SqChip.vue`（取代 Tag）與
-  `SqInput.vue`（取代 InputText），並遷移外殼與結果區（14 個 chip 與相關標記）。仍待處理：
-  16 個檔案／27 個渲染點仍用 PrimeVue Tag、13 個檔案仍用 InputText，以及 Checkbox、
+  `SqInput.vue`（取代 InputText）。**Tag 已全面退場**（`primevue/tag` 匯入 0、`<Tag>` 渲染點 0、
+  SqChip 渲染點 41，涵蓋外殼、結果區、編輯器檢視器與 9 個對話框），過程中一併移除標籤內的
+  emoji 圖示、把動態 severity 改為動態 tone。仍待處理：13 個檔案仍用 InputText，以及 Checkbox、
   ToggleSwitch、SelectButton、Divider、Badge、Card、ProgressBar（見 PRIMEVUE-EVALUATION.md §3）。
 
 - [ ] 全站只有一個操作藍 `#2E6F9E`（及其 hover／tint），沒有第二個彩色 CTA。
