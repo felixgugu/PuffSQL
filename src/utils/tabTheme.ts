@@ -1,196 +1,121 @@
 import type { TabType } from '@/types/workspace';
 
-export interface TabCategoryColors {
-  bg: string;
-  border: string;
-  topAccent: string;
-  text: string;
-  badgeBg: string;
-  hoverBg?: string;
-  hoverBorder?: string;
-  hoverText?: string;
-}
-
+/**
+ * Per-category identity for workspace tabs.
+ *
+ * The minimal spec allows exactly one accent hue for actions, so a category does not get a colour
+ * of its own: it points at the same role token its icon already uses. That keeps light and dark
+ * handled by one contrast-verified token pair instead of two hand-picked hex palettes, and it
+ * removes the case where a tab's icon and the accent line next to it were different greens.
+ *
+ * Categories stay distinguishable by glyph (`FileCode` / `Table2` / `TableProperties` / `Network`
+ * / `Workflow`) *and* by accent, so the distinction never rests on colour alone.
+ */
 export interface TabCategoryTheme {
   type: TabType;
   label: string;
-  active: TabCategoryColors;
-  inactive: Required<TabCategoryColors>;
-  iconColor: string;
-  /**
-   * Light-mode icon/accent colour. The dark palette's 300/400 steps only reach 1.5-2.8:1 on
-   * the light tab strip, so the light theme uses the 600/700 steps of the same hue.
-   */
-  iconColorLight: string;
+  /** A CSS custom-property reference, resolved per colour mode by themeManager. */
+  accent: string;
 }
+
+const token = (name: string) => `rgb(var(${name}))`;
 
 export const TAB_CATEGORY_THEMES: Record<TabType, TabCategoryTheme> = {
   sql_editor: {
     type: 'sql_editor',
     label: 'SQL 查詢',
-    active: {
-      bg: '#1e40af', // Royal Blue 800
-      border: '#3b82f6', // Blue 500
-      topAccent: '#60a5fa', // Blue 400
-      text: '#ffffff',
-      badgeBg: 'rgba(0, 0, 0, 0.3)',
-    },
-    inactive: {
-      bg: 'rgba(30, 58, 138, 0.10)',
-      border: 'rgba(59, 130, 246, 0.18)',
-      topAccent: '#3b82f6',
-      text: '#94a3b8',
-      hoverBg: 'rgba(30, 58, 138, 0.28)',
-      hoverBorder: 'rgba(59, 130, 246, 0.45)',
-      hoverText: '#f8fafc',
-      badgeBg: 'rgba(15, 23, 42, 0.65)',
-    },
-    iconColor: '#60a5fa',
-    iconColorLight: '#2563eb',
+    accent: token('--color-accent'),
   },
   table_data: {
     type: 'table_data',
     label: '表格資料',
-    active: {
-      bg: '#065f46', // Emerald 800
-      border: '#10b981', // Emerald 500
-      topAccent: '#34d399', // Emerald 400
-      text: '#ffffff',
-      badgeBg: 'rgba(0, 0, 0, 0.3)',
-    },
-    inactive: {
-      bg: 'rgba(6, 78, 59, 0.10)',
-      border: 'rgba(16, 185, 129, 0.18)',
-      topAccent: '#10b981',
-      text: '#94a3b8',
-      hoverBg: 'rgba(6, 78, 59, 0.28)',
-      hoverBorder: 'rgba(16, 185, 129, 0.45)',
-      hoverText: '#f8fafc',
-      badgeBg: 'rgba(15, 23, 42, 0.65)',
-    },
-    iconColor: '#34d399',
-    iconColorLight: '#047857',
+    accent: token('--color-ok'),
   },
   table_structure: {
     type: 'table_structure',
     label: '表格結構',
-    active: {
-      bg: '#3730a3', // Indigo 800
-      border: '#6366f1', // Indigo 500
-      topAccent: '#818cf8', // Indigo 400
-      text: '#ffffff',
-      badgeBg: 'rgba(0, 0, 0, 0.3)',
-    },
-    inactive: {
-      bg: 'rgba(49, 46, 129, 0.10)',
-      border: 'rgba(99, 102, 241, 0.18)',
-      topAccent: '#6366f1',
-      text: '#94a3b8',
-      hoverBg: 'rgba(49, 46, 129, 0.28)',
-      hoverBorder: 'rgba(99, 102, 241, 0.45)',
-      hoverText: '#f8fafc',
-      badgeBg: 'rgba(15, 23, 42, 0.65)',
-    },
-    iconColor: '#818cf8',
-    iconColorLight: '#4f46e5',
+    accent: token('--color-structure'),
   },
   execution_plan: {
     type: 'execution_plan',
     label: '執行計畫',
-    active: {
-      bg: '#581c87', // Purple 900
-      border: '#a855f7', // Purple 500
-      topAccent: '#c084fc', // Purple 400
-      text: '#ffffff',
-      badgeBg: 'rgba(0, 0, 0, 0.3)',
-    },
-    inactive: {
-      bg: 'rgba(59, 7, 100, 0.10)',
-      border: 'rgba(168, 85, 247, 0.18)',
-      topAccent: '#a855f7',
-      text: '#94a3b8',
-      hoverBg: 'rgba(59, 7, 100, 0.28)',
-      hoverBorder: 'rgba(168, 85, 247, 0.45)',
-      hoverText: '#f8fafc',
-      badgeBg: 'rgba(15, 23, 42, 0.65)',
-    },
-    iconColor: '#c084fc',
-    iconColorLight: '#7c3aed',
+    accent: token('--color-plan'),
   },
   er_diagram: {
     type: 'er_diagram',
     label: 'ER 關聯圖',
-    active: {
-      bg: '#155e75', // Cyan 800
-      border: '#06b6d4', // Cyan 500
-      topAccent: '#22d3ee', // Cyan 400
-      text: '#ffffff',
-      badgeBg: 'rgba(0, 0, 0, 0.3)',
-    },
-    inactive: {
-      bg: 'rgba(22, 78, 99, 0.10)',
-      border: 'rgba(6, 182, 212, 0.18)',
-      topAccent: '#06b6d4',
-      text: '#94a3b8',
-      hoverBg: 'rgba(22, 78, 99, 0.28)',
-      hoverBorder: 'rgba(6, 182, 212, 0.45)',
-      hoverText: '#f8fafc',
-      badgeBg: 'rgba(15, 23, 42, 0.65)',
-    },
-    iconColor: '#22d3ee',
-    iconColorLight: '#0e7490',
+    accent: token('--color-er'),
   },
 };
 
+const CANVAS = token('--color-dark-900');
+const ACTIVE_TEXT = token('--color-dark-100');
+
+/** The colour a SQL tab used to default to; saved settings holding it mean "no custom colour". */
+const LEGACY_DEFAULT_SQL_TAB_BG = '#1e40af';
+
+export interface TabStyleInput {
+  type: TabType;
+  isActive: boolean;
+  customSqlBg?: string;
+  customSqlText?: string;
+}
+
+function tabStyle({ type, isActive, customSqlBg, customSqlText }: TabStyleInput) {
+  const theme = TAB_CATEGORY_THEMES[type] || TAB_CATEGORY_THEMES.sql_editor;
+  // Only the SQL editor's active tab can be recoloured by the user; the others are not theirs to
+  // paint, so a custom colour is ignored there.
+  const custom = type === 'sql_editor' && customSqlBg && customSqlBg !== LEGACY_DEFAULT_SQL_TAB_BG
+    ? customSqlBg
+    : undefined;
+  const accent = custom ?? theme.accent;
+  const activeSurface = custom ?? CANVAS;
+  const activeText = (custom && customSqlText) || ACTIVE_TEXT;
+
+  if (isActive) {
+    return {
+      '--tab-bg': activeSurface,
+      '--tab-hover-bg': activeSurface,
+      '--tab-border': accent,
+      '--tab-hover-border': accent,
+      '--tab-top-accent': accent,
+      '--tab-text': activeText,
+      '--tab-hover-text': activeText,
+      // The active tab merges into the content canvas, so its bottom edge is the canvas colour.
+      '--tab-active-surface': activeSurface,
+      '--tab-active-text': activeText,
+    } satisfies Record<string, string>;
+  }
+
+  // Inactive tabs are pure chrome: no tint, a hairline border, and the category accent only as the
+  // 2px line on top of an active tab.
+  return {
+    '--tab-bg': 'transparent',
+    '--tab-hover-bg': token('--color-dark-750'),
+    '--tab-border': token('--color-dark-700'),
+    '--tab-hover-border': token('--color-dark-600'),
+    // The custom SQL colour is for the tab you are looking at; an inactive tab stays neutral.
+    '--tab-top-accent': theme.accent,
+    '--tab-text': token('--color-dark-500'),
+    '--tab-hover-text': token('--color-dark-200'),
+    '--tab-active-surface': CANVAS,
+    '--tab-active-text': ACTIVE_TEXT,
+  } satisfies Record<string, string>;
+}
+
 /**
- * Computes CSS variable styling for a tab given its type, active state, and optional light/dark or legacy overrides.
+ * Computes the CSS variables for one workspace tab.
+ *
+ * The third parameter is either the custom SQL background or the light-mode flag — an older
+ * signature the call sites still use.
  */
 export function getTabThemeStyle(
   type: TabType,
   isActive: boolean,
   customSqlBgOrIsLight?: string | boolean,
   customSqlText?: string,
-  isLight = false
+  _isLight = false
 ): Record<string, string> {
   const customSqlBg = typeof customSqlBgOrIsLight === 'string' ? customSqlBgOrIsLight : undefined;
-  const actualIsLight = typeof customSqlBgOrIsLight === 'boolean' ? customSqlBgOrIsLight : isLight;
-  const theme = TAB_CATEGORY_THEMES[type] || TAB_CATEGORY_THEMES.sql_editor;
-
-  if (isActive) {
-    const isCustom = Boolean(type === 'sql_editor' && customSqlBg && customSqlBg !== '#1e40af');
-    const bg = isCustom ? customSqlBg! : theme.active.bg;
-    const text = isCustom && customSqlText ? customSqlText : theme.active.text;
-    const border = isCustom ? customSqlBg! : (type === 'sql_editor' ? 'var(--p-primary-color, #3b82f6)' : theme.active.border);
-    const topAccent = isCustom ? customSqlBg! : (type === 'sql_editor' ? 'var(--p-primary-color, #3b82f6)' : theme.active.topAccent);
-
-    return {
-      '--tab-bg': bg,
-      '--tab-hover-bg': bg,
-      '--tab-border': border,
-      '--tab-hover-border': border,
-      '--tab-top-accent': topAccent,
-      '--tab-text': text,
-      '--tab-hover-text': text,
-      '--tab-badge-bg': theme.active.badgeBg,
-      '--tab-icon-color': type === 'sql_editor' ? 'var(--p-primary-color, #3b82f6)' : text,
-      // The active tab merges into the content canvas in both modes, so it uses the canvas token
-      // instead of a hardcoded white in light mode.
-      '--tab-active-surface': isCustom ? bg : 'rgb(var(--color-dark-900))',
-      '--tab-active-text': isCustom && customSqlText ? customSqlText : (actualIsLight ? '#0f172a' : '#f8fafc'),
-    };
-  }
-
-  return {
-    '--tab-bg': actualIsLight ? 'rgba(226, 232, 240, 0.45)' : theme.inactive.bg,
-    '--tab-hover-bg': actualIsLight ? 'rgba(203, 213, 225, 0.65)' : theme.inactive.hoverBg,
-    '--tab-border': actualIsLight ? 'rgba(203, 213, 225, 0.6)' : theme.inactive.border,
-    '--tab-hover-border': actualIsLight ? 'rgba(148, 163, 184, 0.8)' : theme.inactive.hoverBorder,
-    '--tab-top-accent': actualIsLight ? theme.iconColorLight : theme.inactive.topAccent,
-    // The inactive light label sits on a rgba(226,232,240,0.45) tab over the grey chrome, so it
-    // keeps the slate-600 step rather than slate-500 to stay above 4.5:1.
-    '--tab-text': actualIsLight ? '#475569' : theme.inactive.text,
-    '--tab-hover-text': actualIsLight ? '#0f172a' : theme.inactive.hoverText,
-    '--tab-badge-bg': actualIsLight ? 'rgba(203, 213, 225, 0.6)' : theme.inactive.badgeBg,
-    '--tab-icon-color': actualIsLight ? theme.iconColorLight : theme.iconColor,
-  };
+  return tabStyle({ type, isActive, customSqlBg, customSqlText });
 }

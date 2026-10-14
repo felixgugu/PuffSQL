@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { TAB_CATEGORY_THEMES, getTabThemeStyle } from '../src/utils/tabTheme';
+import { THEME_ROLE_COLORS } from '../src/services/themeManager';
 import type { TabType } from '../src/types/workspace';
 
 const ALL_TAB_TYPES: TabType[] = [
@@ -13,110 +14,89 @@ const ALL_TAB_TYPES: TabType[] = [
   'er_diagram',
 ];
 
-test('TAB_CATEGORY_THEMES defines distinct color schemes for all 5 workspace tab types', () => {
+/** Reads the role name out of an `rgb(var(--color-ok))` style reference. */
+function roleOf(value: string): string {
+  const match = /var\(--color-([a-z-]+)\)/.exec(value);
+  assert.ok(match, `${value} must reference a colour token`);
+  return match[1]!;
+}
+
+test('each workspace tab type is distinct, and every accent is a role token', () => {
   assert.equal(Object.keys(TAB_CATEGORY_THEMES).length, 5);
 
-  const activeBgs = new Set<string>();
-  const topAccents = new Set<string>();
-  const iconColors = new Set<string>();
-
+  const accents = new Set<string>();
   for (const type of ALL_TAB_TYPES) {
     const theme = TAB_CATEGORY_THEMES[type];
     assert.ok(theme, `Theme for ${type} must exist`);
     assert.equal(theme.type, type);
     assert.ok(theme.label, `Label for ${type} must exist`);
 
-    // Verify Active properties
-    assert.ok(theme.active.bg);
-    assert.ok(theme.active.border);
-    assert.ok(theme.active.topAccent);
-    assert.ok(theme.active.text);
-    assert.ok(theme.active.badgeBg);
-
-    // Verify Inactive properties
-    assert.ok(theme.inactive.bg);
-    assert.ok(theme.inactive.border);
-    assert.ok(theme.inactive.topAccent);
-    assert.ok(theme.inactive.text);
-    assert.ok(theme.inactive.hoverBg);
-    assert.ok(theme.inactive.hoverBorder);
-    assert.ok(theme.inactive.hoverText);
-
-    // Each category must have a unique active background and top accent
-    activeBgs.add(theme.active.bg);
-    topAccents.add(theme.inactive.topAccent);
-    iconColors.add(theme.iconColor);
-  }
-
-  // All 5 categories must be visually distinct
-  assert.equal(activeBgs.size, 5, 'All 5 categories must have unique active backgrounds');
-  assert.equal(topAccents.size, 5, 'All 5 categories must have unique inactive top accents');
-  assert.equal(iconColors.size, 5, 'All 5 categories must have unique icon colors');
-});
-
-test('getTabThemeStyle produces expected CSS variables for Active and Inactive states', () => {
-  // 1. Table Data Inactive
-  const inactiveDataStyle = getTabThemeStyle('table_data', false);
-  assert.equal(inactiveDataStyle['--tab-top-accent'], '#10b981');
-  assert.ok(inactiveDataStyle['--tab-bg'].includes('rgba'));
-  assert.ok(inactiveDataStyle['--tab-hover-bg'].includes('rgba'));
-  assert.equal(inactiveDataStyle['--tab-icon-color'], '#34d399');
-
-  // 2. Table Data Active
-  const activeDataStyle = getTabThemeStyle('table_data', true);
-  assert.equal(activeDataStyle['--tab-bg'], '#065f46');
-  assert.equal(activeDataStyle['--tab-text'], '#ffffff');
-  assert.equal(activeDataStyle['--tab-top-accent'], '#34d399');
-
-  // 3. ER Diagram Inactive vs Active
-  const inactiveErStyle = getTabThemeStyle('er_diagram', false);
-  assert.equal(inactiveErStyle['--tab-top-accent'], '#06b6d4');
-  assert.equal(inactiveErStyle['--tab-icon-color'], '#22d3ee');
-
-  const activeErStyle = getTabThemeStyle('er_diagram', true);
-  assert.equal(activeErStyle['--tab-bg'], '#155e75');
-  assert.equal(activeErStyle['--tab-border'], '#06b6d4');
-});
-
-test('getTabThemeStyle swaps to the light icon palette when isLight is set', () => {
-  for (const type of ALL_TAB_TYPES) {
-    const theme = TAB_CATEGORY_THEMES[type];
-    assert.ok(theme.iconColorLight, `Light icon colour for ${type} must exist`);
-    assert.notEqual(
-      theme.iconColorLight,
-      theme.iconColor,
-      `${type} must not reuse the dark icon colour in light mode`
+    assert.match(theme.accent, /^rgb\(var\(--color-[a-z-]+\)\)$/, `${type} accent must be a token`);
+    assert.ok(
+      THEME_ROLE_COLORS[roleOf(theme.accent)],
+      `${type} accent must resolve in the theme role table`
     );
+    accents.add(theme.accent);
   }
 
-  const lightInactive = getTabThemeStyle('table_data', false, undefined, undefined, true);
-  assert.equal(lightInactive['--tab-icon-color'], '#047857');
-  assert.equal(lightInactive['--tab-top-accent'], '#047857');
-
-  // Dark mode keeps the original accents.
-  const darkInactive = getTabThemeStyle('table_data', false);
-  assert.equal(darkInactive['--tab-icon-color'], '#34d399');
-  assert.equal(darkInactive['--tab-top-accent'], '#10b981');
+  assert.equal(accents.size, 5, 'All 5 categories must stay visually distinct');
 });
 
-test('getTabThemeStyle allows custom SQL colors to override sql_editor active tab only', () => {
+test('the category palette holds no raw colour values', () => {
+  const source = readFileSync(resolve(process.cwd(), 'src/utils/tabTheme.ts'), 'utf-8');
+  // The one exception is the sentinel for a legacy saved setting.
+  const hexes = [...source.matchAll(/#[0-9a-fA-F]{3,8}/g)].map((match) => match[0]);
+  assert.deepEqual(hexes, ['#1e40af'], 'only the legacy-default sentinel may be a literal');
+  assert.doesNotMatch(source, /--p-primary-color/, 'PrimeVue theme variables are gone');
+});
+
+test('inactive tabs are neutral chrome so the accent stays the only colour signal', () => {
+  for (const type of ALL_TAB_TYPES) {
+    const style = getTabThemeStyle(type, false);
+    assert.equal(style['--tab-bg'], 'transparent');
+    assert.equal(style['--tab-border'], 'rgb(var(--color-dark-700))');
+    assert.equal(style['--tab-text'], 'rgb(var(--color-dark-500))');
+    assert.equal(style['--tab-hover-bg'], 'rgb(var(--color-dark-750))');
+    assert.equal(style['--tab-hover-text'], 'rgb(var(--color-dark-200))');
+    // The category only shows while the tab is the one you are looking at.
+    assert.equal(style['--tab-top-accent'], TAB_CATEGORY_THEMES[type].accent);
+  }
+});
+
+test('an active tab is canvas plus its own accent, never a coloured block', () => {
+  for (const type of ALL_TAB_TYPES) {
+    const style = getTabThemeStyle(type, true);
+    assert.equal(style['--tab-active-surface'], 'rgb(var(--color-dark-900))');
+    assert.equal(style['--tab-active-text'], 'rgb(var(--color-dark-100))');
+    assert.equal(style['--tab-border'], TAB_CATEGORY_THEMES[type].accent);
+    assert.equal(style['--tab-top-accent'], TAB_CATEGORY_THEMES[type].accent);
+  }
+});
+
+test('the custom SQL tab colour overrides that tab only', () => {
   const customBg = '#4338ca';
   const customText = '#fef08a';
 
-  // sql_editor with custom colors
   const activeSqlStyle = getTabThemeStyle('sql_editor', true, customBg, customText);
-  assert.equal(activeSqlStyle['--tab-bg'], customBg);
-  assert.equal(activeSqlStyle['--tab-text'], customText);
+  assert.equal(activeSqlStyle['--tab-active-surface'], customBg);
+  assert.equal(activeSqlStyle['--tab-active-text'], customText);
   assert.equal(activeSqlStyle['--tab-border'], customBg);
 
-  // table_data active should NOT be overridden by custom SQL colors
-  const activeDataStyle = getTabThemeStyle('table_data', true, customBg, customText);
-  assert.equal(activeDataStyle['--tab-bg'], '#065f46');
-  assert.equal(activeDataStyle['--tab-text'], '#ffffff');
+  // Other categories are not the user's to paint, and a custom colour never reaches an inactive tab.
+  assert.equal(
+    getTabThemeStyle('table_data', true, customBg, customText)['--tab-active-surface'],
+    'rgb(var(--color-dark-900))'
+  );
+  assert.equal(
+    getTabThemeStyle('sql_editor', false, customBg, customText)['--tab-top-accent'],
+    TAB_CATEGORY_THEMES.sql_editor.accent
+  );
 
-  // er_diagram active should NOT be overridden by custom SQL colors
-  const activeErStyle = getTabThemeStyle('er_diagram', true, customBg, customText);
-  assert.equal(activeErStyle['--tab-bg'], '#155e75');
+  // A saved setting still holding the old default means "no custom colour".
+  assert.equal(
+    getTabThemeStyle('sql_editor', true, '#1e40af')['--tab-active-surface'],
+    'rgb(var(--color-dark-900))'
+  );
 });
 
 test('AppBottomPanel active result tab applies theme/connection borders (top, left, right) like editor tabs', () => {
@@ -204,4 +184,3 @@ test('AppMain active workspace tab applies theme/connection borders on top, left
     'active workspace tab must have border-right-color set to theme accent'
   );
 });
-

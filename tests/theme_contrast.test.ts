@@ -236,17 +236,21 @@ function hexToChannels(hex: string): string {
   return `${rgb.r} ${rgb.g} ${rgb.b}`;
 }
 
-test('inactive workspace tabs keep 3:1 icons in light mode', () => {
-  // Composite of the inactive light tab background (rgba(226,232,240,0.45), see utils/tabTheme.ts)
-  // over the light chrome surface, read from the tokens so the two cannot drift apart.
-  const chrome = tokensToRgba(buildThemeTokens('slate', 'light')['--color-dark-850']!);
-  const tabStripSurface = mixRgb(chrome, { r: 226, g: 232, b: 240 }, 0.45);
-  for (const theme of Object.values(TAB_CATEGORY_THEMES)) {
-    const ratio = contrastRatio(parseHexColor(theme.iconColorLight)!, tabStripSurface);
-    assert.ok(ratio >= 3, `${theme.type} light icon is ${ratio.toFixed(2)}:1`);
+test('tab category accents clear 3:1 on the tab strip in both modes', () => {
+  // Inactive tabs are transparent over the chrome surface, so the tab strip *is* dark-850 — read
+  // from the tokens rather than restated, so the strip and the check cannot drift apart.
+  for (const mode of ['light', 'dark'] as const) {
+    const strip = tokensToRgba(buildThemeTokens('slate', mode)['--color-dark-850']!);
 
-    const darkRatio = contrastRatio(parseHexColor(theme.iconColor)!, parseHexColor('#252530')!);
-    assert.ok(darkRatio >= 3, `${theme.type} dark icon is ${darkRatio.toFixed(2)}:1`);
+    for (const theme of Object.values(TAB_CATEGORY_THEMES)) {
+      const role = /var\(--color-([a-z-]+)\)/.exec(theme.accent)?.[1];
+      assert.ok(role, `${theme.type} accent must be a role token`);
+      const resolved = THEME_ROLE_COLORS[role!];
+      assert.ok(resolved, `${role} must exist in THEME_ROLE_COLORS`);
+
+      const ratio = contrastRatio(parseHexColor(resolved[mode])!, strip);
+      assert.ok(ratio >= 3, `${theme.type} ${mode} accent is ${ratio.toFixed(2)}:1 on the tab strip`);
+    }
   }
 });
 

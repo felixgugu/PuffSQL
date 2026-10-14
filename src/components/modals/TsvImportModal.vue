@@ -2,7 +2,7 @@
   <Teleport to="body">
     <div
       v-if="store.isOpen"
-      class="fixed inset-0 z-[9990] bg-black/60 backdrop-blur-xs flex items-center justify-center"
+      class="sq-scrim fixed inset-0 z-[9990] flex items-center justify-center"
       @click.self="handleBackdropClick"
     >
       <div

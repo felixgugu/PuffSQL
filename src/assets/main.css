@@ -402,6 +402,18 @@ html.dark .context-view .monaco-action-bar.vertical .action-item:hover .keybindi
   box-shadow: 0 24px 48px -12px rgb(146 64 14 / 0.35), 0 6px 16px -8px rgb(0 0 0 / 0.4) !important;
 }
 
+/* One scrim for every modal in the app: pure colour, no blur (SPEC §7). Anything translucent
+   enough to need a blur would also be too thin to isolate the dialog from the data behind it. */
+.sq-scrim {
+  background-color: rgba(16, 24, 40, 0.32);
+}
+
+/* A maximized floating window spans the viewport, so its corners have to square off. This needs to
+   outrank the surface rule above, which is why it is a class and not an inline style. */
+.sq-dialog-surface.sq-dialog-square {
+  border-radius: 0 !important;
+}
+
 /* The header is the drag surface, so it carries the move cursor. */
 .sq-dialog-drag-handle {
   cursor: move;

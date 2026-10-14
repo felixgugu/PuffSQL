@@ -7,19 +7,17 @@
       class="fixed z-[9995] flex flex-col font-sans overflow-hidden animate-fade-in"
       :class="[
         dataViewStore.isMaximized
-          ? 'inset-0 w-screen h-screen rounded-none'
+          ? 'inset-0 w-screen h-screen sq-dialog-surface sq-dialog-square'
           : 'sq-dialog-surface bg-dark-850 text-dark-100',
       ]"
       :style="
         dataViewStore.isMaximized
-          ? { top: 0, left: 0, width: '100vw', height: '100vh', borderRadius: '0px' }
+          ? { top: 0, left: 0, width: '100vw', height: '100vh' }
           : {
               top: `${pos.top}px`,
               left: `${pos.left}px`,
               width: `${size.width}px`,
               height: `${size.height}px`,
-              borderRadius:
-                'var(--p-dialog-border-radius, var(--p-overlay-modal-border-radius, var(--p-content-border-radius, 0.5rem)))',
             }
       "
     >
@@ -249,7 +247,7 @@
                     <!-- NULL -->
                     <span
                       v-if="field.specialType === 'null'"
-                      class="italic text-dark-500 font-mono text-xs px-1.5 py-0.5 rounded bg-dark-800/80 border border-dark-750 inline-block select-none"
+                      class="italic text-dark-500 font-mono text-xs px-1.5 py-0.5 rounded bg-dark-800 border border-dark-750 inline-block select-none"
                     >
                       NULL
                     </span>

@@ -51,7 +51,10 @@ describe('Dialog theme styling and dimension consistency', () => {
     const aiChat = readSource('src/components/modals/AiSqlChatModal.vue');
     assert.doesNotMatch(aiChat, /h-\[80vh\]/, 'AiSqlChatModal must retain its own dimension logic and not be 80vh');
     assert.match(aiChat, /size\.height/, 'AiSqlChatModal must use size.height');
-    assert.match(aiChat, /var\(--p-dialog-border-radius/, 'AiSqlChatModal must respect theme border radius');
+    // The frame radius comes from `.sq-dialog-surface`, so the floating window must not restate it
+    // inline (it used to read PrimeVue's theme variable to work around the same problem).
+    assert.match(aiChat, /sq-dialog-surface/, 'AiSqlChatModal must wear the shared dialog surface');
+    assert.doesNotMatch(aiChat, /borderRadius/, 'the shared surface owns the radius');
   });
 
   test('Dialogs do not carry hardcoded rounded classes that conflict with theme preset', () => {

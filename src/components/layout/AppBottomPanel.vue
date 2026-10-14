@@ -32,7 +32,7 @@
             'result-tab-item h-7 px-2 flex items-center space-x-1.5 text-xxs cursor-grab active:cursor-grabbing transition-all duration-100 group max-w-[220px] border flex-shrink-0 select-none touch-none relative',
             queryStore.activeResultTabId === rtab.id
               ? 'font-medium border-primary active-tab'
-              : 'bg-dark-850/60 border-dark-750/70 hover:border-dark-600 hover:bg-dark-800/90',
+              : 'bg-dark-850/60 border-dark-750/70 hover:border-dark-600 hover:bg-dark-800',
             isPointerDragging && dragSourceIndex === idx ? 'opacity-35 border-dashed border-brand-400 scale-95' : '',
             dropHoverIndex === idx && isPointerDragging && dropHoverIndex !== dragSourceIndex ? 'border-brand-500 bg-brand-500/10' : ''
           ]"
@@ -76,7 +76,7 @@
           <!-- Status Badge (if error) -->
           <span
             v-if="editingTabId !== rtab.id && rtab.result.messages.some((m) => m.level === 'error')"
-            class="text-xxs px-1 py-0.2 rounded font-mono flex-shrink-0 pointer-events-none bg-danger/10 text-danger border border-danger/30"
+            class="text-xxs px-1 py-0.5 rounded font-mono flex-shrink-0 pointer-events-none bg-danger/10 text-danger border border-danger/30"
           >
             Err
           </span>
@@ -628,7 +628,7 @@ function getResultTabConnectionColor(rtab: QueryResultTab): string | undefined {
 function getResultTabTopAccent(rtab: QueryResultTab): string {
   const connColor = getResultTabConnectionColor(rtab);
   if (connColor) return connColor;
-  return 'var(--p-primary-color, #3b82f6)';
+  return 'rgb(var(--color-accent))';
 }
 
 function getResultTabStyle(rtab: QueryResultTab): Record<string, string> {
@@ -681,9 +681,9 @@ function getResultTabStyle(rtab: QueryResultTab): Record<string, string> {
   height: 29px !important;
   background-color: var(--tab-active-surface, rgb(var(--color-dark-900))) !important;
   color: var(--tab-active-text, rgb(var(--color-dark-100))) !important;
-  border-top-color: var(--tab-top-accent, var(--p-primary-color, #3b82f6)) !important;
-  border-left-color: var(--tab-top-accent, var(--p-primary-color, #3b82f6)) !important;
-  border-right-color: var(--tab-top-accent, var(--p-primary-color, #3b82f6)) !important;
+  border-top-color: var(--tab-top-accent, rgb(var(--color-accent))) !important;
+  border-left-color: var(--tab-top-accent, rgb(var(--color-accent))) !important;
+  border-right-color: var(--tab-top-accent, rgb(var(--color-accent))) !important;
   border-bottom-color: transparent !important;
   margin-bottom: -1px;
   z-index: 10;
@@ -698,7 +698,7 @@ function getResultTabStyle(rtab: QueryResultTab): Record<string, string> {
   left: 0;
   right: 0;
   height: 2px;
-  background-color: var(--tab-top-accent, var(--p-primary-color, #3b82f6));
+  background-color: var(--tab-top-accent, rgb(var(--color-accent)));
   z-index: 2;
 }
 
@@ -757,7 +757,7 @@ html:not(.dark) .sq-view-switch {
 
 .sq-view-tab.is-active {
   background-color: rgb(var(--color-raised, 39 39 42));
-  color: rgb(var(--p-primary-color, #3b82f6));
+  color: rgb(var(--color-accent));
   font-weight: 500;
   cursor: default;
   box-shadow: 0 1px 2px rgb(var(--color-dark-950) / 0.12), inset 0 0 0 1px rgb(var(--color-dark-700) / 0.7);

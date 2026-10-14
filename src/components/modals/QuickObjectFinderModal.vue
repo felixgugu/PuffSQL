@@ -163,7 +163,7 @@
           'flex items-center justify-between px-3 py-2 rounded-md cursor-pointer transition-colors group relative',
           activeIndex === idx
             ? 'bg-brand-500/20 text-dark-100 ring-1 ring-brand-500/30'
-            : 'text-dark-300 hover:bg-dark-800/80 hover:text-dark-100'
+            : 'text-dark-300 hover:bg-dark-800 hover:text-dark-100'
         ]"
       >
         <!-- Left: Type Badge & Object Name with Highlights -->
@@ -297,27 +297,27 @@
     </div>
 
     <!-- Bottom Status & Keyboard Guide Footer -->
-    <div class="h-9 px-3 border-t border-dark-700 bg-dark-900/90 flex items-center justify-between text-xxs text-dark-400 flex-shrink-0">
+    <div class="h-9 px-3 border-t border-dark-700 bg-dark-900 flex items-center justify-between text-xxs text-dark-400 flex-shrink-0">
       <!-- Left: Shortcut Key hints -->
       <div class="flex items-center space-x-3">
         <span class="flex items-center space-x-1">
-          <kbd class="px-1 py-0.2 rounded bg-dark-750 text-dark-300 font-mono border border-dark-700">↑↓</kbd>
+          <kbd class="px-1 py-0.5 rounded bg-dark-750 text-dark-300 font-mono border border-dark-700">↑↓</kbd>
           <span>{{ $t('quickFinder.navKbd') }}</span>
         </span>
         <span class="flex items-center space-x-1">
-          <kbd class="px-1 py-0.2 rounded bg-dark-750 text-dark-300 font-mono border border-dark-700">↵</kbd>
+          <kbd class="px-1 py-0.5 rounded bg-dark-750 text-dark-300 font-mono border border-dark-700">↵</kbd>
           <span>{{ $t('quickFinder.openKbd') }}</span>
         </span>
         <span class="flex items-center space-x-1">
-          <kbd class="px-1 py-0.2 rounded bg-dark-750 text-dark-300 font-mono border border-dark-700">Shift+↵</kbd>
+          <kbd class="px-1 py-0.5 rounded bg-dark-750 text-dark-300 font-mono border border-dark-700">Shift+↵</kbd>
           <span>{{ $t('quickFinder.structureKbd') }}</span>
         </span>
         <span class="flex items-center space-x-1">
-          <kbd class="px-1 py-0.2 rounded bg-dark-750 text-dark-300 font-mono border border-dark-700">Ctrl+↵</kbd>
+          <kbd class="px-1 py-0.5 rounded bg-dark-750 text-dark-300 font-mono border border-dark-700">Ctrl+↵</kbd>
           <span>{{ $t('quickFinder.scriptKbd') }}</span>
         </span>
         <span class="flex items-center space-x-1">
-          <kbd class="px-1 py-0.2 rounded bg-dark-750 text-dark-300 font-mono border border-dark-700">Esc</kbd>
+          <kbd class="px-1 py-0.5 rounded bg-dark-750 text-dark-300 font-mono border border-dark-700">Esc</kbd>
           <span>{{ $t('quickFinder.closeKbd') }}</span>
         </span>
       </div>

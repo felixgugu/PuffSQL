@@ -442,7 +442,7 @@
         <div class="flex items-center space-x-2.5">
           <div
             class="w-7 h-7 rounded-md flex items-center justify-center"
-            :class="requiresModificationPrompt ? (commitModal.confirmStep === 2 ? 'bg-rose-100 dark:bg-rose-950/80 border border-rose-200 dark:border-rose-700/60' : 'bg-amber-500/20 border border-amber-500/40') : 'bg-emerald-100 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-700/60'"
+            :class="requiresModificationPrompt ? (commitModal.confirmStep === 2 ? 'bg-rose-100 dark:bg-rose-950 border border-rose-200 dark:border-rose-700/60' : 'bg-amber-500/20 border border-amber-500/40') : 'bg-emerald-100 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-700/60'"
           >
             <TriangleAlert
               v-if="requiresModificationPrompt && commitModal.confirmStep === 2"

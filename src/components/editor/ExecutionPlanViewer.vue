@@ -151,7 +151,7 @@
     <!-- SQL Query Collapsible Drawer -->
     <div
       v-if="showSql && tab.querySql"
-      class="bg-dark-850/90 border-b border-dark-700 px-4 py-2 flex items-start justify-between space-x-4 flex-shrink-0 text-xs select-text font-mono"
+      class="bg-dark-850 border-b border-dark-700 px-4 py-2 flex items-start justify-between space-x-4 flex-shrink-0 text-xs select-text font-mono"
     >
       <div class="overflow-x-auto max-h-24 flex-1 text-dark-300 whitespace-pre-wrap leading-relaxed">
         {{ tab.querySql }}
@@ -179,7 +179,7 @@
         <!-- Loading State -->
         <div
           v-if="isRendering"
-          class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-dark-900/80 backdrop-blur-xs space-y-2 text-dark-400 text-xs font-sans"
+          class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-dark-900 space-y-2 text-dark-400 text-xs font-sans"
         >
           <RotateCw class="w-5 h-5 animate-spin text-plan" />
           <span>正在渲染執行計畫圖形...</span>

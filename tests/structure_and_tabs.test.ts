@@ -210,8 +210,8 @@ test('queryStore aggregates rowCount across multiple resultSets and adds [N sets
 
 test('active SQL query tab applies theme color to borders', () => {
   const style = getTabThemeStyle('sql_editor', true);
-  assert.equal(style['--tab-border'], 'var(--p-primary-color, #3b82f6)');
-  assert.equal(style['--tab-top-accent'], 'var(--p-primary-color, #3b82f6)');
+  assert.equal(style['--tab-border'], 'rgb(var(--color-accent))');
+  assert.equal(style['--tab-top-accent'], 'rgb(var(--color-accent))');
 });
 
 test('addErDiagramTab adds an er_diagram tab at index 0 and activates it', () => {

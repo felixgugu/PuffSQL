@@ -61,7 +61,11 @@ describe('SqDialog owns the modal contract', () => {
   });
 
   test('the scrim is the spec scrim, without blur', () => {
-    assert.match(source, /background-color: rgba\(16, 24, 40, 0\.32\);/, 'SPEC §7 scrim colour');
+    // One scrim for the whole app: `.sq-scrim` in main.css, shared with the hand-rolled TSV
+    // wizard, so a modal never dims the app differently from its neighbours.
+    const css = readSource('src/assets/main.css');
+    assert.match(css, /\.sq-scrim \{\s*\n\s*background-color: rgba\(16, 24, 40, 0\.32\);\s*\n\}/);
+    assert.match(source, /class="sq-dialog-mask sq-scrim"/, 'the mask paints the shared scrim');
     assert.doesNotMatch(source, /backdrop-filter/, 'no glass effect');
   });
 

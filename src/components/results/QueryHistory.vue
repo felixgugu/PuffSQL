@@ -50,7 +50,7 @@
             ? 'bg-rose-50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-900/60 text-danger hover:border-rose-700/80'
             : item.status === 'cancelled'
             ? 'bg-amber-500/15 border-amber-500/30 text-warn hover:border-amber-600/50'
-            : 'bg-dark-850/60 border-dark-750 text-dark-200 hover:border-dark-600 hover:bg-dark-850/90'
+            : 'bg-dark-850/60 border-dark-750 text-dark-200 hover:border-dark-600 hover:bg-dark-850'
         ]"
       >
         <!-- Line 1: [序號][時間] 資訊與右上角操作按鈕 -->

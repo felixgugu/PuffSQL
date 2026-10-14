@@ -1,0 +1,44 @@
+<!doctype html>
+<!-- Design-package harness: seeds one workspace tab of every category so a screenshot can show the
+     tab strip's neutral chrome and the active tab's category accent. `#<id>` picks the active tab
+     (sql_editor | data | struct | plan | er) and appending `-dark` renders the paired dark variant.
+     Served by `npm run dev` at
+     http://localhost:1420/docs/design/minimal-ui/harness/tabs.html -->
+<html lang="zh-TW">
+  <head>
+    <meta charset="utf-8" />
+    <title>seed workspace tabs</title>
+  </head>
+  <body>
+    <script>
+      const hash = location.hash.slice(1) || 'sql_editor';
+      const active = hash.replace('-dark', '');
+      const conn = { connectionId: 'demo', database: 'AdventureWorks2022' };
+      const tabs = [
+        { id: 'sql_editor', type: 'sql_editor', title: 'Query 1.sql', ...conn, query: 'SELECT 1;' },
+        { id: 'data', type: 'table_data', title: 'dbo.Orders (資料)', ...conn, schema: 'dbo', tableName: 'Orders' },
+        { id: 'struct', type: 'table_structure', title: 'dbo.Customers (結構)', ...conn, schema: 'dbo', tableName: 'Customers' },
+        {
+          id: 'plan',
+          type: 'execution_plan',
+          title: '執行計畫',
+          ...conn,
+          planXml: '<ShowPlanXML Version="1.2" Build="16.0"/>',
+          querySql: 'SELECT 1',
+          executedAt: '2026-10-15T10:00:00Z',
+        },
+        { id: 'er', type: 'er_diagram', title: 'ER 關聯圖', ...conn, depth: 1 },
+      ];
+      localStorage.setItem('sqlight_workspace_tabs', JSON.stringify(tabs));
+      localStorage.setItem('sqlight_active_tab_id', active);
+      localStorage.setItem('sqlight_sidebar_open', 'true');
+      if (hash.endsWith('-dark')) {
+        const raw = localStorage.getItem('sqlight_app_settings');
+        const settings = raw ? JSON.parse(raw) : {};
+        settings.colorMode = 'dark';
+        localStorage.setItem('sqlight_app_settings', JSON.stringify(settings));
+      }
+      location.replace('http://localhost:1420/');
+    </script>
+  </body>
+</html>

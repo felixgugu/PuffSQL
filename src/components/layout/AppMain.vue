@@ -395,7 +395,7 @@ function getTabItemStyle(tab: WorkspaceTab, idx: number) {
   );
 
   const connColor = getTabConnectionColor(tab);
-  const accentColor = connColor || (tab.type === 'sql_editor' ? 'var(--p-primary-color, #3b82f6)' : (baseStyle['--tab-top-accent'] || 'var(--p-primary-color, #3b82f6)'));
+  const accentColor = connColor || (tab.type === 'sql_editor' ? 'rgb(var(--color-accent))' : (baseStyle['--tab-top-accent'] || 'rgb(var(--color-accent))'));
   baseStyle['--tab-top-accent'] = accentColor;
 
   if (isActive) {
@@ -1063,7 +1063,7 @@ defineExpose({
   left: 0;
   right: 0;
   height: 2px;
-  background-color: var(--tab-top-accent, var(--p-primary-color, #3b82f6));
+  background-color: var(--tab-top-accent, rgb(var(--color-accent)));
   z-index: 2;
 }
 

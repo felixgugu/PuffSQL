@@ -1,10 +1,10 @@
 <template>
   <div
-    class="w-full h-full backdrop-blur rounded-md overflow-hidden flex flex-col font-sans transition-all select-none group relative border"
+    class="w-full h-full rounded-md overflow-hidden flex flex-col font-sans transition-all select-none group relative border"
     :class="[
       isLightTheme
-        ? 'bg-slate-50/95 border-slate-400 hover:border-brand-500/70 shadow-md shadow-slate-300/40 text-slate-800'
-        : 'bg-dark-850/95 border-dark-700 hover:border-brand-500/70 shadow-xl shadow-black/40 text-dark-100',
+        ? 'bg-slate-50 border-slate-400 hover:border-brand-500/70 shadow-md shadow-slate-300/40 text-slate-800'
+        : 'bg-dark-850 border-dark-700 hover:border-brand-500/70 shadow-xl shadow-black/40 text-dark-100',
       isSelected
         ? (isLightTheme ? 'ring-2 ring-brand-500 border-brand-500 shadow-brand-500/20' : 'ring-2 ring-brand-400 border-brand-400 shadow-brand-500/20')
         : ''
@@ -118,7 +118,7 @@
     <div
       v-if="nodeData.isEditMode"
       class="h-6 px-2 border-t flex items-center justify-between text-xxs select-none font-sans flex-shrink-0"
-      :class="isLightTheme ? 'bg-slate-50 border-slate-300 text-slate-500' : 'bg-dark-900/90 border-dark-750 text-dark-400'"
+      :class="isLightTheme ? 'bg-slate-50 border-slate-300 text-slate-500' : 'bg-dark-900 border-dark-750 text-dark-400'"
     >
       <div class="flex items-center space-x-1">
         <CheckSquare class="w-3 h-3 flex-shrink-0" :class="isLightTheme ? 'text-warn' : 'text-warn'" />

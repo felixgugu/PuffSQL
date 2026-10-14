@@ -10,6 +10,7 @@
 | `screens/preview-light.png`、`screens/preview-dark.png` | 樣張的渲染截圖（淺色／深色），供快速審閱。 |
 | `screens/dialog-light.png`、`screens/dialog-dark.png`、`screens/dialog-overlay.png` | `SqDialog` 的真實渲染截圖：外框變體、語意強調外框、既有呼叫端元件（淺色／深色），以及疊在真實遮罩上的樣子。 |
 | `screens/toast-light.png` | `SqToast` 的真實渲染截圖：四種語意色同時堆疊的樣子。 |
+| `screens/tabs-light.png`、`screens/tabs-dark.png` | 五種類別的工作區分頁列（淺色／深色）：中性外框 + 活動分頁的類別頂線，並含一個非 SQL 的活動分頁。 |
 | `../../design-system/puffsql/MASTER.md` | ui-ux-pro-max skill 產生的原始設計系統建議（保留備查；衝突時以 `SPEC.md` 為準）。 |
 
 ## 檢視方式
@@ -38,6 +39,13 @@ npm run dev   # 另一個視窗
   "http://localhost:1420/docs/design/minimal-ui/harness/dialog.html"
 # #dark 為深色、#overlay 為真實遮罩、#pair/#window/#debug 為單一對話框與拖曳縮放整合的檢查視圖，
 # #toast 為通知堆疊、#tooltip 以合成 hover 觸發真實提示
+
+# 分頁列：tabs.html 會寫入五種類別的分頁並可指定活動分頁（#sql_editor | #data | #struct | #plan | #er，
+# 加 -dark 走深色）
+& "C:\Program Files\Google\Chrome\Application\chrome.exe" --headless=new --disable-gpu --hide-scrollbars `
+  --user-data-dir=".design-preview\tabs" --virtual-time-budget=20000 --run-all-compositor-stages-before-draw `
+  --window-size=1500,420 --screenshot="docs\design\minimal-ui\screens\tabs-light.png" `
+  "http://localhost:1420/docs/design/minimal-ui/harness/tabs.html#data"
 ```
 
 ## 設計決策摘要

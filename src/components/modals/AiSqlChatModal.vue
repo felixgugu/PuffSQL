@@ -7,15 +7,14 @@
       class="fixed z-[9995] flex flex-col font-sans select-none overflow-hidden"
       :class="[
         isMaximized
-          ? 'inset-0 w-screen h-screen rounded-none'
+          ? 'inset-0 w-screen h-screen sq-dialog-surface sq-dialog-square bg-dark-850'
           : 'sq-dialog-surface bg-dark-850'
       ]"
-      :style="isMaximized ? { top: 0, left: 0, width: '100vw', height: '100vh', borderRadius: '0px' } : {
+      :style="isMaximized ? { top: 0, left: 0, width: '100vw', height: '100vh' } : {
         top: `${pos.top}px`,
         left: `${pos.left}px`,
         width: `${size.width}px`,
         height: `${size.height}px`,
-        borderRadius: 'var(--p-dialog-border-radius, var(--p-overlay-modal-border-radius, var(--p-content-border-radius, 0.5rem)))',
       }"
     >
       <!-- Top Header / Drag Titlebar -->
@@ -82,7 +81,7 @@
         <!-- 附帶 SQL 標籤欄 -->
         <div
           v-if="aiChatStore.currentSql"
-          class="flex items-center justify-between px-3 py-1.5 border-b border-dark-750 dark:border-dark-800 bg-dark-850/60 dark:bg-dark-850/80 text-xs flex-shrink-0 relative"
+          class="flex items-center justify-between px-3 py-1.5 border-b border-dark-750 dark:border-dark-800 bg-dark-850/60 dark:bg-dark-850 text-xs flex-shrink-0 relative"
         >
           <!-- 懸浮觸發區 (mouseover 浮動顯示完整 SQL) -->
           <div
@@ -104,7 +103,7 @@
             <Transition name="fade">
               <div
                 v-if="isSqlHovered"
-                class="absolute left-0 top-full mt-1.5 z-[9999] w-[520px] max-h-80 flex flex-col rounded-md border border-dark-600 bg-dark-900/95 dark:bg-dark-950/95 backdrop-blur shadow-overlay overflow-hidden pointer-events-auto select-text"
+                class="absolute left-0 top-full mt-1.5 z-[9999] w-[520px] max-h-80 flex flex-col rounded-md border border-dark-600 bg-dark-900 dark:bg-dark-950 shadow-overlay overflow-hidden pointer-events-auto select-text"
                 @mouseenter="isSqlHovered = true"
                 @mouseleave="isSqlHovered = false"
               >
@@ -165,8 +164,8 @@
               <div
                 class="max-w-[85%] rounded-md px-3.5 py-2.5 text-xs leading-relaxed"
                 :style="{
-                  backgroundColor: 'var(--p-primary-color, #3b82f6)',
-                  color: 'var(--p-primary-contrast-color, #ffffff)',
+                  backgroundColor: 'rgb(var(--color-accent-fill))',
+                  color: '#ffffff',
                 }"
               >
                 <div v-if="msg.sqlContext" class="mb-2 pb-1.5 border-b border-white/20 opacity-90 font-mono text-[11px] truncate">
@@ -249,7 +248,7 @@
         </div>
 
         <!-- 快捷提示詞晶片 (純文字無圖示，點選填入輸入框) -->
-        <div class="px-3 py-1.5 border-t border-dark-750 bg-dark-850/80 flex items-center space-x-2 overflow-x-auto flex-shrink-0 select-none scrollbar-none">
+        <div class="px-3 py-1.5 border-t border-dark-750 bg-dark-850 flex items-center space-x-2 overflow-x-auto flex-shrink-0 select-none scrollbar-none">
           <span class="text-[11px] text-dark-400 flex-shrink-0">
             {{ $t('aiSqlChat.quickPromptsLabel') }}
           </span>
@@ -266,7 +265,7 @@
         </div>
 
         <!-- 輸入文字框區塊 -->
-        <div class="p-3 border-t border-dark-750 bg-dark-850/90 flex-shrink-0 select-none">
+        <div class="p-3 border-t border-dark-750 bg-dark-850 flex-shrink-0 select-none">
           <div class="relative flex items-end space-x-2">
             <SqTextarea
               ref="inputTextareaRef"

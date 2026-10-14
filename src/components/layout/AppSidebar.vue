@@ -101,7 +101,7 @@
             <History class="w-3 h-3 text-accent" />
             <span>{{ $t('sidebar.filterHistoryTitle') }}</span>
           </span>
-          <span v-if="filterHistory.length > 0" class="text-xxs px-1 py-0.2 bg-dark-700 text-dark-300 rounded font-sans">
+          <span v-if="filterHistory.length > 0" class="text-xxs px-1 py-0.5 bg-dark-700 text-dark-300 rounded font-sans">
             {{ filterHistory.length }}
           </span>
         </div>

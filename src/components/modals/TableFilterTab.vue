@@ -13,7 +13,7 @@
     </div>
 
     <!-- Add Custom Rule Form -->
-    <div class="bg-dark-900/90 border border-dark-800 rounded p-3 space-y-2">
+    <div class="bg-dark-900 border border-dark-800 rounded p-3 space-y-2">
       <div class="text-xxs font-medium text-dark-300">新增自訂規則 (Add Custom Rule)</div>
       <div class="grid grid-cols-12 gap-2 items-center">
         <!-- Target Scope Selector -->
@@ -383,29 +383,4 @@ function handleAddRule() {
   newDescription.value = '';
 }
 </script>
-
-<style scoped>
-:deep(.p-inputtext) {
-  font-size: 12px !important;
-}
-
-:deep(.p-inputtext::placeholder) {
-  font-size: 11px !important;
-  color: rgb(var(--color-dark-500, 100 116 139)) !important;
-}
-
-:deep(.p-select) {
-  font-size: 12px !important;
-}
-
-:deep(.p-select-label) {
-  font-size: 12px !important;
-  padding-top: 0.25rem !important;
-  padding-bottom: 0.25rem !important;
-}
-
-:deep(.p-select-label.p-placeholder) {
-  font-size: 11px !important;
-}
-</style>
 

@@ -150,7 +150,7 @@
               @click="settingsStore.setPrimaryColor(color.name)"
             >
               <div
-                class="w-4.5 h-4.5 rounded-full flex-shrink-0 flex items-center justify-center text-white text-xxs"
+                class="w-[18px] h-[18px] rounded-full flex-shrink-0 flex items-center justify-center text-white text-xxs"
                 :style="{ backgroundColor: color.color }"
               >
                 <Check
@@ -222,7 +222,7 @@
         </div>
 
         <!-- 6. Live Component Preview -->
-        <div class="space-y-2 p-3.5 rounded-md border border-dark-750 bg-dark-900/80">
+        <div class="space-y-2 p-3.5 rounded-md border border-dark-750 bg-dark-900">
           <div class="flex items-center justify-between">
             <span class="text-xs font-semibold text-dark-200 flex items-center space-x-1.5">
               <Eye class="w-3.5 h-3.5 text-accent" />
@@ -562,7 +562,7 @@
 
     <!-- Modal Footer -->
     <template #footer>
-      <div class="px-5 py-2.5 border-t border-dark-750 bg-dark-800/80 flex items-center justify-between w-full">
+      <div class="px-5 py-2.5 border-t border-dark-750 bg-dark-800 flex items-center justify-between w-full">
         <SqButton
           type="button"
           :label="$t('settingsModal.resetDefaults')"

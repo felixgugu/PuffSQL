@@ -6,7 +6,7 @@
       <div
         v-if="visible"
         ref="maskEl"
-        class="sq-dialog-mask"
+        class="sq-dialog-mask sq-scrim"
         :style="{ zIndex }"
         @pointerdown="onMaskPointerDown"
         @click="onMaskClick"
@@ -213,7 +213,6 @@ function onMaskClick(event: MouseEvent) {
   display: flex;
   padding: 24px;
   overflow: auto;
-  background-color: rgba(16, 24, 40, 0.32);
 }
 
 .sq-dialog-enter-active,

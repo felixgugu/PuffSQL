@@ -33,7 +33,7 @@
 
       <!-- Step 1: Confirm -->
       <template v-if="step === 'confirm'">
-        <div class="p-3 bg-dark-850/80 rounded-md border border-dark-750 space-y-2.5">
+        <div class="p-3 bg-dark-850 rounded-md border border-dark-750 space-y-2.5">
           <p class="text-dark-200 leading-relaxed text-xs" v-html="$t('exportSchemaModal.confirmDesc', { database: `<strong class='text-accent font-semibold'>${database}</strong>` })">
           </p>
           <div class="text-xxs text-dark-400">
@@ -45,7 +45,7 @@
             <div
               v-for="(item, idx) in exportItems"
               :key="item.key"
-              class="p-2.5 rounded bg-dark-900/90 border border-dark-750/70 hover:border-dark-700 transition-colors"
+              class="p-2.5 rounded bg-dark-900 border border-dark-750/70 hover:border-dark-700 transition-colors"
             >
               <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-2">
@@ -258,7 +258,7 @@
                 type="button"
                 @click="handleSaveCombined"
                 :disabled="isSaving"
-                class="flex flex-col items-start p-3 rounded-md border border-dark-700 bg-dark-900/80 hover:bg-dark-800 text-left transition-colors group cursor-pointer"
+                class="flex flex-col items-start p-3 rounded-md border border-dark-700 bg-dark-900 hover:bg-dark-800 text-left transition-colors group cursor-pointer"
               >
                 <div class="flex items-center space-x-2 text-dark-200 font-semibold text-xs mb-1">
                   <FileText class="w-3.5 h-3.5 text-dark-400 group-hover:scale-110 transition-transform" />
