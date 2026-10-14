@@ -73,31 +73,33 @@
         <div class="flex items-center space-x-1 flex-shrink-0">
           <template v-if="editability.canEdit">
             <!-- Revert Button -->
-            <Button
+            <SqButton
               type="button"
-              icon="pi pi-undo"
               :label="$t('common.revert')"
-              size="small"
-              :severity="modifiedCount > 0 ? 'warn' : 'secondary'"
-              outlined
+              size="sm"
+              :tone="modifiedCount > 0 ? 'warn' : 'neutral'"
+              variant="outline"
               :disabled="modifiedCount === 0 || !hasRows"
               @click="handleRevertChanges"
               :v-tooltip.top="$t('results.revertAllTooltip')"
-              class="!text-xxs !py-0.5 !px-2 select-none"
-            />
+            >
+              <template #icon><Undo2 class="w-3.5 h-3.5" /></template>
+            </SqButton>
 
             <!-- Commit Button -->
-            <Button
+            <SqButton
               type="button"
-              icon="pi pi-check"
               :label="modifiedCount > 0 ? $t('results.commitWithCount', { count: modifiedCount }) : $t('common.commit')"
-              size="small"
-              :severity="modifiedCount > 0 ? 'success' : 'secondary'"
+              size="sm"
+              :tone="modifiedCount > 0 ? 'ok' : 'neutral'"
+              :variant="modifiedCount > 0 ? 'solid' : 'outline'"
               :disabled="modifiedCount === 0 || !hasRows"
               @click="openCommitModal"
               :v-tooltip.top="$t('results.commitChangesTooltip')"
-              class="!text-xxs !py-0.5 !px-2.5 font-semibold select-none shadow-xs"
-            />
+              class="font-semibold"
+            >
+              <template #icon><Check class="w-3.5 h-3.5" /></template>
+            </SqButton>
           </template>
 
           <!-- Read-only Indicator when editing is not supported -->
@@ -119,85 +121,89 @@
       <!-- Right: Copy Tools, Row Stats & Maximize Toggle -->
       <div class="flex items-center space-x-1.5 flex-shrink-0">
         <!-- Refresh Button -->
-        <Button
+        <SqButton
           type="button"
-          :icon="isRefreshing ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"
           :label="isRefreshing ? $t('common.refreshing') : $t('common.refresh')"
-          size="small"
-          severity="secondary"
-          outlined
+          size="sm"
+          variant="outline"
+          :loading="isRefreshing"
           :disabled="isRefreshing"
           @click="handleRefresh"
           :v-tooltip.top="isRefreshing ? $t('common.refreshing') : $t('results.refreshTooltip')"
-          class="!text-xxs !py-0.5 !px-2"
-        />
+        >
+          <template #icon><RefreshCw class="w-3.5 h-3.5" /></template>
+        </SqButton>
 
         <!-- Copy to TSV (Excel friendly) -->
-        <Button
+        <SqButton
           type="button"
-          :icon="copiedTsv ? 'pi pi-check text-ok' : 'pi pi-file-excel text-ok'"
           :label="copiedTsv ? 'Copied!' : 'Copy TSV'"
-          size="small"
-          severity="secondary"
-          outlined
+          size="sm"
+          variant="outline"
           @click="copyAsTsv"
           :v-tooltip.top="$t('results.copyTsvTooltip')"
-          class="!text-xxs !py-0.5 !px-2"
-        />
+        >
+          <template #icon>
+            <Check v-if="copiedTsv" class="w-3.5 h-3.5 text-ok" />
+            <FileSpreadsheet v-else class="w-3.5 h-3.5" />
+          </template>
+        </SqButton>
 
         <!-- Copy to CSV -->
-        <Button
+        <SqButton
           type="button"
-          :icon="copiedCsv ? 'pi pi-check text-accent' : 'pi pi-file text-accent'"
           :label="copiedCsv ? 'Copied!' : 'CSV'"
-          size="small"
-          severity="secondary"
-          outlined
+          size="sm"
+          variant="outline"
           @click="copyAsCsv"
           :v-tooltip.top="$t('results.copyCsvTooltip')"
-          class="!text-xxs !py-0.5 !px-2"
-        />
+        >
+          <template #icon>
+            <Check v-if="copiedCsv" class="w-3.5 h-3.5 text-ok" />
+            <FileText v-else class="w-3.5 h-3.5" />
+          </template>
+        </SqButton>
 
         <!-- Copy as JSON -->
-        <Button
+        <SqButton
           type="button"
-          icon="pi pi-code text-er"
           label="JSON"
-          size="small"
-          severity="secondary"
-          outlined
+          size="sm"
+          variant="outline"
           @click="copyAsJson"
           :v-tooltip.top="$t('results.copyJsonTooltip')"
-          class="!text-xxs !py-0.5 !px-2"
-        />
+        >
+          <template #icon><FileCode class="w-3.5 h-3.5" /></template>
+        </SqButton>
 
         <!-- Copy as Markdown -->
-        <Button
+        <SqButton
           type="button"
-          icon="pi pi-table text-danger"
           label="MD"
-          size="small"
-          severity="secondary"
-          outlined
+          size="sm"
+          variant="outline"
           @click="copyAsMarkdown"
           :v-tooltip.top="$t('results.copyMdTooltip')"
-          class="!text-xxs !py-0.5 !px-2"
-        />
+        >
+          <template #icon><Table2 class="w-3.5 h-3.5" /></template>
+        </SqButton>
 
 
         <!-- Maximize / Restore Toggle (when multiple result sets) -->
-        <Button
+        <SqButton
           v-if="totalSets > 1"
           type="button"
-          :icon="isMaximized ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"
-          text
-          rounded
-          size="small"
-          severity="secondary"
+          size="sm"
+          class="ml-1"
+          :aria-label="isMaximized ? $t('results.restoreGrid') : $t('results.maximizeGrid')"
           @click="$emit('toggle-maximize')"
           :v-tooltip.top="isMaximized ? $t('results.restoreGrid') : $t('results.maximizeGrid')"
-          class="!w-6 !h-6 !p-0 ml-1"
-        />
+        >
+          <template #icon>
+            <SquareMinus v-if="isMaximized" class="w-3.5 h-3.5" />
+            <SquarePlus v-else class="w-3.5 h-3.5" />
+          </template>
+        </SqButton>
       </div>
     </div>
 
@@ -266,15 +272,13 @@
             {{ $t('results.distinct') }}: <strong class="font-mono text-dark-100">{{ selectionStats.distinctCount.toLocaleString() }}</strong>
           </div>
 
-          <Button
+          <SqButton
             type="button"
             :label="$t('common.clear')"
-            text
-            size="small"
-            severity="secondary"
+            size="sm"
             @click="clearCellSelection"
             :v-tooltip.top="$t('results.clearSelectionTooltip')"
-            class="!ml-1 !p-0 !text-xxs !font-medium !underline"
+            class="ml-1 font-medium underline"
           />
         </template>
 
@@ -454,16 +458,15 @@
             </p>
           </div>
         </div>
-        <Button
+        <SqButton
           type="button"
-          icon="pi pi-times"
-          text
-          size="small"
-          severity="secondary"
+          tone="danger"
+          aria-label="關閉 (Esc)"
           @click="closeCommitModal"
           v-tooltip.top="'關閉 (Esc)'"
-          class="!w-7 !h-7 !p-0 !rounded-md !border-0 !shadow-none hover:!bg-rose-500/20 hover:!text-danger"
-        />
+        >
+          <template #icon><X class="w-3.5 h-3.5" /></template>
+        </SqButton>
       </div>
 
       <!-- Modal Body -->
@@ -494,17 +497,16 @@
               <span class="font-medium text-dark-200">即將執行的安全交易 T-SQL 語法</span>
               <span class="text-dark-500">(含 @@ROWCOUNT 防護，任一列失敗自動完整 ROLLBACK)</span>
             </span>
-            <Button
+            <SqButton
               type="button"
-              icon="pi pi-copy"
               label="複製語法"
-              size="small"
-              severity="secondary"
-              outlined
+              size="sm"
+              variant="outline"
               @click="copyCommitSql"
               v-tooltip.top="'複製語法至剪貼簿'"
-              class="!text-xxs !py-0.5 !px-2"
-            />
+            >
+              <template #icon><Copy class="w-3.5 h-3.5" /></template>
+            </SqButton>
           </div>
 
           <!-- Monaco SQL Code Viewer Container -->
@@ -543,54 +545,54 @@
 
         <!-- Right: Buttons -->
         <div class="flex items-center space-x-2 shrink-0">
-          <Button
+          <SqButton
             type="button"
             :label="requiresModificationPrompt && commitModal.confirmStep === 2 ? '放棄提交 (Esc)' : '取消'"
-            size="small"
-            severity="secondary"
-            outlined
+            variant="outline"
             @click="closeCommitModal"
-            class="!text-xs !py-1.5 !px-3"
           />
 
           <!-- Guarded Step 1 Button -->
-          <Button
+          <SqButton
             v-if="requiresModificationPrompt && commitModal.confirmStep === 1"
             type="button"
-            icon="pi pi-arrow-right"
-            iconPos="right"
             label="初次確認提交 (1/2)"
-            size="small"
-            severity="warn"
+            tone="warn"
+            variant="outline"
+            class="font-semibold"
             @click="commitModal.confirmStep = 2"
-            class="!text-xs !py-1.5 !px-4 font-semibold shadow-sm"
-          />
+          >
+            <template #icon><ArrowRight class="w-3.5 h-3.5" /></template>
+          </SqButton>
 
           <!-- Guarded Step 2 Button -->
-          <Button
+          <SqButton
             v-else-if="requiresModificationPrompt && commitModal.confirmStep === 2"
             type="button"
-            :icon="commitModal.isExecuting ? 'pi pi-spin pi-spinner' : 'pi pi-exclamation-triangle'"
             :label="commitModal.isExecuting ? '提交執行中...' : '確定立即提交 (最終確認 2/2)'"
-            size="small"
-            severity="danger"
+            tone="danger"
+            variant="solid"
+            :loading="commitModal.isExecuting"
             :disabled="commitModal.isExecuting"
+            class="font-semibold"
             @click="executeCommit"
-            class="!text-xs !py-1.5 !px-4 font-bold shadow-md shadow-rose-950/50"
-          />
+          >
+            <template #icon><TriangleAlert class="w-3.5 h-3.5" /></template>
+          </SqButton>
 
           <!-- Standard Commit Button -->
-          <Button
+          <SqButton
             v-else
             type="button"
-            :icon="commitModal.isExecuting ? 'pi pi-spin pi-spinner' : 'pi pi-check'"
             :label="commitModal.isExecuting ? '提交執行中...' : `確認提交 (${commitModal.rowCount} 列 / ${commitModal.cellCount} 格)`"
-            size="small"
-            severity="success"
+            tone="accent"
+            variant="solid"
+            :loading="commitModal.isExecuting"
             :disabled="commitModal.isExecuting"
             @click="executeCommit"
-            class="!text-xs !py-1.5 !px-4 font-medium shadow-sm"
-          />
+          >
+            <template #icon><Check class="w-3.5 h-3.5" /></template>
+          </SqButton>
         </div>
       </div>
     </Dialog>
@@ -600,7 +602,7 @@
 
 <script setup lang="ts">
 import { ref, computed, reactive, watch, toRaw, nextTick, onMounted, onBeforeUnmount } from 'vue';
-import Button from 'primevue/button';
+import SqButton from '@/components/ui/SqButton.vue';
 import SqInput from '@/components/ui/SqInput.vue';
 import SqChip from '@/components/ui/SqChip.vue';
 import Dialog from 'primevue/dialog';
@@ -621,6 +623,12 @@ import {
   Network,
   Lock,
   Search,
+  Check,
+  RefreshCw,
+  FileSpreadsheet,
+  ArrowRight,
+  SquareMinus,
+  SquarePlus,
 } from 'lucide-vue-next';
 import type {
   TabulatorCellComponent,
