@@ -269,11 +269,15 @@ WCAG 1.4.11 的豁免）；分隔步 `#64748B` 對畫布 4.76:1；focus 指示�
 - **P3 圖示：部分完成。** 外殼自有標記中的 PrimeIcons 已全數換成 lucide（含 DBA 按鈕補上
   `aria-label`）。仍待處理：62 處 `<i class="pi ...">` 元素（主要在對話框與檢視器）與 128 個
   PrimeVue `icon="pi ..."` prop（依賴 P4 換掉元件後改用 `#icon` slot），完成後才移除 primeicons。
-- **P4 葉節點元件：部分完成。** 已建立 `src/components/ui/SqChip.vue`（取代 Tag）與
-  `SqInput.vue`（取代 InputText）。**Tag 已全面退場**（`primevue/tag` 匯入 0、`<Tag>` 渲染點 0、
-  SqChip 渲染點 41，涵蓋外殼、結果區、編輯器檢視器與 9 個對話框），過程中一併移除標籤內的
-  emoji 圖示、把動態 severity 改為動態 tone。仍待處理：13 個檔案仍用 InputText，以及 Checkbox、
-  ToggleSwitch、SelectButton、Divider、Badge、Card、ProgressBar（見 PRIMEVUE-EVALUATION.md §3）。
+- **P4 葉節點元件：進行中。** 已建立 `src/components/ui/SqChip.vue`（取代 Tag）與
+  `SqInput.vue`（取代 InputText）。已全面退場的 PrimeVue 元件：**Tag**（0 匯入／0 渲染點，
+  SqChip 41 處）、**InputText**（0／0，改為 SqInput）、**IconField + InputIcon**（改為 prefix/suffix
+  slot）、**Divider**（改為 1px 分隔線）、**Card**（改為 1px 邊框容器，移除 `:pt` 穿透覆寫）。
+  過程中一併移除標籤內的 emoji 圖示、把動態 severity 改為動態 tone，並修掉 SqInput 自身
+  width 規則壓過呼叫端工具類的問題。
+  仍待處理：button(31 檔)、dialog(10)、select(6)、contextmenu(4)、checkbox(4)、
+  toggleswitch/selectbutton/textarea(各 3)，以及零星的 badge/progressbar/inputnumber/password／
+  menu/popover/toolbar/datatable/column/message（見 PRIMEVUE-EVALUATION.md §3）。
 
 - [ ] 全站只有一個操作藍 `#2E6F9E`（及其 hover／tint），沒有第二個彩色 CTA。
 - [ ] 淺色為預設：畫布白、外框淺灰、深灰文字；深色為配對變體且對比另行驗證。
