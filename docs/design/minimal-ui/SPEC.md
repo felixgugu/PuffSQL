@@ -283,11 +283,12 @@ WCAG 1.4.11 的豁免）；分隔步 `#64748B` 對畫布 4.76:1；focus 指示�
   深色模式原本會讓實心填色與文字色共用 `--color-accent`（淺鋼藍），因此拆出
   `--color-accent-fill`／`--color-accent-fill-hover`：**填色不算文字色，另以白字對填色的
   4.5:1 驗證**。
-  **外殼（標題列、編輯器工具列、側邊欄、底部面板、分頁列）已全數改用 SqButton**；
-  另外結果資料格（ResultGridItem）、SQL 範本、物件快搜與 AI 設定對話框也已換完。
-  仍待處理：results／editor 檢視器與其餘對話框裡約 117 處 Button、dialog(10)、select(6)、
-  contextmenu(4)，以及單檔使用的 toolbar／message／inputnumber／password／datatable／column／
-  menu／popover（見 PRIMEVUE-EVALUATION.md §3）。
+  **Button 已全面退場：193 處渲染點全部改為 SqButton（外殼 → 結果區 → 編輯器檢視器 → 對話框），
+  葉節點層到此結束。** 連同先前的 Tag／InputText／IconField／Divider／Card／Checkbox／
+  ToggleSwitch／SelectButton／Textarea／ProgressBar／Badge，PrimeVue 只剩下行為型元件：
+  dialog(10)、select(6)、contextmenu(4)、menu(1)、popover(1)、toolbar(1)、message(1)、
+  inputnumber(1)、password(1)、datatable(1)、column(1)，以及工具類的 tooltip／toast／config／ripple
+  （見 PRIMEVUE-EVALUATION.md §3、§5 的 P5 複評）。
 
 - [ ] 全站只有一個操作藍 `#2E6F9E`（及其 hover／tint），沒有第二個彩色 CTA。
 - [ ] 淺色為預設：畫布白、外框淺灰、深灰文字；深色為配對變體且對比另行驗證。
