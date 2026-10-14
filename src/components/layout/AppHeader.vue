@@ -224,7 +224,14 @@
           </template>
         </SqButton>
 
-        <Popover ref="dbaPopoverRef">
+        <SqPopover
+          v-model="isDbaPopoverOpen"
+          :anchor="dbaAnchorEl"
+          align="end"
+          min-width="18rem"
+          role="dialog"
+          aria-label="DBA 診斷與維護指令庫"
+        >
           <div class="w-72 font-sans text-xs select-none">
             <div class="px-2 py-1.5 text-xxs font-semibold uppercase tracking-wider text-dark-400 flex items-center justify-between border-b border-dark-750 mb-1">
               <div class="flex items-center space-x-1.5">
@@ -254,7 +261,7 @@
               </div>
             </div>
           </div>
-        </Popover>
+        </SqPopover>
 
         <div class="w-px h-4 bg-dark-700 mx-0.5 flex-shrink-0" />
 
@@ -381,7 +388,7 @@ import {
 } from 'lucide-vue-next';
 import SqButton from '@/components/ui/SqButton.vue';
 import SqChip from '@/components/ui/SqChip.vue';
-import Popover from 'primevue/popover';
+import SqPopover from '@/components/ui/SqPopover.vue';
 import SqlEditorToolbarActions from '@/components/layout/SqlEditorToolbarActions.vue';
 import WindowControls from '@/components/layout/WindowControls.vue';
 // Single source of truth for the brand mark: the icon set shipped with the Tauri app.
@@ -400,7 +407,9 @@ const workspaceStore = useWorkspaceStore();
 const connectionStore = useConnectionStore();
 const queryStore = useQueryStore();
 const settingsStore = useSettingsStore();
-const dbaPopoverRef = ref();
+/** Anchored popover state for the DBA toolbox: the trigger element drives the panel position. */
+const isDbaPopoverOpen = ref(false);
+const dbaAnchorEl = ref<HTMLElement | null>(null);
 
 /** Windows 使用自繪標題列，其餘平台保留系統原生視窗裝飾。 */
 const showWindowControls = windowService.isCustomTitleBar();
@@ -444,11 +453,13 @@ const filteredAvailableDatabases = computed(() => {
 });
 
 function toggleDbaPopover(event: Event) {
-  dbaPopoverRef.value?.toggle(event);
+  const target = event.currentTarget as HTMLElement | null;
+  if (target) dbaAnchorEl.value = target;
+  isDbaPopoverOpen.value = !isDbaPopoverOpen.value;
 }
 
 function openDbaQuery(query: DbaQueryItem) {
-  dbaPopoverRef.value?.hide();
+  isDbaPopoverOpen.value = false;
   workspaceStore.addSqlTab(query.sql, `${query.title}.sql`);
   workspaceStore.showToast(`已載入「${query.title}」診斷指令，按下 Run 即可執行`, 'info', 2500);
 }

@@ -152,11 +152,16 @@
           tone="accent"
           variant="solid"
           class="font-medium"
-          @click="(e) => exportMenuRef?.toggle(e)"
+          @click="toggleExportMenu"
         >
           <template #icon><Download class="w-3.5 h-3.5" /></template>
         </SqButton>
-        <Menu ref="exportMenuRef" :model="exportMenuItems" :popup="true" />
+        <SqMenu
+          v-model="isExportMenuOpen"
+          :anchor="exportAnchorEl"
+          :items="exportMenuItems"
+          aria-label="匯出 ER 圖"
+        />
       </div>
     </div>
 
@@ -361,7 +366,7 @@
 import { ref, reactive, computed, onMounted, onBeforeUnmount, shallowRef, nextTick } from 'vue';
 import SqButton from '@/components/ui/SqButton.vue';
 import SqChip from '@/components/ui/SqChip.vue';
-import Menu from 'primevue/menu';
+import SqMenu from '@/components/ui/SqMenu.vue';
 import {
   FileCode,
   Loader2,
@@ -384,6 +389,8 @@ import {
   Sun,
   ZoomIn,
   ZoomOut,
+  Image,
+  FileText,
 } from 'lucide-vue-next';
 import { Graph, Export } from '@antv/x6';
 import { register } from '@antv/x6-vue-shape';
@@ -508,16 +515,24 @@ const isLoading = ref(false);
 const loadingMessage = ref('正在載入 ER 圖表...');
 const isDragOver = ref(false);
 const isExportMenuOpen = ref(false);
-const exportMenuRef = ref<any>(null);
+const exportAnchorEl = ref<HTMLElement | null>(null);
+
+/** Opens the export menu anchored to its trigger button (SqMenu owns dismissal + keyboard). */
+function toggleExportMenu(event: Event) {
+  const target = event.currentTarget as HTMLElement | null;
+  if (target) exportAnchorEl.value = target;
+  isExportMenuOpen.value = !isExportMenuOpen.value;
+}
+
 const exportMenuItems = computed(() => [
   {
     label: 'PNG 點陣圖 (.png)',
-    icon: 'pi pi-image',
+    icon: Image,
     command: () => exportAsPng(),
   },
   {
     label: 'SVG 向量圖 (.svg)',
-    icon: 'pi pi-code',
+    icon: FileCode,
     command: () => exportAsSvg(),
   },
   {
@@ -525,7 +540,7 @@ const exportMenuItems = computed(() => [
   },
   {
     label: 'ER 圖表架構檔 (.json)',
-    icon: 'pi pi-file',
+    icon: FileText,
     command: () => exportAsJson(),
   },
 ]);
