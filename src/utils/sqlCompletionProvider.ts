@@ -12,6 +12,19 @@ import type { languages, IRange } from 'monaco-editor';
 let isProviderRegistered = false;
 let providerDisposable: monaco.IDisposable | null = null;
 
+/**
+ * Keywords that may legally follow a JOIN modifier, e.g. "LEFT " -> OUTER / JOIN.
+ * Kept as plain keyword text so we do not duplicate the SQL_KEYWORDS snippets.
+ */
+const JOIN_MODIFIER_CONTINUATIONS: Record<string, string[]> = {
+  INNER: ['JOIN'],
+  LEFT: ['OUTER', 'JOIN'],
+  RIGHT: ['OUTER', 'JOIN'],
+  FULL: ['OUTER', 'JOIN'],
+  CROSS: ['JOIN'],
+  OUTER: ['JOIN'],
+};
+
 export function setupSqlCompletionProvider(): void {
   if (isProviderRegistered) return;
 
@@ -28,10 +41,9 @@ export function setupSqlCompletionProvider(): void {
       };
 
       const fullSql = model.getValue();
-      const lineContent = model.getLineContent(position.lineNumber);
-      const lineUntilCursor = lineContent.substring(0, position.column - 1);
+      const textUntilCursor = fullSql.slice(0, model.getOffsetAt(position));
 
-      const cursorContext = getCursorContext(lineUntilCursor);
+      const cursorContext = getCursorContext(textUntilCursor);
       const schemaStore = useSchemaStore();
       const connStore = useConnectionStore();
 
@@ -146,6 +158,27 @@ export function setupSqlCompletionProvider(): void {
             detail: 'Schema',
             insertText: wrapIdentifierIfNeeded(s),
             sortText: `1_${s}`,
+            range,
+          });
+        }
+
+        return { suggestions };
+      }
+
+      // =========================================================================
+      // Case 2.5: JOIN Modifier Context (Preceding keyword is LEFT, INNER, OUTER, ...)
+      // =========================================================================
+      if (cursorContext.contextType === 'join_keyword') {
+        const continuations =
+          JOIN_MODIFIER_CONTINUATIONS[cursorContext.joinModifier ?? ''] ?? ['JOIN'];
+
+        for (const kw of continuations) {
+          suggestions.push({
+            label: kw,
+            kind: monaco.languages.CompletionItemKind.Keyword,
+            detail: 'JOIN clause keyword',
+            insertText: kw,
+            sortText: `0_${kw}`,
             range,
           });
         }

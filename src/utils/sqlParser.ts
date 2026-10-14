@@ -108,20 +108,40 @@ export function parseTableAliases(sql: string): TableAliasMap {
   return { aliases, referencedTables };
 }
 
-export type QueryContextType = 'table' | 'column_or_expr' | 'general';
+export type QueryContextType = 'table' | 'column_or_expr' | 'join_keyword' | 'general';
 
 export interface CursorContext {
   isDotTrigger: boolean;
   qualifier?: string;
   contextType: QueryContextType;
+  /** Uppercase JOIN modifier (e.g. 'LEFT') when contextType is 'join_keyword'. */
+  joinModifier?: string;
 }
 
+/** Keywords that expect a table source next. */
+const TABLE_CONTEXT_KEYWORDS = new Set(['FROM', 'JOIN', 'INTO', 'UPDATE', 'TABLE']);
+
+/** Keywords that expect a column / expression next. */
+const COLUMN_CONTEXT_KEYWORDS = new Set(['SELECT', 'WHERE', 'AND', 'OR', 'ON', 'SET', 'HAVING', 'BY']);
+
+/** JOIN modifiers that expect another modifier or the JOIN keyword next. */
+const JOIN_MODIFIER_KEYWORDS = new Set(['INNER', 'LEFT', 'RIGHT', 'FULL', 'CROSS', 'OUTER']);
+
+/** How many tokens of the cursor prefix are inspected when looking for the governing keyword. */
+const CONTEXT_SCAN_WINDOW = 6;
+
+/** Only the tail of the document is relevant for keyword context detection. */
+const CONTEXT_TAIL_LENGTH = 1000;
+
 /**
- * Analyzes the line content up to the cursor to determine context.
+ * Analyzes the text preceding the cursor (possibly spanning multiple lines)
+ * to determine which kind of objects should be suggested.
  */
-export function getCursorContext(lineUntilCursor: string): CursorContext {
+export function getCursorContext(textUntilCursor: string): CursorContext {
+  const lastLine = textUntilCursor.slice(textUntilCursor.lastIndexOf('\n') + 1);
+
   // Check if cursor is immediately after a dot: e.g. "u." or "Users." or "[dbo]." or "u.a"
-  const dotMatch = lineUntilCursor.match(/([a-zA-Z0-9_#@\[\]]+)\.\s*([a-zA-Z0-9_#@\[\]]*)$/);
+  const dotMatch = lastLine.match(/([a-zA-Z0-9_#@\[\]]+)\.\s*([a-zA-Z0-9_#@\[\]]*)$/);
   if (dotMatch && dotMatch[1]) {
     const qualifier = dotMatch[1].replace(/[\[\]]/g, '').trim();
     return {
@@ -131,31 +151,45 @@ export function getCursorContext(lineUntilCursor: string): CursorContext {
     };
   }
 
-  // Find the last keyword before the cursor (excluding punctuation)
-  const words = lineUntilCursor
+  // Walk backwards from the cursor until a keyword decides the context. Tokens that are
+  // not keywords (partial identifiers, operators, numbers) are skipped, so typing
+  // "FROM Us" or breaking the line right after "JOIN" keeps the table context.
+  const words = textUntilCursor
+    .slice(-CONTEXT_TAIL_LENGTH)
+    .replace(/--[^\n]*/g, ' ')
+    .replace(/\/\*[\s\S]*?\*\//g, ' ')
     .replace(/[(),;]/g, ' ')
     .trim()
     .split(/\s+/)
     .filter(Boolean);
 
-  const lastWord = words.length > 0 ? (words[words.length - 1] ?? '').toUpperCase() : '';
-  const secondLastWord = words.length > 1 ? (words[words.length - 2] ?? '').toUpperCase() : '';
+  const lastIndex = words.length - 1;
+  const scanStart = Math.max(0, words.length - CONTEXT_SCAN_WINDOW);
+  for (let i = words.length - 1; i >= scanStart; i -= 1) {
+    const word = (words[i] ?? '').toUpperCase();
+    if (!word) continue;
 
-  if (
-    ['FROM', 'JOIN', 'INTO', 'UPDATE', 'TABLE'].includes(lastWord) ||
-    (lastWord === 'JOIN' && ['INNER', 'LEFT', 'RIGHT', 'FULL', 'CROSS'].includes(secondLastWord))
-  ) {
-    return {
-      isDotTrigger: false,
-      contextType: 'table',
-    };
-  }
+    if (TABLE_CONTEXT_KEYWORDS.has(word)) {
+      return { isDotTrigger: false, contextType: 'table' };
+    }
 
-  if (['SELECT', 'WHERE', 'AND', 'OR', 'ON', 'SET', 'HAVING', 'BY'].includes(lastWord)) {
-    return {
-      isDotTrigger: false,
-      contextType: 'column_or_expr',
-    };
+    if (COLUMN_CONTEXT_KEYWORDS.has(word)) {
+      return { isDotTrigger: false, contextType: 'column_or_expr' };
+    }
+
+    if (JOIN_MODIFIER_KEYWORDS.has(word)) {
+      return { isDotTrigger: false, contextType: 'join_keyword', joinModifier: word };
+    }
+
+    // The token touching the cursor is whatever the user is still typing, even when it
+    // spells a keyword ("FROM Order", "FROM In" while typing "Inventory").
+    if (i === lastIndex) continue;
+
+    // Any other known keyword ends the search: we are no longer directly after a
+    // clause keyword that would dictate table-only completion.
+    if (RESERVED_NON_ALIAS.has(word.toLowerCase())) {
+      break;
+    }
   }
 
   return {
