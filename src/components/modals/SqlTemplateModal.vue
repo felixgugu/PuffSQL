@@ -42,73 +42,77 @@
           </template>
         </SqInput>
 
-        <Button
+        <SqButton
           v-if="templateStore.searchQuery"
           type="button"
-          icon="pi pi-times"
-          text
-          size="small"
-          severity="secondary"
+          size="sm"
+          :aria-label="$t('sqlTemplates.clearSearchTooltip')"
           @click="clearSearch"
           v-tooltip.top="$t('sqlTemplates.clearSearchTooltip')"
+        >
+          <template #icon><X class="w-3.5 h-3.5" /></template>
+        </SqButton>
           class="!w-7 !h-7 !p-0 !rounded-md !border-0 hover:!bg-dark-750"
         />
 
         <!-- Close Button -->
-        <Button
+        <SqButton
           type="button"
-          icon="pi pi-times"
-          text
-          size="small"
-          severity="secondary"
+          tone="danger"
+          :aria-label="$t('sqlTemplates.closeTooltip')"
           @click="closeModal"
           v-tooltip.top="$t('sqlTemplates.closeTooltip')"
-          class="!w-7 !h-7 !p-0 !rounded-md !border-0 !shadow-none hover:!bg-rose-500/20 hover:!text-danger"
-        />
+        >
+          <template #icon><X class="w-3.5 h-3.5" /></template>
+        </SqButton>
       </div>
 
       <!-- Category Filter Chips -->
       <div class="flex items-center justify-between text-xxs text-dark-400 pt-0.5">
         <div class="flex items-center space-x-1.5 overflow-x-auto">
-          <Button
+          <SqButton
             v-for="chip in categoryChips"
             :key="chip.category"
             type="button"
-            size="small"
-            :severity="templateStore.activeCategory === chip.category ? 'primary' : 'secondary'"
-            :variant="templateStore.activeCategory === chip.category ? undefined : 'outlined'"
+            size="sm"
+            :tone="templateStore.activeCategory === chip.category ? 'accent' : 'neutral'"
+            :variant="templateStore.activeCategory === chip.category ? 'solid' : 'outline'"
             @click="templateStore.activeCategory = chip.category"
-            class="!text-xxs !py-1 !px-2.5"
+            class="text-xxs"
           >
             <span>{{ chip.label }}</span>
             <span class="ml-1 opacity-70 font-mono">({{ chip.count }})</span>
-          </Button>
+          </SqButton>
         </div>
 
         <!-- Reload & Add New Buttons -->
         <div class="flex items-center space-x-1.5 flex-shrink-0">
-          <Button
+          <SqButton
             type="button"
-            :icon="templateStore.isLoading ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"
             :label="$t('sqlTemplates.reloadBtn')"
-            size="small"
-            severity="secondary"
-            outlined
+            size="sm"
+            variant="outline"
+            :loading="templateStore.isLoading"
             @click="handleReloadFromDisk"
             :disabled="templateStore.isLoading"
+          >
+            <template #icon><RefreshCw class="w-3.5 h-3.5" /></template>
+          </SqButton>
             v-tooltip.top="$t('sqlTemplates.reloadTooltip')"
             class="!text-xxs !py-1 !px-2"
           />
 
-          <Button
+          <SqButton
             type="button"
-            icon="pi pi-plus"
             :label="$t('sqlTemplates.addNewBtn')"
-            size="small"
-            severity="primary"
+            size="sm"
+            tone="accent"
+            variant="solid"
             @click="openAddTemplateModal"
             v-tooltip.top="$t('sqlTemplates.addNewTooltip')"
-            class="!text-xxs !py-1 !px-2.5"
+          >
+            <template #icon><Plus class="w-3.5 h-3.5" /></template>
+          </SqButton>
           />
         </div>
       </div>
@@ -197,14 +201,13 @@
           <span class="text-xxs text-dark-500 max-w-xs">
             {{ $t('sqlTemplates.notFoundSub') }}
           </span>
-          <Button
+          <SqButton
             type="button"
             :label="$t('sqlTemplates.resetSearchBtn')"
-            size="small"
-            severity="secondary"
-            outlined
+            size="sm"
+            variant="outline"
+            class="mt-2"
             @click="templateStore.searchQuery = ''; templateStore.activeCategory = 'all'"
-            class="mt-2 !text-xxs !py-1 !px-2.5"
           />
         </div>
       </div>
@@ -235,68 +238,62 @@
             <!-- Action Buttons -->
             <div class="flex items-center space-x-1.5 flex-shrink-0">
               <!-- Copy Button -->
-              <Button
+              <SqButton
                 type="button"
-                :icon="hasCopied ? 'pi pi-check' : 'pi pi-copy'"
                 :label="hasCopied ? $t('sqlTemplates.copied') : $t('sqlTemplates.copy')"
-                size="small"
-                severity="secondary"
-                outlined
+                variant="outline"
                 @click="copyCode(templateStore.selectedTemplate.code)"
                 v-tooltip.top="$t('sqlTemplates.copyTooltip')"
-                class="!text-xs !py-1.5 !px-2.5"
-              />
+              >
+                <template #icon>
+                  <Check v-if="hasCopied" class="w-3.5 h-3.5 text-ok" />
+                  <Copy v-else class="w-3.5 h-3.5" />
+                </template>
+              </SqButton>
 
               <!-- Open in New Tab Button -->
-              <Button
+              <SqButton
                 type="button"
-                icon="pi pi-external-link"
                 :label="$t('sqlTemplates.openInNewTab')"
-                size="small"
-                severity="secondary"
-                outlined
+                variant="outline"
                 @click="openInNewTab(templateStore.selectedTemplate)"
                 v-tooltip.top="$t('sqlTemplates.openInNewTabTooltip')"
-                class="!text-xs !py-1.5 !px-2.5"
-              />
+              >
+                <template #icon><ArrowUpRight class="w-3.5 h-3.5" /></template>
+              </SqButton>
 
               <!-- Insert at Cursor (Primary) -->
-              <Button
+              <SqButton
                 type="button"
-                icon="pi pi-arrow-down-left"
                 :label="$t('sqlTemplates.insertAtCursor')"
-                size="small"
-                severity="primary"
+                tone="accent"
+                variant="solid"
                 @click="insertIntoEditor(templateStore.selectedTemplate)"
                 v-tooltip.top="$t('sqlTemplates.insertAtCursorTooltip')"
-                class="!text-xs !py-1.5 !px-3 shadow-xs"
-              />
+              >
+                <template #icon><ArrowDownLeft class="w-3.5 h-3.5" /></template>
+              </SqButton>
 
               <!-- If Custom: Edit / Delete -->
               <template v-if="templateStore.selectedTemplate.isCustom">
-                <Button
+                <SqButton
                   type="button"
-                  icon="pi pi-pencil"
-                  text
-                  rounded
-                  size="small"
-                  severity="secondary"
+                  :aria-label="$t('sqlTemplates.editTemplateTooltip')"
                   @click="openEditTemplateModal(templateStore.selectedTemplate)"
                   v-tooltip.top="$t('sqlTemplates.editTemplateTooltip')"
-                  class="!p-1 !w-7 !h-7"
-                />
+                >
+                  <template #icon><Pencil class="w-3.5 h-3.5" /></template>
+                </SqButton>
 
-                <Button
+                <SqButton
                   type="button"
-                  icon="pi pi-trash"
-                  text
-                  rounded
-                  size="small"
-                  severity="danger"
+                  tone="danger"
+                  :aria-label="$t('sqlTemplates.deleteTemplateTooltip')"
                   @click="handleDeleteTemplate(templateStore.selectedTemplate.id)"
                   v-tooltip.top="$t('sqlTemplates.deleteTemplateTooltip')"
-                  class="!p-1 !w-7 !h-7"
-                />
+                >
+                  <template #icon><Trash2 class="w-3.5 h-3.5" /></template>
+                </SqButton>
               </template>
             </div>
           </div>
@@ -366,17 +363,16 @@
           {{ templateStore.customFilePath || $t('sqlTemplates.colocatedDefault') }}
         </span>
 
-        <Button
+        <SqButton
           type="button"
-          icon="pi pi-folder-open"
           :label="$t('sqlTemplates.revealInExplorer')"
-          size="small"
-          severity="secondary"
-          outlined
+          size="sm"
+          variant="outline"
           @click="handleRevealInExplorer"
           v-tooltip.top="$t('sqlTemplates.revealTooltip')"
-          class="!text-xxs !py-0.5 !px-2"
-        />
+        >
+          <template #icon><FolderOpen class="w-3.5 h-3.5" /></template>
+        </SqButton>
       </div>
 
       <!-- Right: Keyboard Hints -->
@@ -467,18 +463,17 @@
           {{ $t('sqlTemplates.saveLocationNotice') }}
         </span>
         <div class="flex items-center space-x-2">
-          <Button
+          <SqButton
             type="button"
             :label="$t('sqlTemplates.cancel')"
-            severity="secondary"
-            size="small"
+            variant="outline"
             @click="isCustomFormOpen = false"
           />
-          <Button
+          <SqButton
             type="submit"
             :label="$t('sqlTemplates.saveTemplate')"
-            severity="primary"
-            size="small"
+            tone="accent"
+            variant="solid"
           />
         </div>
       </div>
@@ -492,10 +487,22 @@ import { useI18n } from 'vue-i18n';
 import Dialog from 'primevue/dialog';
 import SqInput from '@/components/ui/SqInput.vue';
 import SqTextarea from '@/components/ui/SqTextarea.vue';
-import Button from 'primevue/button';
+import SqButton from '@/components/ui/SqButton.vue';
 import Select from 'primevue/select';
 import SqChip, { type SqChipTone } from '@/components/ui/SqChip.vue';
-import { Search } from 'lucide-vue-next';
+import {
+  ArrowDownLeft,
+  ArrowUpRight,
+  Check,
+  Copy,
+  FolderOpen,
+  Pencil,
+  Plus,
+  RefreshCw,
+  Search,
+  Trash2,
+  X,
+} from 'lucide-vue-next';
 import { useSqlTemplateStore } from '@/stores/sqlTemplateStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useDialogWindow } from '@/composables/useDialogWindow';

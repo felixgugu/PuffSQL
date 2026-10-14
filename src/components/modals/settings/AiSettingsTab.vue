@@ -37,16 +37,17 @@
             <i :class="showApiKey ? 'pi pi-eye-slash' : 'pi pi-eye'" />
           </button>
         </div>
-        <Button
+        <SqButton
           label="測試連線 (Test)"
-          icon="pi pi-bolt"
-          severity="primary"
-          size="small"
-          class="!text-xs !py-1.5 flex-shrink-0"
+          tone="accent"
+          variant="solid"
+          class="flex-shrink-0"
           :loading="isTesting"
           :disabled="!aiChatStore.config.apiKey.trim() || isTesting"
           @click="handleTestConnection"
-        />
+        >
+          <template #icon><Zap class="w-3.5 h-3.5" /></template>
+        </SqButton>
       </div>
 
       <!-- 測試結果反饋 -->
@@ -67,12 +68,10 @@
           <label class="font-medium text-dark-100 block">cURL 請求範本 (Request Template) *</label>
           <span class="text-xxs text-dark-400">支援貼上完整的 curl 命令；系統會保留自訂參數並維持多輪問答追加</span>
         </div>
-        <Button
+        <SqButton
           label="還原預設範本"
-          severity="secondary"
-          text
-          size="small"
-          class="!text-xxs !p-0 hover:text-dark-100"
+          size="sm"
+          class="text-xxs hover:text-dark-100"
           @click="aiChatStore.resetCurlTemplate()"
         />
       </div>
@@ -91,14 +90,14 @@
         <div class="text-xs font-medium text-dark-200">AI 請求記錄檔 (ai.log)</div>
         <div class="text-xxs text-dark-400">每次發送 AI API 請求時自動記錄請求與回應內容，並於應用程式開啟時自動清空</div>
       </div>
-      <Button
+      <SqButton
         label="開啟 ai.log"
-        icon="pi pi-external-link"
-        severity="secondary"
-        size="small"
-        class="!text-xs !py-1 flex-shrink-0"
+        variant="outline"
+        class="flex-shrink-0"
         @click="handleOpenAiLog"
-      />
+      >
+        <template #icon><ArrowUpRight class="w-3.5 h-3.5" /></template>
+      </SqButton>
     </div>
 
     <!-- 4. 快捷提問選項設定 (Quick Prompts) -->
@@ -109,23 +108,21 @@
           <span class="text-xxs text-dark-400">自訂 AI SQL 智能助理的快捷提問按鈕，點選後會自動填入聊天輸入框</span>
         </div>
         <div class="flex items-center space-x-2">
-          <Button
+          <SqButton
             label="還原預設選項"
-            severity="secondary"
-            text
-            size="small"
-            class="!text-xxs !p-0 hover:text-dark-100"
+            size="sm"
+            class="text-xxs hover:text-dark-100"
             @click="aiChatStore.resetQuickPrompts()"
           />
-          <Button
+          <SqButton
             label="新增選項"
-            icon="pi pi-plus"
-            severity="primary"
-            outlined
-            size="small"
-            class="!text-xs !py-1 !px-2.5 flex-shrink-0"
+            tone="accent"
+            variant="outline"
+            class="flex-shrink-0"
             @click="openAddPromptDialog"
-          />
+          >
+            <template #icon><Plus class="w-3.5 h-3.5" /></template>
+          </SqButton>
         </div>
       </div>
 
@@ -145,26 +142,23 @@
             </p>
           </div>
           <div class="flex items-center space-x-1 flex-shrink-0 pt-0.5">
-            <Button
-              icon="pi pi-pencil"
-              severity="secondary"
-              text
-              rounded
-              size="small"
+            <SqButton
+              size="sm"
+              aria-label="修改此提示詞"
               v-tooltip.top="'修改此提示詞'"
-              class="!w-6 !h-6 !p-0 hover:text-dark-100"
               @click="openEditPromptDialog(item)"
-            />
-            <Button
-              icon="pi pi-trash"
-              severity="secondary"
-              text
-              rounded
-              size="small"
+            >
+              <template #icon><Pencil class="w-3.5 h-3.5" /></template>
+            </SqButton>
+            <SqButton
+              size="sm"
+              tone="danger"
+              aria-label="刪除此選項"
               v-tooltip.top="'刪除此選項'"
-              class="!w-6 !h-6 !p-0 hover:text-danger"
               @click="handleDeletePrompt(item.id)"
-            />
+            >
+              <template #icon><Trash2 class="w-3.5 h-3.5" /></template>
+            </SqButton>
           </div>
         </div>
 
@@ -208,23 +202,19 @@
       </div>
       <template #footer>
         <div class="flex items-center justify-end space-x-2 pt-2">
-          <Button
+          <SqButton
             label="取消"
-            severity="secondary"
-            text
-            size="small"
-            class="!text-xs"
             @click="isPromptDialogVisible = false"
           />
-          <Button
+          <SqButton
             label="儲存"
-            icon="pi pi-check"
-            severity="primary"
-            size="small"
-            class="!text-xs"
+            tone="accent"
+            variant="solid"
             :disabled="!promptForm.label.trim() || !promptForm.prompt.trim()"
             @click="savePromptDialog"
-          />
+          >
+            <template #icon><Check class="w-3.5 h-3.5" /></template>
+          </SqButton>
         </div>
       </template>
     </Dialog>
@@ -234,7 +224,8 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue';
 import SqInput from '@/components/ui/SqInput.vue';
-import Button from 'primevue/button';
+import SqButton from '@/components/ui/SqButton.vue';
+import { ArrowUpRight, Check, Pencil, Plus, Trash2, Zap } from 'lucide-vue-next';
 import SqTextarea from '@/components/ui/SqTextarea.vue';
 import Dialog from 'primevue/dialog';
 import { useAiChatStore } from '@/stores/aiChatStore';

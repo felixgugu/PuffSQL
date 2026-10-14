@@ -32,44 +32,40 @@
           </template>
         </SqInput>
 
-        <Button
+        <SqButton
           v-if="searchQuery"
           type="button"
-          icon="pi pi-times"
-          text
-          size="small"
-          severity="secondary"
+          :aria-label="$t('quickFinder.clearTooltip')"
           @click="clearSearch"
           v-tooltip.top="$t('quickFinder.clearTooltip')"
-          class="!w-7 !h-7 !p-0 !rounded-md !border-0 hover:!bg-dark-750"
-        />
+        >
+          <template #icon><X class="w-3.5 h-3.5" /></template>
+        </SqButton>
 
         <div class="h-4 w-px bg-dark-700 mx-0.5"></div>
 
         <!-- Refresh Button -->
-        <Button
+        <SqButton
           type="button"
-          :icon="isLoading ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"
-          text
-          size="small"
-          severity="secondary"
+          :loading="isLoading"
+          :aria-label="$t('quickFinder.refreshTooltip')"
           @click="refreshObjects"
           :disabled="isLoading"
           v-tooltip.top="$t('quickFinder.refreshTooltip')"
-          class="!w-7 !h-7 !p-0 !rounded-md !border-0 hover:!bg-dark-750"
-        />
+        >
+          <template #icon><RefreshCw class="w-3.5 h-3.5" /></template>
+        </SqButton>
 
         <!-- Close Button -->
-        <Button
+        <SqButton
           type="button"
-          icon="pi pi-times"
-          text
-          size="small"
-          severity="secondary"
+          tone="danger"
+          :aria-label="$t('quickFinder.closeTooltip')"
           @click="closeModal"
           v-tooltip.top="$t('quickFinder.closeTooltip')"
-          class="!w-7 !h-7 !p-0 !rounded-md !border-0 !shadow-none hover:!bg-rose-500/20 hover:!text-danger"
-        />
+        >
+          <template #icon><X class="w-3.5 h-3.5" /></template>
+        </SqButton>
       </div>
 
       <!-- Scope Bar: Connection & Database Selector + Filter Chips -->
@@ -106,19 +102,19 @@
 
         <!-- Right: Type Filter Chips -->
         <div class="flex items-center space-x-1">
-          <Button
+          <SqButton
             v-for="chip in filterChips"
             :key="chip.type"
             type="button"
-            size="small"
-            :severity="activeTypeTab === chip.type ? 'primary' : 'secondary'"
-            :variant="activeTypeTab === chip.type ? undefined : 'outlined'"
+            size="sm"
+            :tone="activeTypeTab === chip.type ? 'accent' : 'neutral'"
+            :variant="activeTypeTab === chip.type ? 'solid' : 'outline'"
             @click="activeTypeTab = chip.type"
-            class="!text-xxs !py-0.5 !px-2"
+            class="text-xxs"
           >
             <span>{{ chip.label }}</span>
             <span class="ml-1 opacity-70 font-mono">({{ chip.count }})</span>
-          </Button>
+          </SqButton>
         </div>
       </div>
     </div>
@@ -213,91 +209,89 @@
         <div class="flex items-center space-x-1 flex-shrink-0">
           <!-- For Tables & Views: Open Data, Structure, SELECT -->
           <template v-if="res.item.type === 'table' || res.item.type === 'view'">
-            <Button
+            <SqButton
               type="button"
-              icon="pi pi-table"
               :label="$t('quickFinder.dataBtn')"
-              size="small"
-              severity="secondary"
-              outlined
+              size="sm"
+              variant="outline"
               @click.stop="openTableData(res.item)"
               v-tooltip.top="$t('quickFinder.openDataTooltip')"
-              class="!text-xxs !py-0.5 !px-2"
+            >
+              <template #icon><Table2 class="w-3.5 h-3.5" /></template>
+            </SqButton>
             />
-            <Button
+            <SqButton
               type="button"
-              icon="pi pi-list"
               :label="$t('quickFinder.structureBtn')"
-              size="small"
-              severity="secondary"
-              outlined
+              size="sm"
+              variant="outline"
               @click.stop="openTableStructure(res.item)"
               v-tooltip.top="$t('quickFinder.openStructureTooltip')"
-              class="!text-xxs !py-0.5 !px-2"
+            >
+              <template #icon><List class="w-3.5 h-3.5" /></template>
+            </SqButton>
             />
-            <Button
+            <SqButton
               type="button"
-              icon="pi pi-file-edit"
               :label="$t('quickFinder.selectBtn')"
-              size="small"
-              severity="secondary"
-              outlined
+              size="sm"
+              variant="outline"
               @click.stop="generateSelectQuery(res.item)"
               v-tooltip.top="$t('quickFinder.generateSelectTooltip')"
-              class="!text-xxs !py-0.5 !px-2"
+            >
+              <template #icon><FileEdit class="w-3.5 h-3.5" /></template>
+            </SqButton>
             />
           </template>
 
           <!-- For Stored Procedures: Definition, EXEC -->
           <template v-else-if="res.item.type === 'procedure'">
-            <Button
+            <SqButton
               type="button"
-              icon="pi pi-code"
               :label="$t('quickFinder.definitionBtn')"
-              size="small"
-              severity="secondary"
-              outlined
+              size="sm"
+              variant="outline"
               @click.stop="viewDefinition(res.item)"
               v-tooltip.top="$t('quickFinder.viewDefinitionTooltip')"
-              class="!text-xxs !py-0.5 !px-2"
+            >
+              <template #icon><FileCode class="w-3.5 h-3.5" /></template>
+            </SqButton>
             />
-            <Button
+            <SqButton
               type="button"
-              icon="pi pi-play"
               :label="$t('quickFinder.execBtn')"
-              size="small"
-              severity="secondary"
-              outlined
+              size="sm"
+              variant="outline"
               @click.stop="generateExecQuery(res.item)"
               v-tooltip.top="$t('quickFinder.generateExecTooltip')"
-              class="!text-xxs !py-0.5 !px-2"
+            >
+              <template #icon><Play class="w-3.5 h-3.5" /></template>
+            </SqButton>
             />
           </template>
 
           <!-- For Functions: Definition, SELECT -->
           <template v-else-if="res.item.type === 'function'">
-            <Button
+            <SqButton
               type="button"
-              icon="pi pi-code"
               :label="$t('quickFinder.definitionBtn')"
-              size="small"
-              severity="secondary"
-              outlined
+              size="sm"
+              variant="outline"
               @click.stop="viewDefinition(res.item)"
               v-tooltip.top="$t('quickFinder.viewDefinitionTooltip')"
-              class="!text-xxs !py-0.5 !px-2"
-            />
-            <Button
+            >
+              <template #icon><FileCode class="w-3.5 h-3.5" /></template>
+            </SqButton>
+            <SqButton
               type="button"
-              icon="pi pi-file-edit"
               :label="$t('quickFinder.selectBtn')"
-              size="small"
-              severity="secondary"
-              outlined
+              size="sm"
+              variant="outline"
               @click.stop="generateFuncSelectQuery(res.item)"
               v-tooltip.top="$t('quickFinder.generateFuncSelectTooltip')"
-              class="!text-xxs !py-0.5 !px-2"
-            />
+            >
+              <template #icon><FileEdit class="w-3.5 h-3.5" /></template>
+            </SqButton>
           </template>
         </div>
       </div>
@@ -342,9 +336,9 @@ import { ref, computed, watch, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import Dialog from 'primevue/dialog';
 import SqInput from '@/components/ui/SqInput.vue';
-import Button from 'primevue/button';
+import SqButton from '@/components/ui/SqButton.vue';
 import Select from 'primevue/select';
-import { FileCode, List, Play, Search, Table2 } from 'lucide-vue-next';
+import { FileCode, FileEdit, List, Play, RefreshCw, Search, Table2, X } from 'lucide-vue-next';
 import SqChip from '@/components/ui/SqChip.vue';
 import { useConnectionStore } from '@/stores/connectionStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
