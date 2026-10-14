@@ -229,8 +229,8 @@ test('the hide-toolbar toggle sits in AppBottomPanel and reaches every grid pane
     /toggleToolbarHidden\(queryStore\.activeResultTabId, toolbarDefaultHidden\.value\)/,
     'toggling must flip the same default the grids render from'
   );
-  // The toggle is labelled with a wrench icon, not the old eye glyph.
-  assert.match(panel, /icon="pi pi-wrench"/, 'the toolbar toggle must use a tool icon');
+  // The toggle is labelled with a wrench glyph drawn by lucide, not an icon-font class.
+  assert.match(panel, /<Wrench class="w-3\.5 h-3\.5" \/>/, 'the toolbar toggle must use a tool icon');
   assert.doesNotMatch(panel, /pi pi-eye/, 'the old eye icon must be gone');
   // The toggle must be reachable in every results-view state, including the empty placeholder grid.
   assert.match(

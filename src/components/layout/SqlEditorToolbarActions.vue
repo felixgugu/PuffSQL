@@ -1,13 +1,9 @@
 <template>
   <div class="flex items-center space-x-1">
-    <Button
+    <SqButton
       v-for="item in actions"
       :key="item.action"
-      severity="secondary"
-      size="small"
-      text
       :disabled="disabled"
-      class="!h-7 !w-7 !p-0"
       :class="item.class"
       :aria-label="item.label"
       v-tooltip.bottom="item.tooltip"
@@ -16,14 +12,14 @@
       <template #icon>
         <component :is="item.icon" class="w-3.5 h-3.5" />
       </template>
-    </Button>
+    </SqButton>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, type Component } from 'vue';
 import { useI18n } from 'vue-i18n';
-import Button from 'primevue/button';
+import SqButton from '@/components/ui/SqButton.vue';
 import {
   ClipboardPaste,
   Copy,

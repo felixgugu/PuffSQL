@@ -7,46 +7,39 @@
         <span>Explorer</span>
       </div>
       <div class="flex items-center space-x-1">
-        <Button
-          icon="pi pi-compass"
-          severity="secondary"
-          size="small"
-          text
-          rounded
-          class="!h-6 !w-6 !p-0"
+        <SqButton
+          size="sm"
+          :aria-label="$t('results.locateInExplorer')"
           :v-tooltip.bottom="$t('results.locateInExplorer')"
           @click="handleLocateCurrentTable"
-        />
-        <Button
-          icon="pi pi-plus"
-          severity="secondary"
-          size="small"
-          text
-          rounded
-          class="!h-6 !w-6 !p-0"
+        >
+          <template #icon><Compass class="w-3.5 h-3.5" /></template>
+        </SqButton>
+        <SqButton
+          size="sm"
+          :aria-label="$t('sidebar.newConnection')"
           :v-tooltip.bottom="$t('sidebar.newConnection')"
           @click="$emit('open-connection-modal')"
-        />
-        <Button
-          :icon="isRefreshing ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'"
-          severity="secondary"
-          size="small"
-          text
-          rounded
-          class="!h-6 !w-6 !p-0"
+        >
+          <template #icon><Plus class="w-3.5 h-3.5" /></template>
+        </SqButton>
+        <SqButton
+          size="sm"
+          :loading="isRefreshing"
+          :aria-label="$t('sidebar.refresh')"
           :v-tooltip.bottom="$t('sidebar.refresh')"
           @click="refreshCurrent"
-        />
-        <Button
-          icon="pi pi-angle-double-up"
-          severity="secondary"
-          size="small"
-          text
-          rounded
-          class="!h-6 !w-6 !p-0"
+        >
+          <template #icon><RefreshCw class="w-3.5 h-3.5" /></template>
+        </SqButton>
+        <SqButton
+          size="sm"
+          :aria-label="$t('common.collapse')"
           :v-tooltip.bottom="$t('common.collapse')"
           @click="handleCollapseAll"
-        />
+        >
+          <template #icon><ChevronsUp class="w-3.5 h-3.5" /></template>
+        </SqButton>
       </div>
     </div>
 
@@ -718,7 +711,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, reactive, nextTick, watch, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import Button from 'primevue/button';
+import SqButton from '@/components/ui/SqButton.vue';
 import SqInput from '@/components/ui/SqInput.vue';
 import ContextMenu from 'primevue/contextmenu';
 import SqChip from '@/components/ui/SqChip.vue';
@@ -741,6 +734,10 @@ import {
   History,
   Clock,
   Search,
+  Compass,
+  Plus,
+  RefreshCw,
+  ChevronsUp,
 } from 'lucide-vue-next';
 import ConfirmModal from '@/components/common/ConfirmModal.vue';
 import ExportSchemaModal from '@/components/modals/ExportSchemaModal.vue';

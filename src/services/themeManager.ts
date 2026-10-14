@@ -121,6 +121,10 @@ export const THEME_ROLE_COLORS: Record<string, { dark: string; light: string }> 
   // on the white canvas *and* on its own 15-25% status-chip tint. `accent` and `info` are the same
   // hue on purpose — the product has exactly one action colour.
   accent: { dark: '#8cb8da', light: '#2a6791' },
+  // Solid fills keep the same steel blue in both modes: white label text needs the darker step,
+  // while `--color-accent` above is the *text/icon* step that has to stay light on dark surfaces.
+  'accent-fill': { dark: '#2a6791', light: '#2a6791' },
+  'accent-fill-hover': { dark: '#235a7e', light: '#235a7e' },
   ok: { dark: '#47cd89', light: '#027a48' },
   danger: { dark: '#f97066', light: '#b42318' },
   warn: { dark: '#fdb022', light: '#a94306' },

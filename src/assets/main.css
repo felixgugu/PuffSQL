@@ -40,6 +40,8 @@
     /* Theme-aware accent roles: light values clear 4.5:1 on the raised overlay surface, on the
        panel surface (#e2e8f0) and on the 15-25% self-hue tints used by the status chips. */
     --color-accent: 42 103 145;      /* Steel blue 700 - the single action colour */
+    --color-accent-fill: 42 103 145; /* Solid button fill (white label) */
+    --color-accent-fill-hover: 35 90 126;
     --color-ok: 2 122 72;            /* Emerald 700 */
     --color-danger: 180 35 24;       /* Rose 700 */
     --color-warn: 169 67 6;          /* Amber 700 (darkened for the 25% chip tint) */
@@ -77,6 +79,8 @@
 
     /* Theme-aware accent roles (dark values: >= 4.5:1 on #0f172a and the raised surface) */
     --color-accent: 140 184 218;     /* Steel blue 300 - the single action colour */
+    --color-accent-fill: 42 103 145; /* Solid button fill stays darker so white labels stay legible */
+    --color-accent-fill-hover: 35 90 126;
     --color-ok: 71 205 137;          /* Emerald 400 */
     --color-danger: 249 112 102;     /* Rose 400 */
     --color-warn: 253 176 34;        /* Amber 400 */

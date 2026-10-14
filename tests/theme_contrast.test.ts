@@ -124,8 +124,12 @@ test('role accent colours clear 4.5:1 on the light surfaces and on the dark surf
   const darkTokens = buildThemeTokens('slate', 'dark');
   const lightSurfaces = ['--color-dark-900', '--color-dark-800'];
   const darkSurfaces = ['--color-dark-900', '--color-dark-750'];
+  // Solid *fills* are not text colours: their contract is that the label drawn on top stays
+  // legible (asserted below), not that the fill itself contrasts with the canvas.
+  const FILL_ROLES = new Set(['accent-fill', 'accent-fill-hover']);
 
   for (const role of Object.keys(THEME_ROLE_COLORS)) {
+    if (FILL_ROLES.has(role)) continue;
     for (const background of lightSurfaces) {
       const ratio = ratioForTokens(lightTokens[`--color-${role}`]!, lightTokens[background]!);
       assert.ok(ratio >= 4.5, `light ${role} on ${background} is ${ratio.toFixed(2)}:1`);
@@ -133,6 +137,18 @@ test('role accent colours clear 4.5:1 on the light surfaces and on the dark surf
     for (const background of darkSurfaces) {
       const ratio = ratioForTokens(darkTokens[`--color-${role}`]!, darkTokens[background]!);
       assert.ok(ratio >= 4.5, `dark ${role} on ${background} is ${ratio.toFixed(2)}:1`);
+    }
+  }
+});
+
+test('the solid accent fill keeps its white label legible in both modes', () => {
+  const white = parseHexColor('#ffffff')!;
+
+  for (const mode of ['light', 'dark'] as const) {
+    const tokens = buildThemeTokens('slate', mode);
+    for (const role of ['accent-fill', 'accent-fill-hover']) {
+      const ratio = contrastRatio(white, tokensToRgba(tokens[`--color-${role}`]!));
+      assert.ok(ratio >= 4.5, `${mode} white label on ${role} is ${ratio.toFixed(2)}:1`);
     }
   }
 });

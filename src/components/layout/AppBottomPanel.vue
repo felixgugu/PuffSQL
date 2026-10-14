@@ -108,32 +108,30 @@
         <!-- Grid Actions (whenever the results view has a grid pane to act on) -->
         <template v-if="workspaceStore.bottomPanelTab === 'results' && queryStore.activeResultTabId !== null">
           <!-- Toolbar visibility for every grid pane in this result tab -->
-          <Button
+          <SqButton
             type="button"
-            icon="pi pi-wrench"
-            size="small"
-            rounded
-            text
-            :severity="isToolbarHidden ? 'primary' : 'secondary'"
+            size="sm"
+            :tone="isToolbarHidden ? 'accent' : 'neutral'"
+            :active="isToolbarHidden"
             @click="toggleToolbarVisibility"
             :aria-label="isToolbarHidden ? $t('results.showToolbars') : $t('results.hideToolbars')"
             :v-tooltip.bottom="isToolbarHidden ? $t('results.showToolbarsTooltip') : $t('results.hideToolbarsTooltip')"
-            class="!w-6 !h-6 !p-0"
-          />
+          >
+            <template #icon><Wrench class="w-3.5 h-3.5" /></template>
+          </SqButton>
 
           <!-- Result tab retention: accumulate tabs vs. keep only pinned + the newest -->
-          <Button
+          <SqButton
             type="button"
-            icon="pi pi-clone"
-            size="small"
-            rounded
-            text
-            :severity="settingsStore.accumulateResultTabs ? 'primary' : 'secondary'"
+            size="sm"
+            :tone="settingsStore.accumulateResultTabs ? 'accent' : 'neutral'"
+            :active="settingsStore.accumulateResultTabs"
             @click="toggleResultTabRetention"
             :aria-label="settingsStore.accumulateResultTabs ? $t('results.singleResultTab') : $t('results.keepResultTabs')"
             :v-tooltip.bottom="settingsStore.accumulateResultTabs ? $t('results.keepResultTabsTooltip') : $t('results.singleResultTabTooltip')"
-            class="!w-6 !h-6 !p-0"
-          />
+          >
+            <template #icon><CopyPlus class="w-3.5 h-3.5" /></template>
+          </SqButton>
 
           <div class="h-3.5 w-px bg-dark-750 mx-1 flex-shrink-0"></div>
         </template>
@@ -172,16 +170,14 @@
 
         <div class="h-3.5 w-px bg-dark-750 mx-1 flex-shrink-0"></div>
 
-        <Button
-          icon="pi pi-minus"
-          severity="secondary"
-          size="small"
-          text
-          rounded
-          class="!h-6 !w-6 !p-0"
+        <SqButton
+          size="sm"
+          aria-label="縮小面板 (Minimize)"
           v-tooltip.bottom="'縮小面板 (Minimize)'"
           @click="workspaceStore.toggleBottomPanel()"
-        />
+        >
+          <template #icon><Minus class="w-3.5 h-3.5" /></template>
+        </SqButton>
       </div>
     </div>
 
@@ -238,9 +234,9 @@
 <script setup lang="ts">
 import { ref, computed, reactive, nextTick, onBeforeUnmount } from 'vue';
 import { useI18n } from 'vue-i18n';
-import Button from 'primevue/button';
+import SqButton from '@/components/ui/SqButton.vue';
 import ContextMenu from 'primevue/contextmenu';
-import { Pin, X } from 'lucide-vue-next';
+import { CopyPlus, Minus, Pin, Wrench, X } from 'lucide-vue-next';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useQueryStore } from '@/stores/queryStore';
 import { useSettingsStore } from '@/stores/settingsStore';

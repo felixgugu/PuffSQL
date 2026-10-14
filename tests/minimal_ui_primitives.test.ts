@@ -58,6 +58,51 @@ describe('minimal UI primitives (src/components/ui)', () => {
     }
   });
 
+  test('SqButton owns the button contract: three variants, four heights, one focus ring', () => {
+    const source = readSource('src/components/ui/SqButton.vue');
+
+    for (const variant of ['solid', 'outline', 'ghost']) {
+      assert.match(source, new RegExp(`\\.sq-btn--${variant}`), `missing variant ${variant}`);
+    }
+    assert.match(source, /\.sq-btn--xs \{ height: 20px;/, 'dense toolbar height');
+    assert.match(source, /\.sq-btn--sm \{ height: 24px;/);
+    assert.match(source, /\.sq-btn--md \{ height: 28px;/);
+    assert.match(source, /\.sq-btn--lg \{ height: 32px;/);
+    assert.match(source, /border-radius: 4px;/, 'the spec control radius');
+    assert.match(source, /outline: 2px solid rgb\(var\(--color-accent\)\)/, 'visible accent focus');
+    assert.match(source, /aria-label="\$attrs|aria-label: undefined|aria-label="ariaLabel"/, 'aria-label is passed through');
+    // The only literal allowed is the label colour on a solid fill; every surface, border and
+    // accent step must come from a token.
+    const literals = [...source.matchAll(/#[0-9a-fA-F]{3,6}/g)].map((match) => match[0]);
+    assert.deepEqual(
+      [...new Set(literals)].sort(),
+      ['#ffffff'],
+      'solid-fill label colour is the only literal'
+    );
+  });
+
+  test('the shell draws its buttons with SqButton and lucide, not PrimeVue', () => {
+    for (const file of [
+      'src/components/layout/AppHeader.vue',
+      'src/components/layout/AppSidebar.vue',
+      'src/components/layout/AppBottomPanel.vue',
+      'src/components/layout/AppMain.vue',
+      'src/components/layout/SqlEditorToolbarActions.vue',
+    ]) {
+      const source = readSource(file);
+      assert.doesNotMatch(source, /primevue\/button/, `${file} must not import PrimeVue Button`);
+      assert.doesNotMatch(source, /\b<Button\b/, `${file} must not render <Button>`);
+    }
+  });
+
+  test('the PrimeIcons lookup covers every icon the map is expected to resolve', () => {
+    const map = readSource('src/components/ui/piIcons.ts');
+    for (const key of ['pi-play', 'pi-stop', 'pi-search', 'pi-check', 'pi-times', 'pi-cog']) {
+      assert.match(map, new RegExp(`'${key}':`), `icon map must cover ${key}`);
+    }
+    assert.match(map, /export function piIcon\(/, 'the map exposes a resolver for dynamic icons');
+  });
+
   test('the shell no longer renders PrimeIcons glyphs in its own markup', () => {
     for (const file of [
       'src/components/layout/AppStatusBar.vue',

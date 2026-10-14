@@ -91,14 +91,14 @@
 
           <template #footer>
             <div class="p-1 border-t border-dark-700">
-              <Button
+              <SqButton
                 :label="$t('sidebar.newConnection') + '...'"
-                icon="pi pi-plus"
-                size="small"
-                text
-                class="w-full !justify-start !text-xs !py-1"
+                size="sm"
+                class="w-full justify-start"
                 @click="handleOpenNewConnection"
-              />
+              >
+                <template #icon><Plus class="w-3.5 h-3.5" /></template>
+              </SqButton>
             </div>
           </template>
         </Select>
@@ -135,37 +135,43 @@
     <template #end>
       <div class="flex items-center justify-end space-x-1 min-w-0 overflow-hidden">
         <!-- Run / Stop Query Button -->
-        <Button
+        <SqButton
           v-if="!queryStore.isExecuting"
-          icon="pi pi-play"
-          severity="primary"
-          size="small"
-          class="!h-7 !w-14 !p-0"
+          tone="accent"
+          variant="solid"
+          class="w-14"
+          :aria-label="$t('header.runTooltip')"
           v-tooltip.bottom="$t('header.runTooltip')"
           @click="$emit('run-query', 'current')"
-        />
-        <Button
+        >
+          <template #icon><Play class="w-3.5 h-3.5" /></template>
+        </SqButton>
+        <SqButton
           v-else
-          :icon="queryStore.isCancelling ? 'pi pi-spin pi-spinner' : 'pi pi-stop'"
-          severity="danger"
-          size="small"
-          class="!h-7 !w-14 !p-0"
+          tone="danger"
+          variant="solid"
+          class="w-14"
+          :loading="queryStore.isCancelling"
           :disabled="queryStore.isCancelling"
+          :aria-label="$t('header.cancelQueryTooltip')"
           v-tooltip.bottom="queryStore.isCancelling ? $t('common.running') : $t('header.cancelQueryTooltip')"
           @click="$emit('cancel-query')"
-        />
+        >
+          <template #icon><SquareMinus class="w-3.5 h-3.5" /></template>
+        </SqButton>
 
         <!-- Run All Statements Button -->
-        <Button
-          icon="pi pi-forward"
-          severity="primary"
-          size="small"
-          outlined
-          class="!h-7 !w-14 !p-0"
+        <SqButton
+          tone="accent"
+          variant="outline"
+          class="w-14"
           :disabled="queryStore.isExecuting"
+          :aria-label="$t('header.runAllTooltip')"
           v-tooltip.bottom="$t('header.runAllTooltip')"
           @click="$emit('run-query', 'all')"
-        />
+        >
+          <template #icon><SkipForward class="w-3.5 h-3.5" /></template>
+        </SqButton>
 
         <div class="w-px h-4 bg-dark-700 mx-0.5 flex-shrink-0" />
 
@@ -176,88 +182,42 @@
         />
 
         <!-- Format SQL Button -->
-        <Button
-          icon="pi pi-align-left"
-          severity="secondary"
-          size="small"
-          text
-          class="!h-7 !w-7 !p-0"
-          v-tooltip.bottom="$t('header.formatSqlTooltip')"
-          @click="$emit('format-sql')"
-        />
+        <SqButton :aria-label="$t('header.formatSqlTooltip')" v-tooltip.bottom="$t('header.formatSqlTooltip')" @click="$emit('format-sql')">
+          <template #icon><AlignLeft class="w-3.5 h-3.5" /></template>
+        </SqButton>
 
         <!-- Open SQL File Button -->
-        <Button
-          icon="pi pi-folder-open"
-          severity="secondary"
-          size="small"
-          text
-          class="!h-7 !w-7 !p-0"
-          v-tooltip.bottom="$t('editor.openFile')"
-          @click="$emit('open-sql-file')"
-        />
+        <SqButton :aria-label="$t('editor.openFile')" v-tooltip.bottom="$t('editor.openFile')" @click="$emit('open-sql-file')">
+          <template #icon><FolderOpen class="w-3.5 h-3.5" /></template>
+        </SqButton>
 
         <!-- Save SQL File Button -->
-        <Button
-          icon="pi pi-save"
-          severity="secondary"
-          size="small"
-          text
-          class="!h-7 !w-7 !p-0"
-          v-tooltip.bottom="$t('editor.saveFile')"
-          @click="$emit('save-sql-file')"
-        />
+        <SqButton :aria-label="$t('editor.saveFile')" v-tooltip.bottom="$t('editor.saveFile')" @click="$emit('save-sql-file')">
+          <template #icon><Save class="w-3.5 h-3.5" /></template>
+        </SqButton>
 
         <!-- New Query Tab Button -->
-        <Button
-          icon="pi pi-plus"
-          severity="secondary"
-          size="small"
-          text
-          class="!h-7 !w-7 !p-0 !text-accent"
-          v-tooltip.bottom="$t('editor.newTab')"
-          @click="workspaceStore.addSqlTab()"
-        />
+        <SqButton tone="accent" :aria-label="$t('editor.newTab')" v-tooltip.bottom="$t('editor.newTab')" @click="workspaceStore.addSqlTab()">
+          <template #icon><Plus class="w-3.5 h-3.5" /></template>
+        </SqButton>
 
         <!-- Quick Object Finder Button (Ctrl + P) -->
-        <Button
-          icon="pi pi-search"
-          severity="secondary"
-          size="small"
-          text
-          class="!h-7 !w-7 !p-0"
-          v-tooltip.bottom="$t('header.quickFinderTooltip')"
-          @click="$emit('open-quick-finder')"
-        />
+        <SqButton :aria-label="$t('header.quickFinderTooltip')" v-tooltip.bottom="$t('header.quickFinderTooltip')" @click="$emit('open-quick-finder')">
+          <template #icon><Search class="w-3.5 h-3.5" /></template>
+        </SqButton>
 
         <!-- SQL Templates Library Button -->
-        <Button
-          icon="pi pi-book"
-          severity="secondary"
-          size="small"
-          text
-          class="!h-7 !w-7 !p-0"
-          v-tooltip.bottom="$t('sqlTemplates.title')"
-          @click="$emit('open-sql-templates')"
-        />
+        <SqButton :aria-label="$t('sqlTemplates.title')" v-tooltip.bottom="$t('sqlTemplates.title')" @click="$emit('open-sql-templates')">
+          <template #icon><Book class="w-3.5 h-3.5" /></template>
+        </SqButton>
 
         <!-- AI SQL Assistant Button -->
-        <Button
-          icon="pi pi-sparkles"
-          severity="secondary"
-          size="small"
-          text
-          class="!h-7 !w-7 !p-0"
-          v-tooltip.bottom="$t('header.aiAssistantTooltip')"
-          @click="$emit('open-ai-chat')"
-        />
+        <SqButton :aria-label="$t('header.aiAssistantTooltip')" v-tooltip.bottom="$t('header.aiAssistantTooltip')" @click="$emit('open-ai-chat')">
+          <template #icon><Sparkles class="w-3.5 h-3.5" /></template>
+        </SqButton>
 
         <!-- DBA Diagnostics Toolbox Button & Popover -->
-        <Button
-          severity="secondary"
-          size="small"
-          text
-          class="!h-7 !w-7 !p-0"
+        <SqButton
           aria-label="DBA 常用診斷維護工具箱"
           v-tooltip.bottom="'DBA 常用診斷維護工具箱'"
           @click="toggleDbaPopover"
@@ -265,7 +225,7 @@
           <template #icon>
             <ChartLine class="w-3.5 h-3.5" />
           </template>
-        </Button>
+        </SqButton>
 
         <Popover ref="dbaPopoverRef">
           <div class="w-72 font-sans text-xs select-none">
@@ -302,37 +262,37 @@
         <div class="w-px h-4 bg-dark-700 mx-0.5 flex-shrink-0" />
 
         <!-- Performance Analysis Toggle (SET STATISTICS IO, TIME ON) -->
-        <Button
-          icon="pi pi-gauge"
-          size="small"
-          :severity="queryStore.isStatsEnabled ? 'primary' : 'secondary'"
-          :text="!queryStore.isStatsEnabled"
-          class="!h-7 !w-7 !p-0"
+        <SqButton
+          :tone="queryStore.isStatsEnabled ? 'accent' : 'neutral'"
+          :active="queryStore.isStatsEnabled"
+          aria-label="效能分析 (SET STATISTICS IO, TIME ON)"
           v-tooltip.bottom="'效能分析 (SET STATISTICS IO, TIME ON)'"
           @click="queryStore.toggleStatsEnabled()"
-        />
+        >
+          <template #icon><Gauge class="w-3.5 h-3.5" /></template>
+        </SqButton>
 
         <!-- Estimated Execution Plan Toggle (SET SHOWPLAN_ALL ON) -->
-        <Button
-          icon="pi pi-sitemap"
-          size="small"
-          :severity="queryStore.isShowplanEnabled ? 'primary' : 'secondary'"
-          :text="!queryStore.isShowplanEnabled"
-          class="!h-7 !w-7 !p-0"
+        <SqButton
+          :tone="queryStore.isShowplanEnabled ? 'accent' : 'neutral'"
+          :active="queryStore.isShowplanEnabled"
+          aria-label="預估執行計畫 (SET SHOWPLAN_ALL ON)"
           v-tooltip.bottom="'預估執行計畫 (SET SHOWPLAN_ALL ON)'"
           @click="queryStore.toggleShowplanEnabled()"
-        />
+        >
+          <template #icon><Network class="w-3.5 h-3.5" /></template>
+        </SqButton>
 
         <!-- Actual Execution Plan Toggle (SET STATISTICS XML ON) -->
-        <Button
-          icon="pi pi-share-alt"
-          size="small"
-          :severity="queryStore.isActualPlanEnabled ? 'primary' : 'secondary'"
-          :text="!queryStore.isActualPlanEnabled"
-          class="!h-7 !w-7 !p-0"
+        <SqButton
+          :tone="queryStore.isActualPlanEnabled ? 'accent' : 'neutral'"
+          :active="queryStore.isActualPlanEnabled"
+          aria-label="實際執行計畫 (SET STATISTICS XML ON)"
           v-tooltip.bottom="'實際執行計畫 (SET STATISTICS XML ON)'"
           @click="queryStore.toggleActualPlanEnabled()"
-        />
+        >
+          <template #icon><Share2 class="w-3.5 h-3.5" /></template>
+        </SqButton>
 
         <!-- Max Rows Limit Selector -->
         <div class="flex items-center space-x-1 pl-1 text-dark-400 text-xxs font-mono">
@@ -362,38 +322,36 @@
         <div class="w-px h-4 bg-dark-700 mx-0.5 flex-shrink-0" />
 
         <!-- Toggle Sidebar -->
-        <Button
-          icon="pi pi-bars"
-          size="small"
-          :severity="workspaceStore.isSidebarOpen ? 'primary' : 'secondary'"
-          :text="!workspaceStore.isSidebarOpen"
-          class="!h-7 !w-7 !p-0"
+        <SqButton
+          :tone="workspaceStore.isSidebarOpen ? 'accent' : 'neutral'"
+          :active="workspaceStore.isSidebarOpen"
+          :aria-label="$t('header.toggleSidebar')"
           :v-tooltip.bottom="$t('header.toggleSidebar')"
           @click="workspaceStore.toggleSidebar()"
-        />
+        >
+          <template #icon><PanelLeft class="w-3.5 h-3.5" /></template>
+        </SqButton>
 
         <!-- Toggle Bottom Results Panel -->
-        <Button
-          icon="pi pi-window-maximize"
-          size="small"
-          :severity="workspaceStore.isBottomPanelOpen ? 'primary' : 'secondary'"
-          :text="!workspaceStore.isBottomPanelOpen"
+        <SqButton
+          :tone="workspaceStore.isBottomPanelOpen ? 'accent' : 'neutral'"
+          :active="workspaceStore.isBottomPanelOpen"
           :disabled="workspaceStore.activeTab?.type === 'er_diagram'"
-          class="!h-7 !w-7 !p-0"
+          :aria-label="$t('header.toggleBottomPanel')"
           :v-tooltip.bottom="$t('header.toggleBottomPanel')"
           @click="workspaceStore.toggleBottomPanel()"
-        />
+        >
+          <template #icon><SquarePlus class="w-3.5 h-3.5" /></template>
+        </SqButton>
 
         <!-- Settings Modal Trigger -->
-        <Button
-          icon="pi pi-cog"
-          size="small"
-          severity="secondary"
-          text
-          class="!h-7 !w-7 !p-0"
+        <SqButton
+          :aria-label="$t('header.settingsTooltip')"
           :v-tooltip.bottom="$t('header.settingsTooltip')"
           @click="$emit('open-settings-modal')"
-        />
+        >
+          <template #icon><Settings class="w-3.5 h-3.5" /></template>
+        </SqButton>
       </div>
 
       <!-- Custom window controls (Windows only, where native decorations are hidden) -->
@@ -405,9 +363,28 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import Toolbar from 'primevue/toolbar';
-import Button from 'primevue/button';
 import Select from 'primevue/select';
-import { ChartLine, Database } from 'lucide-vue-next';
+import {
+  AlignLeft,
+  Book,
+  ChartLine,
+  Database,
+  FolderOpen,
+  Gauge,
+  Network,
+  PanelLeft,
+  Play,
+  Plus,
+  Save,
+  Search,
+  Settings,
+  Share2,
+  SkipForward,
+  Sparkles,
+  SquareMinus,
+  SquarePlus,
+} from 'lucide-vue-next';
+import SqButton from '@/components/ui/SqButton.vue';
 import SqChip from '@/components/ui/SqChip.vue';
 import Popover from 'primevue/popover';
 import SqlEditorToolbarActions from '@/components/layout/SqlEditorToolbarActions.vue';

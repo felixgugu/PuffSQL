@@ -99,16 +99,14 @@
       <div class="h-4 w-px bg-dark-750 mx-0.5 flex-shrink-0"></div>
 
       <!-- Fixed Right: Add New Query Tab Button -->
-      <Button
-        icon="pi pi-plus"
-        severity="secondary"
-        size="small"
-        text
-        rounded
-        class="!h-7 !w-7 !p-0 !text-accent flex-shrink-0"
+      <SqButton
+        tone="accent"
+        :aria-label="$t('editor.newTab')"
         v-tooltip.bottom="$t('editor.newTab')"
         @click="handleAddNewTab"
-      />
+      >
+        <template #icon><Plus class="w-3.5 h-3.5" /></template>
+      </SqButton>
     </div>
 
     <!-- PrimeVue Tab Context Menu -->
@@ -184,10 +182,10 @@
 <script setup lang="ts">
 import { ref, reactive, watch, nextTick, onBeforeUnmount, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import Button from 'primevue/button';
+import SqButton from '@/components/ui/SqButton.vue';
 import SqChip from '@/components/ui/SqChip.vue';
 import ContextMenu from 'primevue/contextmenu';
-import { FileCode, Table2, TableProperties, Network, Workflow, X } from 'lucide-vue-next';
+import { FileCode, Table2, TableProperties, Network, Workflow, X, Plus } from 'lucide-vue-next';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useConnectionStore } from '@/stores/connectionStore';
 import { useQueryStore } from '@/stores/queryStore';
