@@ -365,7 +365,7 @@
             <div>
               <div class="flex items-center space-x-2">
                 <span class="font-bold text-dark-100 text-sm">PuffSQL</span>
-                <SqChip tone="neutral" label="v0.1.1" class="font-mono" />
+                <SqChip tone="neutral" :label="`v${appVersion}`" class="font-mono" />
               </div>
               <span class="text-xxs text-dark-400 font-mono">Lightweight & Fast SQL Client</span>
             </div>
@@ -557,6 +557,8 @@ defineEmits<{
 }>();
 
 const { t } = useI18n();
+/** Injected from package.json at build time, so the version is declared in exactly one place. */
+const appVersion = __APP_VERSION__;
 const settingsStore = useSettingsStore();
 const dialogWindow = useDialogWindow();
 const activeTab = ref<'theme' | 'editor' | 'results' | 'table_filter' | 'ai' | 'about'>('theme');

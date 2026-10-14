@@ -200,6 +200,14 @@ const Harness = defineComponent({
     }
 
     if (isSettings) {
+      // The About panel is the other place the version shows; open it so a shot can prove the
+      // injected number reached the UI.
+      setTimeout(() => {
+        const tab = [...document.querySelectorAll<HTMLElement>('button')].find(
+          (node) => node.textContent?.trim() === '關於'
+        );
+        tab?.click();
+      }, 800);
       return h('div', { class: 'min-h-screen bg-dark-900' }, [
         h(SettingsModal, { isOpen: true, onClose: () => {} }),
       ]);

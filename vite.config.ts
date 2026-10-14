@@ -1,6 +1,16 @@
 import { defineConfig, type Plugin } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import path from 'path';
+import { readFileSync } from 'node:fs';
+
+/**
+ * The one place a release version is read from. Both the status bar and the About panel render
+ * `__APP_VERSION__`, so a bump is a single edit to package.json and the UI cannot drift from the
+ * manifest. `src-tauri/` keeps its own copies for the installer (see tests/app_version.test.ts).
+ */
+const { version: appVersion } = JSON.parse(
+  readFileSync(new URL('./package.json', import.meta.url), 'utf-8')
+) as { version: string };
 
 function patchQpCode(code: string): string {
   return code
@@ -42,6 +52,9 @@ function patchHtmlQueryPlanPlugin(): Plugin {
 
 export default defineConfig({
   plugins: [vue(), patchHtmlQueryPlanPlugin()],
+  define: {
+    __APP_VERSION__: JSON.stringify(appVersion),
+  },
   optimizeDeps: {
     esbuildOptions: {
       plugins: [

@@ -1,6 +1,6 @@
 [package]
 name = "puffsql"
-version = "0.1.1"
+version = "0.2.0"
 description = "Lightweight desktop SQL client for Microsoft SQL Server"
 authors = ["PuffSQL Team"]
 edition = "2021"
