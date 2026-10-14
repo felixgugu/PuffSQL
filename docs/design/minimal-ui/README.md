@@ -25,15 +25,17 @@
 # 深色：把網址改成 ...preview.html#dark，輸出檔名改成 preview-dark.png
 ```
 
-對話框截圖另外用一個 dev-only 的 scratch harness（`.design-preview/`，已 gitignore）拍攝，
-它掛載的是**真實的** `SqDialog` 與呼叫端元件：
+對話框、通知與提示的截圖另外用 `harness/dialog.html` 拍攝。它是一個 dev-only 的檢查頁，
+掛載的是**真實的** `SqDialog`、`SqToast` 與呼叫端元件（不是示意圖），輸出仍寫到已 gitignore 的
+`.design-preview/`：
 
 ```powershell
 npm run dev   # 另一個視窗
 & "C:\Program Files\Google\Chrome\Application\chrome.exe" --headless=new --disable-gpu --hide-scrollbars `
-  --user-data-dir=".design-preview\chrome" --virtual-time-budget=9000 --window-size=1120,1900 `
+  --user-data-dir=".design-preview\chrome" --virtual-time-budget=20000 --run-all-compositor-stages-before-draw `
+  --window-size=1120,1830 `
   --screenshot="docs\design\minimal-ui\screens\dialog-light.png" `
-  "http://localhost:1420/.design-preview/dialog.html"
+  "http://localhost:1420/docs/design/minimal-ui/harness/dialog.html"
 # #dark 為深色、#overlay 為真實遮罩、#pair/#window/#debug 為單一對話框與拖曳縮放整合的檢查視圖，
 # #toast 為通知堆疊、#tooltip 以合成 hover 觸發真實提示
 ```
