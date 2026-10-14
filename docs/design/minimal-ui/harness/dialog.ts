@@ -13,6 +13,7 @@ import SqToast from '@/components/ui/SqToast.vue';
 import ConfirmModal from '@/components/common/ConfirmModal.vue';
 import DangerousQueryModal from '@/components/modals/DangerousQueryModal.vue';
 import SettingsModal from '@/components/modals/SettingsModal.vue';
+import ConnectionModal from '@/components/modals/ConnectionModal.vue';
 import { useDialogWindow } from '@/composables/useDialogWindow';
 import { useToastStore } from '@/stores/toastStore';
 import { Database, X } from 'lucide-vue-next';
@@ -28,6 +29,7 @@ const isWindow = hash.startsWith('window');
 const isTooltipDemo = hash.startsWith('tooltip');
 const isToastDemo = hash.startsWith('toast');
 const isSettings = hash.startsWith('settings');
+const isConnection = hash.startsWith('connection');
 if (isDark) document.documentElement.classList.add('dark');
 
 /**
@@ -200,6 +202,17 @@ const Harness = defineComponent({
     if (isSettings) {
       return h('div', { class: 'min-h-screen bg-dark-900' }, [
         h(SettingsModal, { isOpen: true, onClose: () => {} }),
+      ]);
+    }
+
+    if (isConnection) {
+      return h('div', { class: 'min-h-screen bg-dark-900' }, [
+        h(ConnectionModal, {
+          isOpen: true,
+          editProfile: { id: 'demo', name: 'Production SQL Server', host: 'sql-prod-01', port: 1433, username: 'sa', password: '', database: 'AdventureWorks2022', color: '#2a6791' },
+          initialProfile: null,
+          onClose: () => {},
+        }),
       ]);
     }
 

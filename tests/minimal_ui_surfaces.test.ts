@@ -194,3 +194,86 @@ describe('the PrimeVue dependency is gone', () => {
     assert.deepEqual(matches, [], 'the app owns its own component classes now');
   });
 });
+
+describe('type and imagery follow the brief', () => {
+  test('SQL and data values are monospace while chrome follows the configurable UI font', () => {
+    // Data cells come from the grid's own font variable, which the settings dialog can point at a
+    // different monospace family without touching the UI font.
+    assert.match(
+      readSource('src/styles/tabulatorTheme.css'),
+      /font-family: var\(--sqlight-grid-font, ui-monospace[^)]*monospace\)/,
+      'grid cells are monospace'
+    );
+    assert.match(
+      readSource('src/components/results/ResultMessages.vue'),
+      /font-mono/,
+      'the messages panel is monospace'
+    );
+    for (const file of [
+      'src/components/editor/TableDataViewer.vue',
+      'src/components/editor/TableStructureViewer.vue',
+      'src/components/modals/ExportSchemaModal.vue',
+      'src/components/results/ExecutionStatsViewer.vue',
+    ]) {
+      assert.match(readSource(file), /font-mono/, `${file} shows SQL or data and must be monospace`);
+    }
+    assert.match(
+      readSource('src/components/editor/MonacoEditor.vue'),
+      /fontFamily: settingsStore\.editorFontFamily/,
+      'the editor uses its own monospace setting'
+    );
+
+    // The chrome is the other half of the rule: it must follow --app-font-sans, never a pin.
+    assert.match(readSource('tailwind.config.js'), /sans: \['var\(--app-font-sans\)'\]/);
+    for (const file of [
+      'src/components/layout/AppSidebar.vue',
+      'src/components/layout/SqlFolderExplorer.vue',
+      'src/components/editor/ErTableNode.vue',
+      'src/components/editor/ErDiagramViewer.vue',
+    ]) {
+      assert.doesNotMatch(readSource(file), /font-mono/, `${file} is chrome, not data`);
+    }
+  });
+
+  test('there is no decorative imagery beyond the brand mark', () => {
+    // The brief rules out large decorative illustrations. The only images in the app are the
+    // product mark and the preview of the background picture the user picked themselves.
+    const ALLOWED = new Set([
+      'src/components/layout/AppHeader.vue',
+      'src/components/modals/SettingsModal.vue',
+      'src/components/modals/settings/EditorBackgroundSettings.vue',
+    ]);
+
+    for (const file of trackedSources()) {
+      if (!file.endsWith('.vue')) continue;
+      if (!/<img\b/.test(readCode(file))) continue;
+      assert.ok(ALLOWED.has(file), `${file} renders an image; the brief allows no illustrations`);
+    }
+  });
+
+  test('the only gradient-like rules left are functional patterns', () => {
+    const offenders: string[] = [];
+    for (const file of trackedSources()) {
+      if (!/\.(vue|css)$/.test(file)) continue;
+      const source = readCode(file);
+      if (/linear-gradient|radial-gradient/.test(source) && !PATTERN_FILES.has(file)) {
+        offenders.push(file);
+      }
+    }
+    assert.deepEqual(
+      offenders,
+      [],
+      'a transparency checkerboard and the execution plan dot grid are the only two allowed'
+    );
+  });
+});
+
+/**
+ * `.sqlight-checkerboard` shows a transparent PNG's alpha; `.plan-scroll-*` is the graph-paper
+ * dot grid behind an execution plan. Both are 1-stop patterns that help read the content, not
+ * colour ramps used as decoration.
+ */
+const PATTERN_FILES = new Set([
+  'src/components/modals/settings/EditorBackgroundSettings.vue',
+  'src/components/editor/ExecutionPlanViewer.vue',
+]);

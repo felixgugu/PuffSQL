@@ -12,9 +12,28 @@
 | `screens/toast-light.png` | `SqToast` 的真實渲染截圖：四種語意色同時堆疊的樣子。 |
 | `screens/tabs-light.png`、`screens/tabs-dark.png` | 五種類別的工作區分頁列（淺色／深色）：中性外框 + 活動分頁的類別頂線，並含一個非 SQL 的活動分頁。 |
 | `screens/settings-appearance.png` | 設定對話框的外觀頁：語言、全域字型、深淺模式、中性表面色盤與即時預覽。 |
+| `screens/dialog-connection.png` | 連線設定對話框：三張分組卡片、無陰影、1px 邊、6px 圓角（用來核對「避免過多卡片」這條）。 |
 | `../../design-system/puffsql/MASTER.md` | ui-ux-pro-max skill 產生的原始設計系統建議（保留備查；衝突時以 `SPEC.md` 為準）。 |
 
 ## 檢視方式
+
+### ui-ux-pro-max skill 使用紀錄
+
+本設計由 `ui-ux-pro-max` skill 驅動（`G:/PuffSQL/.agents/skills/ui-ux-pro-max/SKILL.md`，
+以 `python .agents/skills/ui-ux-pro-max/scripts/search.py` 呼叫）。skill 查詢與其造成的決定：
+
+| skill 查詢 | 得到的指引 | 落實在哪裡 |
+|---|---|---|
+| `"minimalism density technical tool" --domain style` | Minimalism & Swiss Style：`text contrast measured`、`no unnecessary decorations`、`no box-shadow unless necessary`、`--accent-color: single primary only` | SPEC §3／§6 與 P1 token 層；單一操作藍 |
+| `"blur purpose background dismissal" --domain style` | Glassmorphism 是**另一個**風格類別，需要「vibrant background」才成立；本產品是白／淺灰底 | P10：15 處 `backdrop-blur*` 全部移除 |
+| `"glassmorphism blur decoration" --domain ux` | 回傳「Inline Validation」，與查詢意圖不符 | 依 skill 的 Query Contract **重試一次**改走 `style` 領域；仍不採用該結果，改用 skill 的 `blur-purpose`／`surface-readability` 規則 |
+| 內建 Quick Reference §4 | `blur-purpose`（模糊只表示背景可關閉）、`primary-action`（一畫面一個主要 CTA）、`elevation-consistent`、`icon-style-consistent`、`effects-match-style` | P10 玻璃移除、分頁色彩統一、P9 兩個陰影 token、lucide 單一圖示家族 |
+| 內建 Quick Reference §6 | `color-semantic`（語意 token，不在元件內寫死色票）、`number-tabular`、`line-height` | P9／P10 把 hex 收斂到 token；資料欄 tabular-nums |
+| 內建 Quick Reference §1 | `color-contrast` 4.5:1、`focus-states`、`aria-labels`、`color-not-only`、`reduced-motion` | SPEC §11 與 `theme_contrast`／`motion_accessibility` 護欄 |
+| 內建 Pre-Delivery Checklist「Layout」 | `4/8dp spacing rhythm` | P10 的級距護欄測試（並修掉 `py-0.2`、`w-4.5` 這兩個不存在的級距） |
+
+skill 產生的完整設計系統原始輸出保留在 `design-system/puffsql/MASTER.md`；與本 SPEC 衝突時以
+SPEC 為準，每條偏離都附理由（SPEC §12）。
 
 直接用瀏覽器開 `preview.html` 即可（不需要 dev server、不需要網路）。
 
