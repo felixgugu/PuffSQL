@@ -105,12 +105,12 @@
 
       <!-- Right: Grid Actions + Panel View Switcher + Panel Minimize Control -->
       <div class="flex items-center space-x-1 pl-2 flex-shrink-0 text-xs">
-        <!-- Grid Actions (only when in results tab and has active result sets) -->
-        <template v-if="workspaceStore.bottomPanelTab === 'results' && activeResultSetsCount > 0">
+        <!-- Grid Actions (whenever the results view has a grid pane to act on) -->
+        <template v-if="workspaceStore.bottomPanelTab === 'results' && queryStore.activeResultTabId !== null">
           <!-- Toolbar visibility for every grid pane in this result tab -->
           <Button
             type="button"
-            :icon="isToolbarHidden ? 'pi pi-eye-slash' : 'pi pi-eye'"
+            icon="pi pi-wrench"
             size="small"
             rounded
             text
@@ -231,7 +231,7 @@ import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useQueryStore } from '@/stores/queryStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useConnectionStore } from '@/stores/connectionStore';
-import { useGridLayoutStore } from '@/stores/gridLayoutStore';
+import { useGridLayoutStore, defaultToolbarHiddenForCount } from '@/stores/gridLayoutStore';
 import ResultGrid from '@/components/results/ResultGrid.vue';
 import ResultMessages from '@/components/results/ResultMessages.vue';
 import QueryHistory from '@/components/results/QueryHistory.vue';
@@ -251,12 +251,21 @@ const activeResultSetsCount = computed(() => {
   return queryStore.activeResultTab?.result?.resultSets?.length ?? queryStore.activeResult?.resultSets?.length ?? 0;
 });
 
+/**
+ * A single grid tab opens with the toolbar visible; a tab with several stacked grids opens with
+ * them hidden. The header toggle below always drives the same default the grids render from, so
+ * toggling never fights the outcome.
+ */
+const toolbarDefaultHidden = computed(() =>
+  defaultToolbarHiddenForCount(activeResultSetsCount.value)
+);
+
 const isToolbarHidden = computed(() => {
-  return gridLayoutStore.isToolbarHidden(queryStore.activeResultTabId, true);
+  return gridLayoutStore.isToolbarHidden(queryStore.activeResultTabId, toolbarDefaultHidden.value);
 });
 
 function toggleToolbarVisibility() {
-  gridLayoutStore.toggleToolbarHidden(queryStore.activeResultTabId, true);
+  gridLayoutStore.toggleToolbarHidden(queryStore.activeResultTabId, toolbarDefaultHidden.value);
 }
 
 const resultsTabsBarRef = ref<HTMLDivElement | null>(null);

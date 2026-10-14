@@ -81,7 +81,7 @@ import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import ResizableSplitter from '@/components/common/ResizableSplitter.vue';
 import ResultGridItem from '@/components/results/ResultGridItem.vue';
 import ResultsEmptyState from '@/components/results/ResultsEmptyState.vue';
-import { useGridLayoutStore } from '@/stores/gridLayoutStore';
+import { useGridLayoutStore, defaultToolbarHiddenForCount } from '@/stores/gridLayoutStore';
 import { rubberbandClamp, SPRING_PRESETS } from '@/utils/spring';
 import { runSpring } from '@/composables/useMotion';
 import type { ResultSet } from '@/types/query';
@@ -113,11 +113,15 @@ const gridLayoutStore = useGridLayoutStore();
 /**
  * Per result tab view mode: hides the toolbar and info bar of every grid in this tab. The state
  * lives in the layout store so it survives switching between result tabs and bottom panel tabs,
- * and is dropped when the result tab closes. Single result sets and multi result sets both
- * default to hiding toolbars and share this toggle.
+ * and is dropped when the result tab closes. A tab with a single grid opens with its toolbar
+ * visible; a tab stacking several grids opens with them hidden; the panel header toggle overrides
+ * either default.
  */
-const toolbarHidden = computed(
-  () => (props.resultSets.length > 1 && gridLayoutStore.isToolbarHidden(props.tabId ?? null, true)) || gridLayoutStore.isToolbarHidden(props.tabId ?? null, true)
+const toolbarHidden = computed(() =>
+  gridLayoutStore.isToolbarHidden(
+    props.tabId ?? null,
+    defaultToolbarHiddenForCount(props.resultSets.length)
+  )
 );
 
 

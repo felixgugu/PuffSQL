@@ -33,6 +33,17 @@ export function buildLayoutKey(tabId: string | null | undefined, setIndex: numbe
   return `${tabId ?? 'orphan'}:${setIndex}`;
 }
 
+/**
+ * Toolbar default of one result tab, before the user touches the header toggle. A tab that shows
+ * a single grid keeps its toolbar open — the common one-SELECT case, and also the fallback empty
+ * grid of a statement that returned no result set. A tab stacking two or more grids (a batch with
+ * several SELECTs) starts with the toolbars hidden so the data area keeps the vertical space.
+ * Kept pure for unit testing.
+ */
+export function defaultToolbarHiddenForCount(resultSetCount: number): boolean {
+  return resultSetCount > 1;
+}
+
 export const useGridLayoutStore = defineStore('gridLayout', () => {
   // Plain (non-reactive) maps: nothing renders from them and column entries can grow with the
   // result width, so keeping them outside Vue's reactivity avoids proxy overhead on every capture.

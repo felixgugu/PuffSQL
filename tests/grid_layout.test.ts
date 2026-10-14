@@ -4,7 +4,11 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { createPinia, setActivePinia } from 'pinia';
 import type { Tabulator } from 'tabulator-tables';
-import { buildLayoutKey, useGridLayoutStore } from '../src/stores/gridLayoutStore';
+import {
+  buildLayoutKey,
+  defaultToolbarHiddenForCount,
+  useGridLayoutStore,
+} from '../src/stores/gridLayoutStore';
 
 function freshStore() {
   setActivePinia(createPinia());
@@ -166,20 +170,42 @@ test('hidden toolbars are remembered per result tab and cleared with the tab', (
 
 test('multiple result sets default to hiding toolbars until explicitly toggled', () => {
   const store = freshStore();
-  // When defaultHidden is true (multi result sets view):
-  assert.equal(store.isToolbarHidden('tab-m', true), true);
+  const multiDefault = defaultToolbarHiddenForCount(2);
+
+  assert.equal(store.isToolbarHidden('tab-m', multiDefault), true);
 
   // Toggling flips from default-hidden (true) to visible (false)
-  assert.equal(store.toggleToolbarHidden('tab-m', true), false);
-  assert.equal(store.isToolbarHidden('tab-m', true), false);
+  assert.equal(store.toggleToolbarHidden('tab-m', multiDefault), false);
+  assert.equal(store.isToolbarHidden('tab-m', multiDefault), false);
 
   // Toggling again flips from visible (false) back to hidden (true)
-  assert.equal(store.toggleToolbarHidden('tab-m', true), true);
-  assert.equal(store.isToolbarHidden('tab-m', true), true);
+  assert.equal(store.toggleToolbarHidden('tab-m', multiDefault), true);
+  assert.equal(store.isToolbarHidden('tab-m', multiDefault), true);
 
   // Clearing the tab resets the preference back to defaultHidden
   store.clearTab('tab-m');
-  assert.equal(store.isToolbarHidden('tab-m', true), true);
+  assert.equal(store.isToolbarHidden('tab-m', multiDefault), true);
+});
+
+test('a single grid opens with its toolbar visible, several grids open hidden', () => {
+  // Exactly one DataGrid (one SELECT): toolbar on.
+  assert.equal(defaultToolbarHiddenForCount(1), false);
+  // No result set (a statement that only produced messages): the empty placeholder grid keeps its
+  // toolbar too, matching the earlier "empty result keeps the toolbar" decision.
+  assert.equal(defaultToolbarHiddenForCount(0), false);
+  // Two or more stacked DataGrids: toolbar off.
+  assert.equal(defaultToolbarHiddenForCount(2), true);
+  assert.equal(defaultToolbarHiddenForCount(3), true);
+
+  const store = freshStore();
+  assert.equal(store.isToolbarHidden('tab-single', defaultToolbarHiddenForCount(1)), false);
+  assert.equal(store.isToolbarHidden('tab-multi', defaultToolbarHiddenForCount(3)), true);
+
+  // The user can still override either default, and the override sticks.
+  store.toggleToolbarHidden('tab-single', defaultToolbarHiddenForCount(1));
+  assert.equal(store.isToolbarHidden('tab-single', defaultToolbarHiddenForCount(1)), true);
+  store.toggleToolbarHidden('tab-multi', defaultToolbarHiddenForCount(3));
+  assert.equal(store.isToolbarHidden('tab-multi', defaultToolbarHiddenForCount(3)), false);
 });
 
 test('the hide-toolbar toggle sits in AppBottomPanel and reaches every grid pane', () => {
@@ -187,6 +213,31 @@ test('the hide-toolbar toggle sits in AppBottomPanel and reaches every grid pane
   assert.match(panel, /toggleToolbarVisibility/);
   assert.match(panel, /results\.hideToolbars/);
   assert.match(panel, /results\.showToolbars/);
+  // The header button and the grids must resolve the same default from the same shared rule.
+  assert.match(
+    panel,
+    /defaultToolbarHiddenForCount\(activeResultSetsCount\.value\)/,
+    'AppBottomPanel must derive the toolbar default from the active tab result set count'
+  );
+  assert.match(
+    panel,
+    /isToolbarHidden\(queryStore\.activeResultTabId, toolbarDefaultHidden\.value\)/,
+    'the header toggle state must use that default'
+  );
+  assert.match(
+    panel,
+    /toggleToolbarHidden\(queryStore\.activeResultTabId, toolbarDefaultHidden\.value\)/,
+    'toggling must flip the same default the grids render from'
+  );
+  // The toggle is labelled with a wrench icon, not the old eye glyph.
+  assert.match(panel, /icon="pi pi-wrench"/, 'the toolbar toggle must use a tool icon');
+  assert.doesNotMatch(panel, /pi pi-eye/, 'the old eye icon must be gone');
+  // The toggle must be reachable in every results-view state, including the empty placeholder grid.
+  assert.match(
+    panel,
+    /bottomPanelTab === 'results' && queryStore\.activeResultTabId !== null/,
+    'the toggle must be offered whenever the results view renders a grid pane'
+  );
 
   const grid = readSource('src/components/results/ResultGrid.vue');
   assert.equal(
@@ -194,7 +245,11 @@ test('the hide-toolbar toggle sits in AppBottomPanel and reaches every grid pane
     3,
     'single, maximized, and stacked panes must all receive the flag'
   );
-  assert.match(grid, /gridLayoutStore\.isToolbarHidden\(props\.tabId \?\? null, true\)/);
+  assert.match(
+    grid,
+    /gridLayoutStore\.isToolbarHidden\(\s*props\.tabId \?\? null,\s*defaultToolbarHiddenForCount\(props\.resultSets\.length\)\s*\)/,
+    'ResultGrid must derive the toolbar default from its own result set count'
+  );
 
   const item = readSource('src/components/results/ResultGridItem.vue');
   assert.match(item, /hideToolbar\?: boolean;/);

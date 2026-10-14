@@ -669,7 +669,7 @@ const props = defineProps<{
   queryTab?: QueryResultTab | null;
   isMaximized?: boolean;
   tabId?: string | null;
-  /** Hides the grid toolbar and the info bar, leaving only the data area (multi result set view). */
+  /** Hides the grid toolbar and the info bar, leaving only the data area (multi result set tabs). */
   hideToolbar?: boolean;
   durationMs?: number;
 }>();
