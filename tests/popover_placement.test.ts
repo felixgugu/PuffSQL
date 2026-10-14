@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { placePanel } from '../src/utils/popoverPlacement';
+import { placeTooltip } from '../src/utils/popoverPlacement';
 import { useContextMenu } from '../src/composables/useContextMenu';
 
 const VIEWPORT = { width: 1440, height: 900 };
@@ -118,5 +119,70 @@ describe('popover placement', () => {
     assert.match(source, /icon\?: Component \| string/, 'the item model accepts both');
     assert.match(source, /typeof icon === 'string' \? piIcon\(icon\) : icon/, 'pi-* strings resolve through the map');
     assert.match(source, /anchorRect/, 'pointer-anchored menus are supported');
+  });
+});
+
+describe('tooltip placement', () => {
+  const TRIGGER = { top: 300, bottom: 328, left: 400, right: 428 };
+  const PANEL = { width: 160, height: 24 };
+
+  test('a bottom tooltip is centred under the trigger with the gap', () => {
+    const { top, left, side } = placeTooltip({
+      anchor: TRIGGER,
+      panel: PANEL,
+      viewport: VIEWPORT,
+      side: 'bottom',
+    });
+
+    assert.equal(top, 334, '328 + 6');
+    assert.equal(left, 334, 'centred on the trigger: 414 - 80');
+    assert.equal(side, 'bottom');
+  });
+
+  test('a top tooltip sits above the trigger', () => {
+    const { top, side } = placeTooltip({
+      anchor: TRIGGER,
+      panel: PANEL,
+      viewport: VIEWPORT,
+      side: 'top',
+    });
+
+    assert.equal(top, 270, '300 - 24 - 6');
+    assert.equal(side, 'top');
+  });
+
+  test('a top tooltip flips below when the trigger is against the top edge', () => {
+    const { top, side } = placeTooltip({
+      anchor: { top: 2, bottom: 30, left: 400, right: 428 },
+      panel: PANEL,
+      viewport: VIEWPORT,
+      side: 'top',
+    });
+
+    assert.equal(side, 'bottom', 'the tooltip would otherwise cover its own trigger');
+    assert.equal(top, 36, '30 + 6');
+  });
+
+  test('a bottom tooltip flips above when there is no room below', () => {
+    const { top, side } = placeTooltip({
+      anchor: { top: 880, bottom: 908, left: 400, right: 428 },
+      panel: PANEL,
+      viewport: VIEWPORT,
+      side: 'bottom',
+    });
+
+    assert.equal(side, 'top');
+    assert.equal(top, 850, '880 - 24 - 6');
+  });
+
+  test('a tooltip on a trigger past the edge stays fully inside the viewport', () => {
+    const { left } = placeTooltip({
+      anchor: { top: 300, bottom: 328, left: 1420, right: 1440 },
+      panel: PANEL,
+      viewport: VIEWPORT,
+      side: 'bottom',
+    });
+
+    assert.equal(left, 1440 - 160 - 8, 'clamped to the right margin');
   });
 });

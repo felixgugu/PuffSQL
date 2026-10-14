@@ -53,3 +53,63 @@ export function placePanel({
     left: Math.max(margin, Math.min(preferredLeft, maxLeft)),
   };
 }
+
+export type TooltipSide = 'top' | 'bottom' | 'left' | 'right';
+
+export interface PlaceTooltipOptions {
+  anchor: RectLike;
+  panel: SizeLike;
+  viewport: SizeLike;
+  /** Where the tooltip should sit relative to its trigger. */
+  side: TooltipSide;
+  /** Space kept between the tooltip and the viewport edges. */
+  margin?: number;
+  /** Space kept between the trigger and the tooltip. */
+  gap?: number;
+}
+
+/**
+ * Placement for the shared tooltip.
+ *
+ * A tooltip is centred on its trigger rather than edge-aligned, and it flips to the opposite side
+ * when the requested one has no room — a `.top` tooltip on a button near the top of the window
+ * would otherwise be clamped down on top of the very control it describes.
+ */
+export function placeTooltip({
+  anchor,
+  panel,
+  viewport,
+  side,
+  margin = 8,
+  gap = 6,
+}: PlaceTooltipOptions): { top: number; left: number; side: TooltipSide } {
+  const centreX = (anchor.left + anchor.right) / 2;
+  const centreY = (anchor.top + anchor.bottom) / 2;
+  const fitsAbove = anchor.top - panel.height - gap >= margin;
+  const fitsBelow = anchor.bottom + panel.height + gap <= viewport.height - margin;
+
+  let resolved = side;
+  if (side === 'top' && !fitsAbove && fitsBelow) resolved = 'bottom';
+  else if (side === 'bottom' && !fitsBelow && fitsAbove) resolved = 'top';
+
+  let top = anchor.top - panel.height - gap;
+  let left = centreX - panel.width / 2;
+
+  if (resolved === 'bottom') top = anchor.bottom + gap;
+  else if (resolved === 'left') {
+    top = centreY - panel.height / 2;
+    left = anchor.left - panel.width - gap;
+  } else if (resolved === 'right') {
+    top = centreY - panel.height / 2;
+    left = anchor.right + gap;
+  }
+
+  const clamp = (value: number, extent: number) =>
+    Math.max(margin, Math.min(value, Math.max(margin, extent - margin)));
+
+  return {
+    top: clamp(top, viewport.height - panel.height),
+    left: clamp(left, viewport.width - panel.width),
+    side: resolved,
+  };
+}

@@ -7,11 +7,12 @@ import './styles/tabulatorTheme.css';
 
 import PrimeVue from 'primevue/config';
 import Aura from '@primevue/themes/aura';
-import Tooltip from 'primevue/tooltip';
 import ToastService from 'primevue/toastservice';
 import ConfirmationService from 'primevue/confirmationservice';
 import Ripple from 'primevue/ripple';
 import 'primeicons/primeicons.css';
+
+import tooltip from './directives/tooltip';
 
 import { i18n, primevueZhTW, primevueLocales } from './i18n';
 
@@ -54,7 +55,7 @@ app.use(PrimeVue, {
 });
 app.use(ToastService);
 app.use(ConfirmationService);
-app.directive('tooltip', Tooltip);
+app.directive('tooltip', tooltip);
 app.directive('ripple', Ripple);
 
 app.mount('#app');

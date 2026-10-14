@@ -101,21 +101,39 @@ test('the light theme paints a white canvas with grey chrome, panels and hover r
   }
 });
 
-test('light-mode overlays and popups use the raised token instead of hardcoded white', () => {
-  const css = readFileSync(resolve(process.cwd(), 'src/assets/main.css'), 'utf-8');
+test('every floating surface resolves through the raised token instead of hardcoded white', () => {
+  const read = (relPath: string) => readFileSync(resolve(process.cwd(), relPath), 'utf-8');
 
-  for (const rule of [
-    /html:not\(\.dark\) \.p-select-overlay \{[\s\S]*?background-color: rgb\(var\(--color-raised\)\)/,
-    /html:not\(\.dark\) \.p-contextmenu,\s*\nhtml:not\(\.dark\) \.p-menu \{[\s\S]*?background-color: rgb\(var\(--color-raised\)\)/,
-    /html:not\(\.dark\) \.p-tooltip \.p-tooltip-text \{[\s\S]*?background-color: rgb\(var\(--color-raised\)\)/,
-  ]) {
-    assert.match(css, rule, 'light overlay surfaces must resolve through --color-raised');
-  }
+  // SqPopover is the single source of the raised surface: menus, selects and every context menu
+  // are built on it, so one assertion covers them all.
+  assert.match(
+    read('src/components/ui/SqPopover.vue'),
+    /background-color: rgb\(var\(--color-raised\)\)/,
+    'popovers, menus, selects and context menus all sit on SqPopover'
+  );
+  assert.match(
+    read('src/components/ui/SqDialog.vue'),
+    /background-color: rgb\(var\(--color-raised\)\)/,
+    'a dialog is a floating layer too and uses the same surface'
+  );
+  assert.match(
+    read('src/components/layout/AppSidebar.vue'),
+    /bg-raised/,
+    'the sidebar dropdown uses the same surface'
+  );
 
+  const css = read('src/assets/main.css');
   assert.doesNotMatch(
     css,
     /html:not\(\.dark\)[^{]*\{[^}]*background-color: #ffffff/,
     'the light theme must not hardcode white surfaces'
+  );
+  // The tooltip is the deliberate exception: SPEC §7 asks for one dark chip in both modes, with
+  // #F2F4F7 text on #1F2328.
+  assert.match(
+    css,
+    /\.sq-tooltip \{[\s\S]*?background-color: #1f2328;[\s\S]*?color: #f2f4f7;/,
+    'the tooltip keeps its own fixed surface'
   );
 });
 
