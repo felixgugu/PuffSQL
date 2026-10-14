@@ -4,7 +4,7 @@
     class="fixed bottom-6 right-6 z-[9999] animate-fadein select-none"
   >
     <div
-      class="flex items-center space-x-2.5 px-4 py-2.5 rounded-full shadow-2xl border bg-dark-850 text-dark-100 transition-all duration-200 cursor-pointer"
+      class="flex items-center space-x-2.5 px-4 py-2.5 rounded-md shadow-overlay border bg-dark-850 text-dark-100 transition-all duration-200 cursor-pointer"
       :class="aiChatStore.isGenerating ? 'border-primary' : 'border-dark-700'"
       @click="aiChatStore.restoreWindow()"
     >
@@ -18,8 +18,8 @@
           v-if="aiChatStore.isGenerating"
           class="absolute -top-1 -right-1 flex h-2 w-2"
         >
-          <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" :style="{ backgroundColor: 'var(--p-primary-color)' }"></span>
-          <span class="relative inline-flex rounded-full h-2 w-2" :style="{ backgroundColor: 'var(--p-primary-color)' }"></span>
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" :style="{ backgroundColor: 'rgb(var(--color-accent))' }"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2" :style="{ backgroundColor: 'rgb(var(--color-accent))' }"></span>
         </span>
       </div>
 

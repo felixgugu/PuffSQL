@@ -226,7 +226,7 @@
             <div
               ref="diagramContainerRef"
               :class="[
-                'plan-render-canvas p-6 rounded-lg shadow-xl inline-block min-w-[500px] transition-colors',
+                'plan-render-canvas p-6 rounded-md shadow-xl inline-block min-w-[500px] transition-colors',
                 planTheme === 'dark' ? 'theme-dark' : 'theme-classic'
               ]"
             />

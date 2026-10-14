@@ -2,7 +2,7 @@
   <div class="flex-1 min-h-0 flex flex-col">
     <div class="flex-1 min-h-0 overflow-y-auto px-4 py-3 space-y-4">
       <!-- Target table -->
-      <section class="rounded-lg border border-dark-700 bg-dark-900/60 p-3">
+      <section class="rounded-md border border-dark-700 bg-dark-900/60 p-3">
         <div class="flex items-center justify-between">
           <div class="text-xxs font-semibold text-dark-300 tracking-wide">{{ $t('tsvImportModal.targetTable') }}</div>
           <span v-if="store.isLoadingMetadata" class="text-xxs text-dark-400 flex items-center space-x-1">
@@ -27,7 +27,7 @@
       </section>
 
       <!-- Data source -->
-      <section class="rounded-lg border border-dark-700 bg-dark-900/60 p-3 space-y-3">
+      <section class="rounded-md border border-dark-700 bg-dark-900/60 p-3 space-y-3">
         <div class="text-xxs font-semibold text-dark-300 tracking-wide">{{ $t('tsvImportModal.dataSource') }}</div>
 
         <div class="flex items-center space-x-2">
@@ -97,7 +97,7 @@
       </section>
 
       <!-- Options -->
-      <section class="rounded-lg border border-dark-700 bg-dark-900/60 p-3 space-y-2">
+      <section class="rounded-md border border-dark-700 bg-dark-900/60 p-3 space-y-2">
         <div class="text-xxs font-semibold text-dark-300 tracking-wide">{{ $t('tsvImportModal.importSettings') }}</div>
 
         <label class="flex items-center space-x-2 text-xs cursor-pointer select-none">
@@ -145,7 +145,7 @@
       </section>
 
       <!-- Expected columns -->
-      <section class="rounded-lg border border-dark-700 bg-dark-900/60 overflow-hidden">
+      <section class="rounded-md border border-dark-700 bg-dark-900/60 overflow-hidden">
         <div class="px-3 py-2 border-b border-dark-750 flex items-center justify-between">
           <div class="text-xxs font-semibold text-dark-300 tracking-wide">
             {{ $t('tsvImportModal.expectedColumns', { count: store.importColumns.length }) }}

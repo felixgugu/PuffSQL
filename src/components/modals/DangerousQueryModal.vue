@@ -67,7 +67,7 @@
       <!-- Step 2 Content -->
       <template v-else>
         <!-- Dangerous Alert Box -->
-        <div class="bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-600/60 p-3.5 rounded-lg space-y-2 text-danger leading-relaxed">
+        <div class="bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-600/60 p-3.5 rounded-md space-y-2 text-danger leading-relaxed">
           <div class="flex items-center space-x-2 text-danger font-bold text-xs">
             <Ban class="w-4 h-4 flex-shrink-0" />
             <span>{{ $t('dangerousQuery.dangerAlertTitle') }}</span>

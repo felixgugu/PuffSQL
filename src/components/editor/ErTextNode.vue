@@ -1,6 +1,6 @@
 <template>
   <div
-    class="w-full h-full rounded-lg shadow-xl border overflow-hidden flex flex-col font-sans transition-all relative select-none group cursor-move"
+    class="w-full h-full rounded-md shadow-xl border overflow-hidden flex flex-col font-sans transition-all relative select-none group cursor-move"
     :class="[
       themeClasses.container,
       isSelected ? 'ring-2 ring-brand-400 shadow-brand-500/20' : ''

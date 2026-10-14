@@ -33,7 +33,7 @@
 
       <!-- Step 1: Confirm -->
       <template v-if="step === 'confirm'">
-        <div class="p-3 bg-dark-850/80 rounded-lg border border-dark-750 space-y-2.5">
+        <div class="p-3 bg-dark-850/80 rounded-md border border-dark-750 space-y-2.5">
           <p class="text-dark-200 leading-relaxed text-xs" v-html="$t('exportSchemaModal.confirmDesc', { database: `<strong class='text-accent font-semibold'>${database}</strong>` })">
           </p>
           <div class="text-xxs text-dark-400">
@@ -66,7 +66,7 @@
         </div>
 
         <!-- Collapsible SQL Preview -->
-        <div class="border border-dark-750 rounded-lg overflow-hidden bg-dark-900/50">
+        <div class="border border-dark-750 rounded-md overflow-hidden bg-dark-900/50">
           <button
             type="button"
             @click="showSqlPreview = !showSqlPreview"
@@ -101,7 +101,7 @@
             <div
               v-for="(item, idx) in exportItems"
               :key="item.key"
-              class="p-3 rounded-lg border transition-all"
+              class="p-3 rounded-md border transition-all"
               :class="[
                 item.status === 'running'
                   ? 'bg-brand-500/10 border-brand-500/40'
@@ -178,7 +178,7 @@
       <!-- Step 3: Save Location Prompt -->
       <template v-else-if="step === 'save_prompt'">
         <div class="space-y-3.5">
-          <div class="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg flex items-center space-x-2.5">
+          <div class="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-md flex items-center space-x-2.5">
             <CircleCheck class="w-4 h-4 text-ok flex-shrink-0" />
             <div class="text-xs text-ok">
               <span class="font-semibold">{{ $t('exportSchemaModal.successTitle') }}</span>
@@ -193,7 +193,7 @@
             <div
               v-for="(item, idx) in exportItems"
               :key="item.key"
-              class="p-2.5 bg-dark-900 rounded-lg border border-dark-750 flex items-center justify-between"
+              class="p-2.5 bg-dark-900 rounded-md border border-dark-750 flex items-center justify-between"
             >
               <div class="flex items-center space-x-2.5">
                 <span class="w-5 h-5 rounded bg-brand-500/15 text-accent font-mono text-xxs flex items-center justify-center font-bold">
@@ -230,7 +230,7 @@
           </div>
 
           <!-- Save Options Box -->
-          <div class="p-3 bg-dark-850 rounded-lg border border-dark-750 space-y-2.5">
+          <div class="p-3 bg-dark-850 rounded-md border border-dark-750 space-y-2.5">
             <div class="text-xs font-semibold text-dark-200 flex items-center space-x-1.5">
               <FolderOpen class="w-3.5 h-3.5 text-accent" />
               <span>{{ $t('exportSchemaModal.chooseSaveMode') }}</span>
@@ -242,7 +242,7 @@
                 type="button"
                 @click="handleSaveToDirectory"
                 :disabled="isSaving"
-                class="flex flex-col items-start p-3 rounded-lg border border-brand-500/40 bg-brand-500/10 hover:bg-brand-500/20 text-left transition-colors group cursor-pointer"
+                class="flex flex-col items-start p-3 rounded-md border border-brand-500/40 bg-brand-500/10 hover:bg-brand-500/20 text-left transition-colors group cursor-pointer"
               >
                 <div class="flex items-center space-x-2 text-accent font-semibold text-xs mb-1">
                   <Folder class="w-3.5 h-3.5 text-accent group-hover:scale-110 transition-transform" />
@@ -258,7 +258,7 @@
                 type="button"
                 @click="handleSaveCombined"
                 :disabled="isSaving"
-                class="flex flex-col items-start p-3 rounded-lg border border-dark-700 bg-dark-900/80 hover:bg-dark-800 text-left transition-colors group cursor-pointer"
+                class="flex flex-col items-start p-3 rounded-md border border-dark-700 bg-dark-900/80 hover:bg-dark-800 text-left transition-colors group cursor-pointer"
               >
                 <div class="flex items-center space-x-2 text-dark-200 font-semibold text-xs mb-1">
                   <FileText class="w-3.5 h-3.5 text-dark-400 group-hover:scale-110 transition-transform" />
@@ -293,7 +293,7 @@
           </div>
 
           <!-- Saved Files List -->
-          <div class="text-left bg-dark-900 p-3 rounded-lg border border-dark-750 space-y-1.5">
+          <div class="text-left bg-dark-900 p-3 rounded-md border border-dark-750 space-y-1.5">
             <div
               v-for="file in savedFilesList"
               :key="file.fileName"

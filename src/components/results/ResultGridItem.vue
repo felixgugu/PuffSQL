@@ -301,7 +301,7 @@
     <div
       v-if="contextMenu.visible"
       :style="{ top: `${contextMenu.y}px`, left: `${contextMenu.x}px` }"
-      class="fixed z-50 bg-dark-800 border border-dark-700 rounded shadow-xl py-1 w-52 text-xs font-sans text-dark-200 select-none"
+      class="fixed z-50 bg-dark-800 border border-dark-700 rounded shadow-overlay py-1 w-52 text-xs font-sans text-dark-200 select-none"
       @click="contextMenu.visible = false"
     >
       <div class="px-2.5 py-1 text-xxs text-dark-400 border-b border-dark-750 font-mono truncate">
@@ -512,7 +512,7 @@
           </div>
 
           <!-- Monaco SQL Code Viewer Container -->
-          <div class="flex-1 min-h-[350px] border border-dark-750 rounded-md overflow-hidden relative shadow-inner">
+          <div class="flex-1 min-h-[350px] border border-dark-750 rounded-md overflow-hidden relative">
             <SqlCodeViewer :code="commitModal.sql" language="sql" class="w-full h-full" />
           </div>
         </div>

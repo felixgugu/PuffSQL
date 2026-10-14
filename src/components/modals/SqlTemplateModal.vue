@@ -139,9 +139,9 @@
             @click="selectTemplate(tpl)"
             @mouseenter="hoverIndex = idx"
             :class="[
-              'p-2.5 rounded-lg cursor-pointer transition-all border text-left group relative',
+              'p-2.5 rounded-md cursor-pointer transition-all border text-left group relative',
               templateStore.selectedTemplate?.id === tpl.id
-                ? 'bg-brand-500/15 border-brand-500/40 text-dark-100 ring-1 ring-brand-500/30 shadow-xs'
+                ? 'bg-brand-500/15 border-brand-500/40 text-dark-100 ring-1 ring-brand-500/30'
                 : 'bg-dark-800/60 hover:bg-dark-800 border-dark-750/60 hover:border-dark-700 text-dark-300 hover:text-dark-200'
             ]"
           >
@@ -300,7 +300,7 @@
           <!-- Preview Content Area -->
           <div class="flex-1 overflow-y-auto p-4 space-y-3.5">
             <!-- Usage Notes / Description Card -->
-            <div class="p-3 bg-dark-800/80 border border-dark-700/80 rounded-lg text-dark-300 text-xs leading-relaxed space-y-1.5">
+            <div class="p-3 bg-dark-800/80 border border-dark-700/80 rounded-md text-dark-300 text-xs leading-relaxed space-y-1.5">
               <div class="flex items-center space-x-1.5 font-semibold text-warn text-xxs uppercase tracking-wider">
                 <Info class="w-3 h-3"></Info>
                 <span>{{ $t('sqlTemplates.usageNotes') }}</span>
@@ -327,7 +327,7 @@
                 <span>{{ $t('sqlTemplates.enterToInsert') }}</span>
               </div>
 
-              <div class="relative bg-dark-950 border border-dark-700 rounded-lg overflow-hidden group">
+              <div class="relative bg-dark-950 border border-dark-700 rounded-md overflow-hidden group">
                 <pre
                   class="p-3.5 text-xs font-mono text-dark-100 overflow-x-auto select-text leading-relaxed whitespace-pre font-light"
                 ><code>{{ templateStore.selectedTemplate.code }}</code></pre>

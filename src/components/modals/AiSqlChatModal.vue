@@ -104,7 +104,7 @@
             <Transition name="fade">
               <div
                 v-if="isSqlHovered"
-                class="absolute left-0 top-full mt-1.5 z-[9999] w-[520px] max-h-80 flex flex-col rounded-lg border border-dark-600 bg-dark-900/95 dark:bg-dark-950/95 backdrop-blur shadow-2xl overflow-hidden pointer-events-auto select-text"
+                class="absolute left-0 top-full mt-1.5 z-[9999] w-[520px] max-h-80 flex flex-col rounded-md border border-dark-600 bg-dark-900/95 dark:bg-dark-950/95 backdrop-blur shadow-overlay overflow-hidden pointer-events-auto select-text"
                 @mouseenter="isSqlHovered = true"
                 @mouseleave="isSqlHovered = false"
               >
@@ -163,7 +163,7 @@
             <!-- 使用者訊息 -->
             <div v-if="msg.role === 'user'" class="flex flex-col items-end space-y-1">
               <div
-                class="max-w-[85%] rounded-lg px-3.5 py-2.5 shadow-sm text-xs leading-relaxed"
+                class="max-w-[85%] rounded-md px-3.5 py-2.5 text-xs leading-relaxed"
                 :style="{
                   backgroundColor: 'var(--p-primary-color, #3b82f6)',
                   color: 'var(--p-primary-contrast-color, #ffffff)',
@@ -181,7 +181,7 @@
 
             <!-- AI 助手訊息 -->
             <div v-else-if="msg.role === 'assistant'" class="flex flex-col items-start space-y-1">
-              <div class="max-w-[95%] rounded-lg px-3.5 py-2.5 shadow-sm text-xs leading-relaxed border border-dark-750 bg-dark-850 dark:bg-dark-800 text-dark-200 select-text">
+              <div class="max-w-[95%] rounded-md px-3.5 py-2.5 text-xs leading-relaxed border border-dark-750 bg-dark-850 dark:bg-dark-800 text-dark-200 select-text">
                 <div class="prose prose-invert max-w-none">
                   <template v-for="(segment, sIdx) in parseMessageSegments(msg.content)" :key="sIdx">
                     <div

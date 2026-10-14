@@ -2,7 +2,7 @@
   <div class="space-y-5">
     <!-- 提示卡片 -->
     <div
-      class="p-3.5 rounded-lg border border-dark-700 bg-dark-850 flex items-start space-x-3 text-xs"
+      class="p-3.5 rounded-md border border-dark-700 bg-dark-850 flex items-start space-x-3 text-xs"
     >
       <Sparkles class="w-4 h-4 mt-0.5 text-plan flex-shrink-0" />
       <div class="space-y-1">
@@ -134,7 +134,7 @@
         <div
           v-for="item in aiChatStore.quickPrompts"
           :key="item.id"
-          class="p-2.5 rounded-lg border border-dark-750 bg-dark-850/60 hover:border-dark-700 transition-colors flex items-start justify-between space-x-3"
+          class="p-2.5 rounded-md border border-dark-750 bg-dark-850/60 hover:border-dark-700 transition-colors flex items-start justify-between space-x-3"
         >
           <div class="flex-1 min-w-0 space-y-1">
             <div class="text-xs font-semibold text-plan font-sans">
@@ -167,7 +167,7 @@
 
         <div
           v-if="aiChatStore.quickPrompts.length === 0"
-          class="text-center py-6 border border-dashed border-dark-800 rounded-lg text-dark-400 text-xs"
+          class="text-center py-6 border border-dashed border-dark-800 rounded-md text-dark-400 text-xs"
         >
           尚無任何快捷提問選項，請點選上方「新增選項」或「還原預設選項」。
         </div>

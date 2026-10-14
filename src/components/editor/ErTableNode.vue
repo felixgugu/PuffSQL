@@ -1,6 +1,6 @@
 <template>
   <div
-    class="w-full h-full backdrop-blur rounded-lg overflow-hidden flex flex-col font-sans transition-all select-none group relative border"
+    class="w-full h-full backdrop-blur rounded-md overflow-hidden flex flex-col font-sans transition-all select-none group relative border"
     :class="[
       isLightTheme
         ? 'bg-slate-50/95 border-slate-400 hover:border-brand-500/70 shadow-md shadow-slate-300/40 text-slate-800'

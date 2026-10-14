@@ -165,7 +165,7 @@
       </div>
 
       <!-- 3. Per-Table IO Breakdown Table -->
-      <div class="bg-dark-850 border border-dark-750 rounded-lg flex flex-col overflow-hidden flex-1 min-h-[160px]">
+      <div class="bg-dark-850 border border-dark-750 rounded-md flex flex-col overflow-hidden flex-1 min-h-[160px]">
         <!-- Table Header -->
         <div class="h-8 px-3 bg-dark-800/80 border-b border-dark-750 flex items-center justify-between text-xs flex-shrink-0">
           <div class="flex items-center space-x-1.5 font-medium text-dark-200">
@@ -276,7 +276,7 @@
       </div>
 
       <!-- 4. Session Wait Stats (If any wait events captured) -->
-      <div v-if="stats.waitStats.length > 0" class="bg-dark-850 border border-dark-750 rounded-lg p-2.5 flex flex-col space-y-2 flex-shrink-0">
+      <div v-if="stats.waitStats.length > 0" class="bg-dark-850 border border-dark-750 rounded-md p-2.5 flex flex-col space-y-2 flex-shrink-0">
         <div class="flex items-center space-x-1.5 text-xs font-medium text-dark-200">
           <Zap class="w-3 h-3 text-warn" />
           <span>{{ $t('stats.sessionWaitStats') }}</span>

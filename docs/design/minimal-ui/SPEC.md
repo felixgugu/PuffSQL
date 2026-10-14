@@ -337,6 +337,20 @@ WCAG 1.4.11 的豁免）；分隔步 `#64748B` 對畫布 4.76:1；focus 指示�
   追蹤：只有鍵盤造成的 focus（Tab）才顯示提示。這件事是靠 headless 實拍與 DOM 傾印發現的，
   測試與型別檢查都不會抓到。
 
+- **P9 表面收斂（2026-10-15）。** 把 SPEC §6 的兩條規則真正掃乾淨，並加上護欄測試
+  （`tests/minimal_ui_surfaces.test.ts`）：
+  - **圓角**：`rounded-lg`(8px) 43 處、`rounded-xl`(12px) 5 處、`rounded-sm`(2px) 1 處全部換成
+    允許的級距；兩個浮動膠囊（`AiFloatingPill`、`DataViewFloatingPill`）由 `rounded-full` 改
+    `rounded-md`（SPEC 禁止膠囊按鈕）。狀態點／頭像／spinner 的 `rounded-full` 保留。
+  - **陰影**：`shadow-2xl/xl/lg/md/sm/xs/inner` 共 34 處換成 `shadow-overlay`／`shadow-raised`
+    或直接移除，含連帶失效的彩色陰影工具類（`shadow-amber-500/5` 這類沒有尺寸類時本來就不生效）。
+    ER 節點與執行計畫畫布內的陰影刻意保留：那是畫布上的**內容**，陰影負責與畫布背景分離，
+    不是 App 外殼。
+  - **對比**：`ConnectionModal` 的測試結果橫幅原本用 `text-emerald-400`／`text-rose-400`
+    （淺色模式下約 1.9:1），改走 `--color-ok`／`--color-danger` 與其 10%／30% tint；
+    TSV 匯入進度條的實心填色 `bg-emerald-500` 改為 `bg-ok`。
+  - 護欄測試會列出違規檔案與類別名，而不是只回報「有一項失敗」。
+
 - [ ] 全站只有一個操作藍 `#2E6F9E`（及其 hover／tint），沒有第二個彩色 CTA。
 - [ ] 淺色為預設：畫布白、外框淺灰、深灰文字；深色為配對變體且對比另行驗證。
 - [ ] 面板與工具列沒有任何陰影；陰影只出現在選單／對話框／tooltip／toast。

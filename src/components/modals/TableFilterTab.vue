@@ -96,7 +96,7 @@
           <!-- Editing Mode -->
           <div
             v-if="editingRuleId === rule.id"
-            class="px-3 py-2 bg-dark-850 border border-brand-500/60 rounded space-y-2 shadow-sm"
+            class="px-3 py-2 bg-dark-850 border border-brand-500/60 rounded space-y-2"
           >
             <div class="grid grid-cols-12 gap-2 items-center">
               <!-- Target Scope Selector -->

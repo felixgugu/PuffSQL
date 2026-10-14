@@ -10,11 +10,11 @@
         offset, so the two never animate the same `transform`.
       -->
       <div
-        class="animate-fade-in flex items-center space-x-2.5 px-3.5 py-2 rounded-full shadow-2xl border border-sky-500/40 bg-dark-850 text-dark-100 hover:border-sky-400 transition-all duration-200 cursor-pointer group"
+        class="animate-fade-in flex items-center space-x-2.5 px-3.5 py-2 rounded-md shadow-overlay border border-er/40 bg-dark-850 text-dark-100 hover:border-er transition-all duration-200 cursor-pointer group"
         @click="dataViewStore.restore()"
       >
         <!-- Icon -->
-        <div class="w-6 h-6 rounded-full bg-sky-500/20 text-info flex items-center justify-center flex-shrink-0">
+        <div class="w-6 h-6 rounded-full bg-er/15 text-er flex items-center justify-center flex-shrink-0">
           <Eye class="w-3.5 h-3.5" />
         </div>
 

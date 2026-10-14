@@ -194,7 +194,7 @@
         <!-- Vertical Four-Column Table -->
         <table v-else class="w-full border-collapse text-left text-xs font-sans table-fixed">
           <!-- Table Header -->
-          <thead class="sticky top-0 z-10 bg-dark-800 text-dark-300 font-medium text-xxs uppercase tracking-wider border-b border-dark-750 shadow-xs select-none">
+          <thead class="sticky top-0 z-10 bg-dark-800 text-dark-300 font-medium text-xxs uppercase tracking-wider border-b border-dark-750 select-none">
             <tr>
               <th class="w-[24%] py-2 px-3.5 border-r border-dark-750">
                 欄位名稱 (Column)

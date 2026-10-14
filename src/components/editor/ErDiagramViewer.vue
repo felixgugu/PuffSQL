@@ -186,7 +186,7 @@
         v-if="isDragOver"
         class="absolute inset-0 bg-brand-500/10 border-2 border-dashed border-brand-400 z-30 pointer-events-none flex items-center justify-center backdrop-blur-xs"
       >
-        <div class="bg-dark-850/90 px-4 py-2 rounded-lg border border-brand-500/50 shadow-2xl flex items-center space-x-2 text-accent text-sm font-medium">
+        <div class="bg-dark-850/90 px-4 py-2 rounded-md border border-brand-500/50 shadow-overlay flex items-center space-x-2 text-accent text-sm font-medium">
           <PlusCircle class="w-4 h-4 animate-bounce" />
           <span>{{ $t('erDiagram.dropTableHint') }}</span>
         </div>
@@ -215,8 +215,8 @@
 
       <!-- Floating Stats & Linking Tip (Bottom Left) -->
       <div
-        class="absolute bottom-3 left-3 backdrop-blur px-3 py-1.5 rounded-md text-[11px] flex items-center space-x-3 pointer-events-none z-10 font-sans shadow-lg border"
-        :class="isLightTheme ? 'bg-slate-50/90 border-slate-200 text-slate-600 shadow-slate-200/50' : 'bg-dark-900/90 border-dark-750 text-dark-300'"
+        class="absolute bottom-3 left-3 backdrop-blur px-3 py-1.5 rounded-md text-[11px] flex items-center space-x-3 pointer-events-none z-10 font-sans shadow-raised border"
+        :class="isLightTheme ? 'bg-slate-50/90 border-slate-200 text-slate-600' : 'bg-dark-900/90 border-dark-750 text-dark-300'"
       >
         <span>{{ $t('erDiagram.tableCount') }}<strong :class="isLightTheme ? 'text-slate-900' : 'text-dark-100'">{{ nodeCount }}</strong></span>
         <span :class="isLightTheme ? 'text-slate-500' : 'text-dark-600'">•</span>
@@ -240,8 +240,8 @@
           left: `${edgeMenu.x}px`,
           transformOrigin: `${edgeMenu.originX}px ${edgeMenu.originY}px`
         }"
-        class="sq-menu-in fixed z-50 backdrop-blur border rounded-lg shadow-2xl py-1.5 w-64 text-xs font-sans select-none"
-        :class="isLightTheme ? 'bg-slate-50/95 border-slate-200 text-slate-700 shadow-slate-300/60' : 'bg-dark-850/95 border-dark-700 text-dark-200'"
+        class="sq-menu-in fixed z-50 backdrop-blur border rounded-md shadow-overlay py-1.5 w-64 text-xs font-sans select-none"
+        :class="isLightTheme ? 'bg-slate-50/95 border-slate-200 text-slate-700' : 'bg-dark-850/95 border-dark-700 text-dark-200'"
         @click.stop
       >
         <!-- Header Info -->

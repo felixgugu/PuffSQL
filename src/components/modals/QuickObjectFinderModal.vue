@@ -160,9 +160,9 @@
         @mouseenter="activeIndex = idx"
         @click="handlePrimaryAction(res.item)"
         :class="[
-          'flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer transition-colors group relative',
+          'flex items-center justify-between px-3 py-2 rounded-md cursor-pointer transition-colors group relative',
           activeIndex === idx
-            ? 'bg-brand-500/20 text-dark-100 ring-1 ring-brand-500/30 shadow-xs'
+            ? 'bg-brand-500/20 text-dark-100 ring-1 ring-brand-500/30'
             : 'text-dark-300 hover:bg-dark-800/80 hover:text-dark-100'
         ]"
       >

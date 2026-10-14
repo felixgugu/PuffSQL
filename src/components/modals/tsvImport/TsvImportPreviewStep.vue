@@ -2,7 +2,7 @@
   <div class="flex-1 min-h-0 flex flex-col">
     <div class="flex-1 min-h-0 overflow-y-auto px-4 py-3 space-y-4">
       <!-- Summary -->
-      <section class="rounded-lg border border-dark-700 bg-dark-900/60 p-3">
+      <section class="rounded-md border border-dark-700 bg-dark-900/60 p-3">
         <div class="text-xxs font-semibold text-dark-300 tracking-wide mb-2">{{ $t('tsvImportModal.importSummary') }}</div>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
           <div>
@@ -37,7 +37,7 @@
       <!-- Identity warning (non blocking: the database reports the error) -->
       <div
         v-if="store.identityInsertWarning"
-        class="rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xxs text-warn"
+        class="rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xxs text-warn"
       >
         {{ store.identityInsertWarning }}
       </div>
@@ -45,7 +45,7 @@
       <!-- Validation failures -->
       <section
         v-if="store.validation && store.validation.errors.length > 0"
-        class="rounded-lg border border-rose-200 dark:border-rose-800/60 bg-rose-50 dark:bg-rose-950/25 p-3 space-y-2"
+        class="rounded-md border border-rose-200 dark:border-rose-800/60 bg-rose-50 dark:bg-rose-950/25 p-3 space-y-2"
       >
         <div class="flex items-center justify-between">
           <div class="text-xxs font-semibold text-danger">
@@ -91,7 +91,7 @@
       <!-- Preview -->
       <section
         v-else-if="store.validation"
-        class="rounded-lg border border-dark-700 bg-dark-900/60 overflow-hidden"
+        class="rounded-md border border-dark-700 bg-dark-900/60 overflow-hidden"
       >
         <div class="px-3 py-2 border-b border-dark-750 flex items-center justify-between">
           <div class="text-xxs font-semibold text-dark-300 tracking-wide">
@@ -134,7 +134,7 @@
       <!-- Import progress -->
       <section
         v-if="store.isImporting"
-        class="rounded-lg border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50 dark:bg-emerald-950/20 p-3 space-y-2"
+        class="rounded-md border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50 dark:bg-emerald-950/20 p-3 space-y-2"
       >
         <div class="flex items-center justify-between text-xxs text-ok">
           <span class="flex items-center space-x-1.5">
@@ -146,9 +146,9 @@
             {{ store.importProgress.totalRows.toLocaleString() }}
           </span>
         </div>
-        <div class="h-1.5 rounded-full bg-dark-800 overflow-hidden">
+        <div class="h-1.5 rounded-[3px] bg-dark-800 overflow-hidden">
           <div
-            class="h-full bg-emerald-500 transition-all duration-150"
+            class="h-full bg-ok transition-all duration-150"
             :style="{ width: `${store.importProgressPercent}%` }"
           ></div>
         </div>
@@ -157,7 +157,7 @@
       <!-- Import result -->
       <section
         v-if="store.importResult"
-        class="rounded-lg border p-3 space-y-2"
+        class="rounded-md border p-3 space-y-2"
         :class="
           store.importResult.rolledBack
             ? 'border-rose-200 dark:border-rose-800/60 bg-rose-50 dark:bg-rose-950/25'
@@ -200,7 +200,7 @@
 
       <div
         v-if="store.importError"
-        class="rounded-lg border border-rose-200 dark:border-rose-800/60 bg-rose-50 dark:bg-rose-950/25 p-3 text-xxs text-danger font-mono break-all"
+        class="rounded-md border border-rose-200 dark:border-rose-800/60 bg-rose-50 dark:bg-rose-950/25 p-3 text-xxs text-danger font-mono break-all"
       >
         {{ store.importError }}
       </div>

@@ -150,7 +150,7 @@
               @click="settingsStore.setPrimaryColor(color.name)"
             >
               <div
-                class="w-4.5 h-4.5 rounded-full flex-shrink-0 flex items-center justify-center text-white text-xxs shadow-xs"
+                class="w-4.5 h-4.5 rounded-full flex-shrink-0 flex items-center justify-center text-white text-xxs"
                 :style="{ backgroundColor: color.color }"
               >
                 <Check
@@ -222,7 +222,7 @@
         </div>
 
         <!-- 6. Live Component Preview -->
-        <div class="space-y-2 p-3.5 rounded-lg border border-dark-750 bg-dark-900/80">
+        <div class="space-y-2 p-3.5 rounded-md border border-dark-750 bg-dark-900/80">
           <div class="flex items-center justify-between">
             <span class="text-xs font-semibold text-dark-200 flex items-center space-x-1.5">
               <Eye class="w-3.5 h-3.5 text-accent" />
@@ -434,12 +434,12 @@
 
       <!-- Tab 5: About & Shortcuts -->
       <div v-else-if="activeTab === 'about'" class="space-y-4">
-        <div class="bg-dark-900 border border-dark-750 p-4 rounded-lg space-y-3">
+        <div class="bg-dark-900 border border-dark-750 p-4 rounded-md space-y-3">
           <div class="flex items-center space-x-3">
             <img
               :src="appIcon"
               alt="PuffSQL"
-              class="w-10 h-10 rounded-lg select-none shadow-sm flex-shrink-0"
+              class="w-10 h-10 rounded-md select-none flex-shrink-0"
               draggable="false"
             />
             <div>

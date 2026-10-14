@@ -18,7 +18,7 @@
 
     <form @submit.prevent="handleSave" class="space-y-4 text-xs">
       <!-- Quick Environment Preset Ribbon -->
-      <div class="flex items-center justify-between px-3 py-2 rounded-xl bg-dark-850/60 border border-dark-750/70">
+      <div class="flex items-center justify-between px-3 py-2 rounded-md bg-dark-850/60 border border-dark-750/70">
         <span class="text-xxs font-medium text-dark-400 flex items-center gap-1.5">
           <Sparkles class="w-3 h-3 text-accent" />
           環境快速範本
@@ -32,7 +32,7 @@
             class="px-2 py-0.5 rounded-md text-xxs font-medium transition-all flex items-center space-x-1 border"
             :class="[
               form.alias === env.alias
-                ? 'bg-dark-750 border-dark-600 text-dark-100 shadow-sm'
+                ? 'bg-dark-750 border-dark-600 text-dark-100'
                 : 'bg-dark-900/50 border-dark-800 text-dark-400 hover:text-dark-200 hover:border-dark-700'
             ]"
             :title="env.desc"
@@ -44,7 +44,7 @@
       </div>
 
       <!-- Section 1: Server & Database Card -->
-      <div class="rounded-xl bg-dark-850/50 border border-dark-750/80 p-3.5 space-y-3 transition-colors hover:border-dark-700">
+      <div class="rounded-md bg-dark-850/50 border border-dark-750/80 p-3.5 space-y-3 transition-colors hover:border-dark-700">
         <div class="flex items-center justify-between text-xs font-semibold text-dark-200">
           <div class="flex items-center space-x-1.5">
             <Database class="w-3 h-3 text-accent" />
@@ -119,7 +119,7 @@
       </div>
 
       <!-- Section 2: Authentication Card -->
-      <div class="rounded-xl bg-dark-850/50 border border-dark-750/80 p-3.5 space-y-3 transition-colors hover:border-dark-700">
+      <div class="rounded-md bg-dark-850/50 border border-dark-750/80 p-3.5 space-y-3 transition-colors hover:border-dark-700">
         <div class="flex items-center space-x-1.5 text-xs font-semibold text-dark-200">
           <Lock class="w-3 h-3 text-accent" />
           <span>{{ $t('connectionModal.authLegend') }}</span>
@@ -160,7 +160,7 @@
       </div>
 
       <!-- Section 3: Security & Appearance Card -->
-      <div class="rounded-xl bg-dark-850/50 border border-dark-750/80 p-3.5 space-y-3 transition-colors hover:border-dark-700">
+      <div class="rounded-md bg-dark-850/50 border border-dark-750/80 p-3.5 space-y-3 transition-colors hover:border-dark-700">
         <div class="flex items-center space-x-1.5 text-xs font-semibold text-dark-200">
           <ShieldCheck class="w-3 h-3 text-accent" />
           <span>{{ $t('connectionModal.securityLegend') }}</span>
@@ -169,10 +169,10 @@
         <div class="space-y-3 pt-0.5">
           <!-- Modification Prompt Safe Guard Banner -->
           <div
-            class="flex items-start space-x-3 p-2.5 rounded-lg border transition-all"
+            class="flex items-start space-x-3 p-2.5 rounded-md border transition-all"
             :class="[
               form.modificationPrompt
-                ? 'bg-amber-500/10 border-amber-500/35 shadow-sm shadow-amber-500/5'
+                ? 'bg-amber-500/10 border-amber-500/35'
                 : 'bg-dark-900/40 border-dark-750/60'
             ]"
           >
@@ -225,7 +225,7 @@
                   @click="form.color = preset"
                   :style="{ backgroundColor: preset }"
                   :class="[
-                    'w-4 h-4 rounded-full border transition-all cursor-pointer shadow-sm',
+                    'w-4 h-4 rounded-full border transition-all cursor-pointer',
                     form.color.toLowerCase() === preset.toLowerCase()
                       ? 'border-white scale-125 ring-2 ring-accent/40 shadow-accent/20'
                       : 'border-dark-600 hover:scale-115 opacity-80 hover:opacity-100'
@@ -240,7 +240,7 @@
                   class="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                 />
                 <span
-                  class="w-3 h-3 rounded-sm border border-white/20 shadow-xs"
+                  class="w-3 h-3 rounded-[3px] border border-white/20"
                   :style="{ backgroundColor: form.color || '#64748b' }"
                 />
               </label>
@@ -253,10 +253,10 @@
             </div>
 
             <!-- Live Badge Preview -->
-            <div class="ml-auto flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-dark-900 border border-dark-750 text-xxs shadow-inner">
+            <div class="ml-auto flex items-center space-x-1.5 px-2.5 py-1 rounded-md bg-dark-900 border border-dark-750 text-xxs">
               <span class="text-dark-500 font-mono text-xxs font-medium">{{ $t('connectionModal.preview') }}</span>
               <span
-                class="w-2 h-2 rounded-full shrink-0 shadow-xs"
+                class="w-2 h-2 rounded-full shrink-0"
                 :style="{ backgroundColor: form.color || '#64748b' }"
               />
               <span class="font-medium truncate max-w-[110px]" :style="{ color: connectionLabelColor || undefined }">
@@ -277,11 +277,11 @@
       <transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0 -translate-y-1" enter-to-class="opacity-100 translate-y-0">
         <div
           v-if="testResult"
-          class="p-2.5 rounded-xl border flex items-start space-x-2.5 text-xs"
+          class="p-2.5 rounded-md border flex items-start space-x-2.5 text-xs"
           :class="[
             testResult.success
-              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
-              : 'bg-rose-500/10 border-rose-500/30 text-rose-400'
+              ? 'bg-ok/10 border-ok/30 text-ok'
+              : 'bg-danger/10 border-danger/30 text-danger'
           ]"
         >
           <component
