@@ -114,12 +114,12 @@
             </div>
             <div class="col-span-2">
               <label class="block text-dark-300 font-medium text-xxs mb-1">{{ $t('connectionModal.portRequired') }}</label>
-              <InputNumber
-                v-model="form.port"
-                :use-grouping="false"
+              <SqInput
+                :model-value="String(form.port)"
+                type="number"
                 required
-                class="w-full !text-xs font-mono"
-                input-class="!text-xs !bg-dark-900/90 !border-dark-700 hover:!border-dark-600 focus:!border-accent !rounded-lg font-mono w-full !py-1.5 !px-2.5"
+                class="w-full font-mono"
+                @update:model-value="(value: string) => (form.port = Number(value))"
               />
             </div>
           </div>
@@ -155,15 +155,24 @@
           </div>
           <div>
             <label class="block text-dark-300 font-medium text-xxs mb-1">{{ $t('connectionModal.passwordLabel') }}</label>
-            <Password
+            <SqInput
               v-model="form.password"
-              :toggle-mask="true"
-              :feedback="false"
-              fluid
-              class="w-full !text-xs"
-              input-class="!text-xs !bg-dark-900/90 !border-dark-700 hover:!border-dark-600 focus:!border-accent !rounded-lg font-mono w-full !py-1.5 !px-2.5"
+              :type="showPassword ? 'text' : 'password'"
+              class="w-full font-mono"
               :placeholder="editProfile ? $t('connectionModal.keepPasswordPlaceholder') : (initialProfile ? $t('connectionModal.reusePasswordPlaceholder') : $t('connectionModal.enterPasswordPlaceholder'))"
-            />
+            >
+              <template #suffix>
+                <button
+                  type="button"
+                  class="flex items-center text-dark-500 hover:text-dark-200 transition-colors"
+                  :aria-label="showPassword ? '隱藏密碼' : '顯示密碼'"
+                  @click="showPassword = !showPassword"
+                >
+                  <Eye v-if="!showPassword" class="w-3.5 h-3.5" />
+                  <EyeOff v-else class="w-3.5 h-3.5" />
+                </button>
+              </template>
+            </SqInput>
           </div>
         </div>
       </div>
@@ -350,8 +359,7 @@ import { reactive, ref, watch, computed } from 'vue';
 import Dialog from 'primevue/dialog';
 import { useDialogWindow } from '@/composables/useDialogWindow';
 import SqInput from '@/components/ui/SqInput.vue';
-import InputNumber from 'primevue/inputnumber';
-import Password from 'primevue/password';
+import { Eye, EyeOff } from 'lucide-vue-next';
 import SqSwitch from '@/components/ui/SqSwitch.vue';
 import SqCheckbox from '@/components/ui/SqCheckbox.vue';
 import SqButton from '@/components/ui/SqButton.vue';
@@ -438,6 +446,9 @@ function applyEnvironmentPreset(env: EnvironmentPreset) {
   form.color = env.color;
   form.modificationPrompt = env.modificationPrompt;
 }
+
+/** Reveals the password field: SqInput keeps the masking in a native input. */
+const showPassword = ref(false);
 
 const form = reactive({
   name: '',

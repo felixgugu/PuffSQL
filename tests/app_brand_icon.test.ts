@@ -47,8 +47,8 @@ describe('AppHeader brand icon', () => {
     );
     assert.match(
       source,
-      /!h-10 !bg-dark-850/,
-      'the toolbar row height itself must stay at 40px'
+      /class="h-10 bg-dark-850 border-b border-dark-700/,
+      'the title bar row height itself must stay at 40px (plain flex row since P5)'
     );
   });
 

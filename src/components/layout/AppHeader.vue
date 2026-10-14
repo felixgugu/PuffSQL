@@ -1,13 +1,12 @@
 <template>
   <!-- The toolbar row doubles as the custom window title bar: empty areas are draggable (deep),
        while buttons/selects stay clickable because Tauri ignores interactive elements. -->
-  <Toolbar
+  <div
     data-tauri-drag-region="deep"
-    class="!h-10 !bg-dark-850 !border-b !border-dark-700 !rounded-none !px-2.5 !py-0 !flex-nowrap select-none flex-shrink-0 relative z-30 font-sans text-xs"
+    class="h-10 bg-dark-850 border-b border-dark-700 px-2.5 flex items-center justify-between gap-2 select-none flex-shrink-0 relative z-30 font-sans text-xs"
   >
     <!-- Start: Branding & Connection / Database Pickers -->
-    <template #start>
-      <div class="flex items-center space-x-2 flex-shrink-0">
+    <div class="flex items-center space-x-2 flex-shrink-0">
         <!-- App Brand: bleeds to the title-bar edges (no top/left/bottom gap) at the full row height.
              The negative left margin cancels the toolbar's 10px horizontal padding plus its 1px left
              border, `pr-2` keeps the breathing room before the divider that separates the brand from
@@ -128,12 +127,10 @@
             </div>
           </template>
         </Select>
-      </div>
-    </template>
+    </div>
 
     <!-- End: Actions Toolbar & Settings -->
-    <template #end>
-      <div class="flex items-center justify-end space-x-1 min-w-0 overflow-hidden">
+    <div class="flex items-center justify-end space-x-1 min-w-0 overflow-hidden">
         <!-- Run / Stop Query Button -->
         <SqButton
           v-if="!queryStore.isExecuting"
@@ -352,17 +349,15 @@
         >
           <template #icon><Settings class="w-3.5 h-3.5" /></template>
         </SqButton>
-      </div>
 
       <!-- Custom window controls (Windows only, where native decorations are hidden) -->
       <WindowControls v-if="showWindowControls" />
-    </template>
-  </Toolbar>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import Toolbar from 'primevue/toolbar';
 import Select from 'primevue/select';
 import {
   AlignLeft,

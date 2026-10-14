@@ -61,7 +61,14 @@ describe('custom window title bar (Windows)', () => {
     const source = readSource('src/components/layout/AppHeader.vue');
 
     assert.match(source, /data-tauri-drag-region="deep"/, 'empty toolbar areas should drag the window');
-    assert.match(source, /!flex-nowrap/, 'toolbar groups must shrink instead of wrapping');
+    // The title bar is a plain flex row now (PrimeVue Toolbar retired in P5); it must still keep
+    // its groups from wrapping so a squeezed window hides buttons instead of growing the bar.
+    assert.match(
+      source,
+      /class="[^"]*flex items-center justify-between gap-2[^"]*"/,
+      'the title bar stays a single non-wrapping row'
+    );
+    assert.match(source, /select-none flex-shrink-0/, 'the title bar must not shrink');
     assert.match(
       source,
       /class="flex items-center justify-end space-x-1 min-w-0 overflow-hidden"/,
@@ -69,11 +76,11 @@ describe('custom window title bar (Windows)', () => {
     );
     assert.match(source, /const showWindowControls = windowService\.isCustomTitleBar\(\)/);
 
-    const endSlotIndex = source.indexOf('<template #end>');
-    const controlsIndex = source.indexOf('<WindowControls');
-    const toolbarEndIndex = source.indexOf('</Toolbar>');
-    assert.ok(endSlotIndex > -1 && controlsIndex > endSlotIndex, 'window controls belong to the end toolbar group');
-    assert.ok(toolbarEndIndex > controlsIndex, 'window controls should be rendered inside the toolbar');
+    assert.match(
+      source,
+      /<!-- End: Actions Toolbar & Settings -->[\s\S]*?<WindowControls v-if="showWindowControls" \/>[\s\S]*?<\/div>\s*<\/div>\s*<\/template>/,
+      'window controls must stay inside the end group of the title bar'
+    );
   });
 
   test('WindowControls wires minimize, restore/maximize and close with accessible labels', () => {

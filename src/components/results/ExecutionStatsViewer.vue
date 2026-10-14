@@ -148,22 +148,21 @@
       </div>
 
       <!-- 2. Health Insight Banner -->
-      <Message
+      <!-- Inline note: one border + one tone, no card chrome (SPEC §7 訊息列) -->
+      <div
         v-if="hasHighIoAlert"
-        severity="error"
-        :closable="false"
-        class="!text-xs"
+        class="flex items-center gap-2 px-3 py-2 rounded border border-danger/30 bg-danger/8 text-danger text-xs"
       >
-        {{ $t('stats.highIoAlert') }}
-      </Message>
-      <Message
+        <TriangleAlert class="w-3.5 h-3.5 flex-shrink-0" />
+        <span>{{ $t('stats.highIoAlert') }}</span>
+      </div>
+      <div
         v-else-if="stats.totalLogicalReads > 0"
-        severity="success"
-        :closable="false"
-        class="!text-xs"
+        class="flex items-center gap-2 px-3 py-2 rounded border border-ok/30 bg-ok/8 text-ok text-xs"
       >
-        {{ $t('stats.healthyBanner', { ratio: stats.cacheHitRatio }) }}
-      </Message>
+        <CircleCheck class="w-3.5 h-3.5 flex-shrink-0" />
+        <span>{{ $t('stats.healthyBanner', { ratio: stats.cacheHitRatio }) }}</span>
+      </div>
 
       <!-- 3. Per-Table IO Breakdown Table -->
       <div class="bg-dark-850 border border-dark-750 rounded-lg flex flex-col overflow-hidden flex-1 min-h-[160px]">
@@ -188,69 +187,91 @@
           </SqInput>
         </div>
 
-        <!-- DataTable -->
+        <!-- Per-table IO table: plain semantic table, sortable headers, hairline rows (SPEC §7) -->
         <div class="flex-1 overflow-auto font-mono text-xs">
-          <DataTable
-            :value="sortedTableStats"
-            size="small"
-            class="p-datatable-sm w-full"
-            :rowClass="() => '!bg-dark-900 hover:!bg-dark-800/80 transition-colors'"
-          >
-            <template #empty>
-              <div class="p-6 text-center text-dark-500 italic text-xs">
-                {{ $t('stats.noTableIo') }}
-              </div>
-            </template>
-            <Column field="tableName" :header="$t('stats.tableNameCol')" sortable class="!py-1.5 !px-3 font-sans font-medium text-dark-200" />
-            <Column field="scanCount" :header="$t('stats.scanCountCol')" sortable class="!py-1.5 !px-2 text-right">
-              <template #body="{ data }">
-                <span :class="data.scanCount > 1 ? 'text-warn font-bold' : 'text-dark-300'">
-                  {{ data.scanCount }}
-                </span>
-              </template>
-            </Column>
-            <Column field="logicalReads" :header="$t('stats.logicalReadsRatioCol')" sortable class="!py-1.5 !px-3 text-right w-44">
-              <template #body="{ data }">
-                <div class="flex items-center justify-end space-x-2">
-                  <div class="w-16 bg-dark-750 rounded-full h-1.5 overflow-hidden flex-shrink-0">
-                    <div
-                      class="h-full rounded-full transition-all"
-                      :class="data.isHighIo ? 'bg-rose-500' : 'bg-brand-400'"
-                      :style="{ width: `${getLogicalPercent(data.logicalReads)}%` }"
+          <table class="w-full border-collapse">
+            <thead>
+              <tr class="bg-dark-850 text-dark-400">
+                <th
+                  v-for="column in statColumns"
+                  :key="column.key"
+                  scope="col"
+                  :aria-sort="ariaSortFor(column.key)"
+                  :class="['h-7 px-3 border-b border-dark-700 font-sans font-medium whitespace-nowrap', column.align === 'right' ? 'text-right' : 'text-left']"
+                >
+                  <button
+                    type="button"
+                    class="inline-flex items-center gap-1 hover:text-dark-100 transition-colors"
+                    @click="toggleStatSort(column.key)"
+                  >
+                    {{ column.label }}
+                    <component
+                      :is="statSortDesc ? ChevronDown : ChevronUp"
+                      v-if="statSortKey === column.key"
+                      class="w-3 h-3"
                     />
-                  </div>
-                  <span :class="data.isHighIo ? 'text-danger font-bold' : 'text-dark-200'">
-                    {{ data.logicalReads.toLocaleString() }}
+                  </button>
+                </th>
+                <th scope="col" class="h-7 px-3 border-b border-dark-700 font-sans font-medium text-center whitespace-nowrap">
+                  {{ $t('stats.statusCol') }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="sortedTableStats.length === 0">
+                <td :colspan="statColumns.length + 1" class="p-6 text-center text-dark-500 italic">
+                  {{ $t('stats.noTableIo') }}
+                </td>
+              </tr>
+              <tr
+                v-for="data in sortedTableStats"
+                :key="data.tableName"
+                class="hover:bg-dark-800/60 transition-colors"
+              >
+                <td class="h-6 px-3 border-b border-dark-750 font-sans font-medium text-dark-200 truncate max-w-[240px]" :title="data.tableName">
+                  {{ data.tableName }}
+                </td>
+                <td class="h-6 px-3 border-b border-dark-750 text-right">
+                  <span :class="data.scanCount > 1 ? 'text-warn font-semibold' : 'text-dark-300'">
+                    {{ data.scanCount }}
                   </span>
-                </div>
-              </template>
-            </Column>
-            <Column field="physicalReads" :header="$t('stats.physicalReadsCol')" sortable class="!py-1.5 !px-2 text-right text-dark-300">
-              <template #body="{ data }">
-                {{ data.physicalReads.toLocaleString() }}
-              </template>
-            </Column>
-            <Column field="readAheadReads" :header="$t('stats.readAheadCol')" sortable class="!py-1.5 !px-2 text-right text-dark-400">
-              <template #body="{ data }">
-                {{ data.readAheadReads.toLocaleString() }}
-              </template>
-            </Column>
-            <Column field="lobLogicalReads" :header="$t('stats.lobReadsCol')" sortable class="!py-1.5 !px-2 text-right text-dark-400">
-              <template #body="{ data }">
-                {{ data.lobLogicalReads.toLocaleString() }}
-              </template>
-            </Column>
-            <Column field="bytesFormatted" :header="$t('stats.totalBytesCol')" sortable class="!py-1.5 !px-2 text-right font-medium text-dark-300" />
-            <Column :header="$t('stats.statusCol')" class="!py-1.5 !px-3 text-center">
-              <template #body="{ data }">
-                <SqChip
-                  :tone="data.isHighIo ? 'danger' : 'ok'"
-                  :label="data.isHighIo ? 'High IO' : 'OK'"
-                  class="font-medium"
-                />
-              </template>
-            </Column>
-          </DataTable>
+                </td>
+                <td class="h-6 px-3 border-b border-dark-750 text-right">
+                  <div class="flex items-center justify-end gap-2">
+                    <div class="w-16 bg-dark-750 h-1.5 overflow-hidden flex-shrink-0">
+                      <div
+                        class="h-full transition-all"
+                        :class="data.isHighIo ? 'bg-danger' : 'bg-accent'"
+                        :style="{ width: `${getLogicalPercent(data.logicalReads)}%` }"
+                      />
+                    </div>
+                    <span :class="data.isHighIo ? 'text-danger font-semibold' : 'text-dark-200'">
+                      {{ data.logicalReads.toLocaleString() }}
+                    </span>
+                  </div>
+                </td>
+                <td class="h-6 px-3 border-b border-dark-750 text-right text-dark-300">
+                  {{ data.physicalReads.toLocaleString() }}
+                </td>
+                <td class="h-6 px-3 border-b border-dark-750 text-right text-dark-400">
+                  {{ data.readAheadReads.toLocaleString() }}
+                </td>
+                <td class="h-6 px-3 border-b border-dark-750 text-right text-dark-400">
+                  {{ data.lobLogicalReads.toLocaleString() }}
+                </td>
+                <td class="h-6 px-3 border-b border-dark-750 text-right font-medium text-dark-300">
+                  {{ data.bytesFormatted }}
+                </td>
+                <td class="h-6 px-3 border-b border-dark-750 text-center">
+                  <SqChip
+                    :tone="data.isHighIo ? 'danger' : 'ok'"
+                    :label="data.isHighIo ? 'High IO' : 'OK'"
+                    class="font-medium"
+                  />
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -261,25 +282,24 @@
           <span>{{ $t('stats.sessionWaitStats') }}</span>
         </div>
 
-        <DataTable
-          :value="stats.waitStats"
-          size="small"
-          class="p-datatable-sm w-full font-mono text-xxs"
-          :rowClass="() => '!bg-dark-900'"
-        >
-          <Column field="waitType" :header="$t('stats.waitTypeCol')" class="!py-1 !px-2 text-dark-300 font-semibold" />
-          <Column field="waitingTasksCount" :header="$t('stats.waitCountCol')" class="!py-1 !px-2 text-right text-dark-400" />
-          <Column field="waitTimeMs" :header="$t('stats.totalWaitTimeCol')" class="!py-1 !px-2 text-right text-warn font-bold">
-            <template #body="{ data }">
-              {{ data.waitTimeMs }} ms
-            </template>
-          </Column>
-          <Column field="maxWaitTimeMs" :header="$t('stats.maxWaitTimeCol')" class="!py-1 !px-2 text-right text-dark-400">
-            <template #body="{ data }">
-              {{ data.maxWaitTimeMs }} ms
-            </template>
-          </Column>
-        </DataTable>
+        <table class="w-full border-collapse font-mono text-xxs">
+          <thead>
+            <tr class="bg-dark-800 text-dark-400">
+              <th scope="col" class="h-6 px-2 border-b border-dark-700 font-sans font-medium text-left">{{ $t('stats.waitTypeCol') }}</th>
+              <th scope="col" class="h-6 px-2 border-b border-dark-700 font-sans font-medium text-right">{{ $t('stats.waitCountCol') }}</th>
+              <th scope="col" class="h-6 px-2 border-b border-dark-700 font-sans font-medium text-right">{{ $t('stats.totalWaitTimeCol') }}</th>
+              <th scope="col" class="h-6 px-2 border-b border-dark-700 font-sans font-medium text-right">{{ $t('stats.maxWaitTimeCol') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="wait in stats.waitStats" :key="wait.waitType">
+              <td class="h-6 px-2 border-b border-dark-750 text-dark-300 font-semibold">{{ wait.waitType }}</td>
+              <td class="h-6 px-2 border-b border-dark-750 text-right text-dark-400">{{ wait.waitingTasksCount }}</td>
+              <td class="h-6 px-2 border-b border-dark-750 text-right text-warn font-semibold">{{ wait.waitTimeMs }} ms</td>
+              <td class="h-6 px-2 border-b border-dark-750 text-right text-dark-400">{{ wait.maxWaitTimeMs }} ms</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
@@ -291,11 +311,10 @@ import { useI18n } from 'vue-i18n';
 import SqButton from '@/components/ui/SqButton.vue';
 import { Copy, Sparkles, Trash2 } from 'lucide-vue-next';
 import SqChip from '@/components/ui/SqChip.vue';
-import Message from 'primevue/message';
+import { CircleCheck, TriangleAlert } from 'lucide-vue-next';
 import SqInput from '@/components/ui/SqInput.vue';
 import { Search } from 'lucide-vue-next';
-import DataTable from 'primevue/datatable';
-import Column from 'primevue/column';
+import { ChevronDown, ChevronUp } from 'lucide-vue-next';
 import { useQueryStore } from '@/stores/queryStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useAiChatStore } from '@/stores/aiChatStore';
@@ -332,14 +351,65 @@ const hasHighIoAlert = computed(() => {
   return stats.value?.tableStats.some((t) => t.isHighIo) ?? false;
 });
 
+/** Column sorting for the per-table IO table: one key + one direction, no PrimeVue DataTable. */
+type TableStatSortKey =
+  | 'tableName'
+  | 'scanCount'
+  | 'logicalReads'
+  | 'physicalReads'
+  | 'readAheadReads'
+  | 'lobLogicalReads'
+  | 'bytesFormatted';
+
+const statSortKey = ref<TableStatSortKey>('logicalReads');
+const statSortDesc = ref(true);
+
+/** Header definitions for the per-table IO table. */
+const statColumns: Array<{ key: TableStatSortKey; label: string; align: 'left' | 'right' }> = [
+  { key: 'tableName', label: t('stats.tableNameCol'), align: 'left' },
+  { key: 'scanCount', label: t('stats.scanCountCol'), align: 'right' },
+  { key: 'logicalReads', label: t('stats.logicalReadsRatioCol'), align: 'right' },
+  { key: 'physicalReads', label: t('stats.physicalReadsCol'), align: 'right' },
+  { key: 'readAheadReads', label: t('stats.readAheadCol'), align: 'right' },
+  { key: 'lobLogicalReads', label: t('stats.lobReadsCol'), align: 'right' },
+  { key: 'bytesFormatted', label: t('stats.totalBytesCol'), align: 'right' },
+];
+
+function toggleStatSort(key: TableStatSortKey) {
+  if (statSortKey.value === key) {
+    statSortDesc.value = !statSortDesc.value;
+    return;
+  }
+  statSortKey.value = key;
+  // Text sorts ascending first; numbers start with the biggest offender on top.
+  statSortDesc.value = key !== 'tableName' && key !== 'bytesFormatted';
+}
+
+function ariaSortFor(key: TableStatSortKey): 'ascending' | 'descending' | 'none' {
+  if (statSortKey.value !== key) return 'none';
+  return statSortDesc.value ? 'descending' : 'ascending';
+}
+
 const sortedTableStats = computed(() => {
   if (!stats.value?.tableStats) return [];
-  let list = stats.value.tableStats;
+  let list = [...stats.value.tableStats];
 
   const q = tableFilterQuery.value.trim().toLowerCase();
   if (q) {
     list = list.filter((t) => t.tableName.toLowerCase().includes(q));
   }
+
+  const key = statSortKey.value;
+  list.sort((a, b) => {
+    const left = a[key];
+    const right = b[key];
+    const result =
+      typeof left === 'number' && typeof right === 'number'
+        ? left - right
+        : String(left).localeCompare(String(right));
+    return statSortDesc.value ? -result : result;
+  });
+
   return list;
 });
 
