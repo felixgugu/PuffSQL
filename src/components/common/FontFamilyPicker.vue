@@ -8,12 +8,12 @@
       :class="selectClass"
       @update:model-value="handleSelect"
     />
-    <InputText
+    <SqInput
       v-if="showCustom"
       ref="inputRef"
       :model-value="customText"
       :placeholder="inputPlaceholder"
-      class="w-full !text-xs !bg-dark-900 !border-dark-700 font-mono"
+      class="w-full font-mono"
       @update:model-value="handleInput"
       @blur="handleBlur"
     />
@@ -31,7 +31,7 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue';
 import Select from 'primevue/select';
-import InputText from 'primevue/inputtext';
+import SqInput from '@/components/ui/SqInput.vue';
 import {
   CUSTOM_FONT_VALUE,
   isPresetFontFamily,
@@ -84,7 +84,7 @@ const showCustom = ref(!isPresetFontFamily(props.modelValue, props.options));
 /** Local editable text so trailing spaces are not stripped while typing. */
 const customText = ref(props.modelValue ?? '');
 
-const inputRef = ref<{ $el?: HTMLInputElement } | null>(null);
+const inputRef = ref<{ focus?: () => void } | null>(null);
 
 const currentFont = computed(() =>
   normalizeFontFamily(props.modelValue, fallback.value)
@@ -116,7 +116,7 @@ function handleSelect(value: unknown): void {
     // Reveal the input, seeding it with the current font for easy editing.
     showCustom.value = true;
     customText.value = currentFont.value;
-    void nextTick(() => inputRef.value?.$el?.focus?.());
+    void nextTick(() => inputRef.value?.focus?.());
   } else if (typeof value === 'string') {
     showCustom.value = false;
     customText.value = value;

@@ -75,8 +75,7 @@
       <!-- 1. KPI Metric Cards -->
       <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 flex-shrink-0">
         <!-- CPU Time -->
-        <Card class="!bg-dark-850 !border !border-dark-750 !rounded-lg" :pt="{ body: { class: '!p-2.5 flex flex-col justify-between h-full' } }">
-          <template #content>
+        <div class="bg-dark-850 border border-dark-750 rounded p-2.5 flex flex-col justify-between h-full">
             <div class="flex items-center justify-between text-dark-400 text-xxs">
               <span>{{ $t('stats.cpuTimeCard') }}</span>
               <i class="pi pi-microchip text-warn text-xs"></i>
@@ -88,12 +87,10 @@
             <div class="text-xxs text-dark-500 font-mono mt-0.5 truncate leading-normal">
               {{ $t('stats.compile', { ms: stats.compileCpuTimeMs ?? 0 }) }}
             </div>
-          </template>
-        </Card>
+        </div>
 
         <!-- Elapsed Time -->
-        <Card class="!bg-dark-850 !border !border-dark-750 !rounded-lg" :pt="{ body: { class: '!p-2.5 flex flex-col justify-between h-full' } }">
-          <template #content>
+        <div class="bg-dark-850 border border-dark-750 rounded p-2.5 flex flex-col justify-between h-full">
             <div class="flex items-center justify-between text-dark-400 text-xxs">
               <span>{{ $t('stats.elapsedTimeCard') }}</span>
               <i class="pi pi-clock text-info text-xs"></i>
@@ -105,12 +102,10 @@
             <div class="text-xxs text-dark-500 font-mono mt-0.5 truncate leading-normal">
               {{ $t('stats.compile', { ms: stats.compileElapsedTimeMs ?? 0 }) }}
             </div>
-          </template>
-        </Card>
+        </div>
 
         <!-- Logical Reads -->
-        <Card class="!bg-dark-850 !border !border-dark-750 !rounded-lg" :pt="{ body: { class: '!p-2.5 flex flex-col justify-between h-full' } }">
-          <template #content>
+        <div class="bg-dark-850 border border-dark-750 rounded p-2.5 flex flex-col justify-between h-full">
             <div class="flex items-center justify-between text-dark-400 text-xxs">
               <span>{{ $t('stats.logicalReadsCard') }}</span>
               <i class="pi pi-book text-ok text-xs"></i>
@@ -122,12 +117,10 @@
             <div class="text-xxs text-ok font-mono mt-0.5 truncate leading-normal">
               {{ $t('stats.size', { size: extractByteSize(stats.logicalReadsFormatted) }) }}
             </div>
-          </template>
-        </Card>
+        </div>
 
         <!-- Physical Reads -->
-        <Card class="!bg-dark-850 !border !border-dark-750 !rounded-lg" :pt="{ body: { class: '!p-2.5 flex flex-col justify-between h-full' } }">
-          <template #content>
+        <div class="bg-dark-850 border border-dark-750 rounded p-2.5 flex flex-col justify-between h-full">
             <div class="flex items-center justify-between text-dark-400 text-xxs">
               <span>{{ $t('stats.physicalReadsCard') }}</span>
               <i class="pi pi-server text-plan text-xs"></i>
@@ -139,12 +132,10 @@
             <div class="text-xxs text-dark-500 font-mono mt-0.5 truncate leading-normal">
               {{ $t('stats.readAhead', { count: stats.totalReadAheadReads }) }}
             </div>
-          </template>
-        </Card>
+        </div>
 
         <!-- Physical Writes & LOB -->
-        <Card class="!bg-dark-850 !border !border-dark-750 !rounded-lg" :pt="{ body: { class: '!p-2.5 flex flex-col justify-between h-full' } }">
-          <template #content>
+        <div class="bg-dark-850 border border-dark-750 rounded p-2.5 flex flex-col justify-between h-full">
             <div class="flex items-center justify-between text-dark-400 text-xxs">
               <span>{{ $t('stats.writesAndLobCard') }}</span>
               <i class="pi pi-database text-structure text-xs"></i>
@@ -156,8 +147,7 @@
             <div class="text-xxs text-dark-500 font-mono mt-0.5 truncate leading-normal">
               {{ $t('stats.lobReads', { count: stats.totalLobReads }) }}
             </div>
-          </template>
-        </Card>
+        </div>
       </div>
 
       <!-- 2. Health Insight Banner -->
@@ -189,15 +179,16 @@
           </div>
 
           <!-- Quick Filter Input -->
-          <IconField>
-            <InputIcon class="pi pi-search text-dark-500" />
-            <InputText
-              v-model="tableFilterQuery"
-              :placeholder="$t('stats.filterTablesPlaceholder')"
-              size="small"
-              class="w-40 font-mono !text-xxs !py-0.5 !pl-6"
-            />
-          </IconField>
+          <SqInput
+            v-model="tableFilterQuery"
+            :placeholder="$t('stats.filterTablesPlaceholder')"
+            size="sm"
+            class="w-40 font-mono"
+          >
+            <template #prefix>
+              <Search class="w-3.5 h-3.5 text-dark-500" />
+            </template>
+          </SqInput>
         </div>
 
         <!-- DataTable -->
@@ -301,12 +292,10 @@
 import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import Button from 'primevue/button';
-import Card from 'primevue/card';
 import SqChip from '@/components/ui/SqChip.vue';
 import Message from 'primevue/message';
-import IconField from 'primevue/iconfield';
-import InputIcon from 'primevue/inputicon';
-import InputText from 'primevue/inputtext';
+import SqInput from '@/components/ui/SqInput.vue';
+import { Search } from 'lucide-vue-next';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import { useQueryStore } from '@/stores/queryStore';

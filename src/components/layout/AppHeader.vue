@@ -167,7 +167,7 @@
           @click="$emit('run-query', 'all')"
         />
 
-        <Divider layout="vertical" class="!my-0 !h-4 !mx-0.5" />
+        <div class="w-px h-4 bg-dark-700 mx-0.5 flex-shrink-0" />
 
         <!-- SQL Editor Clipboard & Folding Actions -->
         <SqlEditorToolbarActions
@@ -299,7 +299,7 @@
           </div>
         </Popover>
 
-        <Divider layout="vertical" class="!my-0 !h-4 !mx-0.5" />
+        <div class="w-px h-4 bg-dark-700 mx-0.5 flex-shrink-0" />
 
         <!-- Performance Analysis Toggle (SET STATISTICS IO, TIME ON) -->
         <Button
@@ -359,7 +359,7 @@
           </Select>
         </div>
 
-        <Divider layout="vertical" class="!my-0 !h-4 !mx-0.5" />
+        <div class="w-px h-4 bg-dark-700 mx-0.5 flex-shrink-0" />
 
         <!-- Toggle Sidebar -->
         <Button
@@ -409,7 +409,6 @@ import Button from 'primevue/button';
 import Select from 'primevue/select';
 import { ChartLine, Database } from 'lucide-vue-next';
 import SqChip from '@/components/ui/SqChip.vue';
-import Divider from 'primevue/divider';
 import Popover from 'primevue/popover';
 import SqlEditorToolbarActions from '@/components/layout/SqlEditorToolbarActions.vue';
 import WindowControls from '@/components/layout/WindowControls.vue';

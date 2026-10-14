@@ -24,21 +24,23 @@
 
         <div class="h-4 w-px bg-dark-700 mx-1"></div>
 
-        <!-- Search Input with IconField -->
-        <IconField class="flex-1">
-          <InputIcon class="pi pi-search text-accent" />
-          <InputText
-            ref="searchInputRef"
-            v-model="templateStore.searchQuery"
-            type="text"
-            :placeholder="$t('sqlTemplates.searchPlaceholder')"
-            class="w-full !bg-dark-800 !border-dark-700 font-mono !text-xs text-dark-100 placeholder-dark-500"
-            @keydown.down.prevent="navigateDown"
-            @keydown.up.prevent="navigateUp"
-            @keydown.enter="handleEnterKey"
-            @keydown.esc.prevent="closeModal"
-          />
-        </IconField>
+        <!-- Search Input -->
+        <SqInput
+          ref="searchInputRef"
+          v-model="templateStore.searchQuery"
+          type="text"
+          :placeholder="$t('sqlTemplates.searchPlaceholder')"
+          size="sm"
+          class="flex-1 font-mono"
+          @keydown.down.prevent="navigateDown"
+          @keydown.up.prevent="navigateUp"
+          @keydown.enter="handleEnterKey"
+          @keydown.esc.prevent="closeModal"
+        >
+          <template #prefix>
+            <Search class="w-3.5 h-3.5 text-accent" />
+          </template>
+        </SqInput>
 
         <Button
           v-if="templateStore.searchQuery"
@@ -400,12 +402,12 @@
       <!-- Title Field -->
       <div class="space-y-1">
         <label class="block text-dark-300 font-medium">{{ $t('sqlTemplates.tplTitle') }} <span class="text-danger">*</span></label>
-        <InputText
+        <SqInput
           v-model="formState.title"
           required
           type="text"
           :placeholder="$t('sqlTemplates.tplTitlePlaceholder')"
-          size="small"
+          size="sm"
           class="w-full"
         />
       </div>
@@ -426,11 +428,11 @@
 
         <div class="space-y-1">
           <label class="block text-dark-300 font-medium">{{ $t('sqlTemplates.tplTags') }}</label>
-          <InputText
+          <SqInput
             v-model="formState.tagsInput"
             type="text"
             :placeholder="$t('sqlTemplates.tplTagsPlaceholder')"
-            size="small"
+            size="sm"
             class="w-full font-mono"
           />
         </div>
@@ -490,13 +492,12 @@
 import { ref, reactive, computed, watch, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import Dialog from 'primevue/dialog';
-import IconField from 'primevue/iconfield';
-import InputIcon from 'primevue/inputicon';
-import InputText from 'primevue/inputtext';
+import SqInput from '@/components/ui/SqInput.vue';
 import Textarea from 'primevue/textarea';
 import Button from 'primevue/button';
 import Select from 'primevue/select';
 import SqChip, { type SqChipTone } from '@/components/ui/SqChip.vue';
+import { Search } from 'lucide-vue-next';
 import { useSqlTemplateStore } from '@/stores/sqlTemplateStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useDialogWindow } from '@/composables/useDialogWindow';

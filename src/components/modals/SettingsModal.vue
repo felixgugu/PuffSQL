@@ -241,7 +241,7 @@
             <Button label="文字按鈕" text size="small" />
             <SqChip label="狀態標籤" />
             <Badge value="99+" />
-            <InputText placeholder="輸入框預覽..." size="small" class="w-32 !h-7 !text-xs" />
+            <SqInput placeholder="輸入框預覽..." size="sm" class="w-32" />
             <div class="flex items-center space-x-1.5 pl-2">
               <Checkbox :binary="true" :model-value="true" />
               <span class="text-xxs text-dark-300">核取方塊</span>
@@ -339,9 +339,9 @@
               class="w-7 h-7 rounded border border-dark-700 bg-dark-900 cursor-pointer p-0.5"
               title="選擇高亮顏色"
             />
-            <InputText
+            <SqInput
               v-model="settingsStore.editorHighlightColor"
-              class="w-20 !h-7 !bg-dark-900 !border-dark-700 !text-xs !font-mono text-center uppercase"
+              class="w-20 font-mono"
               placeholder="#feffe0"
             />
           </div>
@@ -598,7 +598,7 @@ import SelectButton from 'primevue/selectbutton';
 import ToggleSwitch from 'primevue/toggleswitch';
 import Badge from 'primevue/badge';
 import Checkbox from 'primevue/checkbox';
-import InputText from 'primevue/inputtext';
+import SqInput from '@/components/ui/SqInput.vue';
 import SqChip from '@/components/ui/SqChip.vue';
 import { usePrimeVue } from 'primevue/config';
 import { useSettingsStore } from '@/stores/settingsStore';

@@ -205,11 +205,11 @@
         </p>
         <div>
           <label class="block text-xxs text-dark-400 mb-1">{{ $t('sidebar.newName') }}</label>
-          <InputText
+          <SqInput
             id="rename-target-input"
             v-model="renameInput"
             :placeholder="targetNode?.isDir ? $t('sidebar.folderPlaceholder') : $t('sidebar.filePlaceholder')"
-            class="w-full font-sans text-xs"
+            class="w-full"
             @keyup.enter="handleConfirmRename"
           />
           <p v-if="renameError" class="text-danger text-xxs mt-1.5">{{ renameError }}</p>
@@ -259,10 +259,10 @@
         </p>
         <div>
           <label class="block text-xxs text-dark-400 mb-1">{{ $t('sidebar.folderFullPath') }}</label>
-          <InputText
+          <SqInput
             v-model="manualPathInput"
             :placeholder="$t('sidebar.manualPathPlaceholder')"
-            class="w-full font-sans text-xs"
+            class="w-full"
             @keyup.enter="handleConfirmManualPath"
           />
         </div>
@@ -297,7 +297,7 @@
 import { ref, computed, onMounted, provide, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import Button from 'primevue/button';
-import InputText from 'primevue/inputtext';
+import SqInput from '@/components/ui/SqInput.vue';
 import Dialog from 'primevue/dialog';
 import ContextMenu from 'primevue/contextmenu';
 import {

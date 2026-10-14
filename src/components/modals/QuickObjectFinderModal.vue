@@ -15,20 +15,22 @@
     <!-- Search Header Bar -->
     <div class="sq-dialog-drag-handle p-3 border-b border-dark-700 bg-dark-900/60 flex flex-col space-y-2.5 flex-shrink-0">
       <div class="flex items-center space-x-2">
-        <IconField class="flex-1">
-          <InputIcon class="pi pi-search text-accent" />
-          <InputText
-            ref="searchInputRef"
-            v-model="searchQuery"
-            type="text"
-            :placeholder="$t('quickFinder.placeholder')"
-            class="w-full !bg-dark-900/50 !border-dark-700 !text-sm font-mono text-dark-100 placeholder-dark-500"
-            @keydown.down.prevent="navigateDown"
-            @keydown.up.prevent="navigateUp"
-            @keydown.enter="handleEnterKey($event)"
-            @keydown.esc.prevent="closeModal"
-          />
-        </IconField>
+        <SqInput
+          ref="searchInputRef"
+          v-model="searchQuery"
+          type="text"
+          :placeholder="$t('quickFinder.placeholder')"
+          size="lg"
+          class="flex-1 font-mono"
+          @keydown.down.prevent="navigateDown"
+          @keydown.up.prevent="navigateUp"
+          @keydown.enter="handleEnterKey($event)"
+          @keydown.esc.prevent="closeModal"
+        >
+          <template #prefix>
+            <Search class="w-3.5 h-3.5 text-accent" />
+          </template>
+        </SqInput>
 
         <Button
           v-if="searchQuery"
@@ -339,12 +341,10 @@
 import { ref, computed, watch, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import Dialog from 'primevue/dialog';
-import IconField from 'primevue/iconfield';
-import InputIcon from 'primevue/inputicon';
-import InputText from 'primevue/inputtext';
+import SqInput from '@/components/ui/SqInput.vue';
 import Button from 'primevue/button';
 import Select from 'primevue/select';
-import { FileCode, List, Play, Table2 } from 'lucide-vue-next';
+import { FileCode, List, Play, Search, Table2 } from 'lucide-vue-next';
 import SqChip from '@/components/ui/SqChip.vue';
 import { useConnectionStore } from '@/stores/connectionStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';

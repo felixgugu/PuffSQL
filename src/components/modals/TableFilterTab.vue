@@ -30,26 +30,26 @@
 
         <!-- Pattern Input -->
         <div class="col-span-4">
-          <InputText
+          <SqInput
             v-model="newPattern"
             type="text"
             placeholder="正規表示式 (例: ^(master|tempdb)$)"
-            size="small"
+            size="sm"
             @keydown.enter="handleAddRule"
             :invalid="!!patternError"
-            class="w-full font-mono !text-xs !h-7 placeholder:!text-[11px] placeholder:!text-dark-500"
+            class="w-full font-mono"
           />
         </div>
 
         <!-- Description Input -->
         <div class="col-span-3">
-          <InputText
+          <SqInput
             v-model="newDescription"
             type="text"
             placeholder="說明備註 (選填，例: 系統庫)"
-            size="small"
+            size="sm"
             @keydown.enter="handleAddRule"
-            class="w-full !text-xs !h-7 placeholder:!text-[11px] placeholder:!text-dark-500"
+            class="w-full"
           />
         </div>
 
@@ -111,28 +111,28 @@
 
               <!-- Pattern Input -->
               <div class="col-span-4">
-                <InputText
+                <SqInput
                   v-model="editPattern"
                   type="text"
                   placeholder="正規表示式"
-                  size="small"
+                  size="sm"
                   @keydown.enter="saveEditing"
                   @keydown.esc="cancelEditing"
                   :invalid="!!editPatternError"
-                  class="w-full font-mono !text-xs !h-7 placeholder:!text-[11px] placeholder:!text-dark-500"
+                  class="w-full font-mono"
                 />
               </div>
 
               <!-- Description Input -->
               <div class="col-span-3">
-                <InputText
+                <SqInput
                   v-model="editDescription"
                   type="text"
                   placeholder="說明備註 (選填)"
-                  size="small"
+                  size="sm"
                   @keydown.enter="saveEditing"
                   @keydown.esc="cancelEditing"
-                  class="w-full !text-xs !h-7 placeholder:!text-[11px] placeholder:!text-dark-500"
+                  class="w-full"
                 />
               </div>
 
@@ -254,12 +254,12 @@
           class="!text-xxs"
         />
 
-        <InputText
+        <SqInput
           v-model="testName"
           type="text"
           :placeholder="testTargetType === 'database' ? '輸入資料庫名稱 (例: tempdb 或 DB_bak)' : '輸入資料表名稱 (例: bak_Orders 或 dbo.tmp_logs)'"
-          size="small"
-          class="flex-1 font-mono !text-xs !h-7 placeholder:!text-[11px] placeholder:!text-dark-500"
+          size="sm"
+          class="flex-1 font-mono"
         />
         <div v-if="testName.trim()" class="flex-shrink-0">
           <SqChip
@@ -289,7 +289,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import Select from 'primevue/select';
-import InputText from 'primevue/inputtext';
+import SqInput from '@/components/ui/SqInput.vue';
 import Button from 'primevue/button';
 import Checkbox from 'primevue/checkbox';
 import { Eye, EyeOff } from 'lucide-vue-next';

@@ -11,16 +11,17 @@
         </span>
 
         <!-- Quick Filter Input -->
-        <IconField class="w-40 sm:w-56 ml-2">
-          <InputIcon class="pi pi-search text-dark-500 text-xs" />
-          <InputText
-            v-model="quickFilter"
-            type="text"
-            :placeholder="$t('dataView.filterTableDataPlaceholder')"
-            size="small"
-            class="w-full !bg-dark-900 !border-dark-700 !py-0.5 !pl-7 !pr-6 !text-xs"
-          />
-        </IconField>
+        <SqInput
+          v-model="quickFilter"
+          type="text"
+          :placeholder="$t('dataView.filterTableDataPlaceholder')"
+          size="sm"
+          class="w-40 sm:w-56 ml-2"
+        >
+          <template #prefix>
+            <Search class="w-3.5 h-3.5 text-dark-500" />
+          </template>
+        </SqInput>
       </div>
 
       <div class="flex items-center space-x-1.5 flex-shrink-0">
@@ -257,9 +258,7 @@
 <script setup lang="ts">
 import { ref, computed, reactive, onMounted, onBeforeUnmount, nextTick, watch, markRaw } from 'vue';
 import Button from 'primevue/button';
-import InputText from 'primevue/inputtext';
-import IconField from 'primevue/iconfield';
-import InputIcon from 'primevue/inputicon';
+import SqInput from '@/components/ui/SqInput.vue';
 import {
   FileText,
   Copy,
@@ -267,6 +266,7 @@ import {
   Edit3,
   Trash2,
   Braces,
+  Search,
 } from 'lucide-vue-next';
 import type {
   TabulatorCellComponent,

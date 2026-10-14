@@ -63,7 +63,10 @@ defineExpose({
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  width: 100%;
+  /* Width stays a call-site decision (`w-full`, `w-40`, …): no scoped `width` rule here, which
+     would out-specify Tailwind's utilities and silently ignore those classes. */
+  flex: 1 1 auto;
+  min-width: 0;
   padding: 0 8px;
   background-color: rgb(var(--color-dark-900));
   border: 1px solid rgb(var(--color-dark-700));

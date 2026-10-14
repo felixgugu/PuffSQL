@@ -81,22 +81,22 @@
                   {{ $t('connectionModal.nameExists') }}
                 </span>
               </div>
-              <InputText
+              <SqInput
                 v-model="form.name"
                 required
                 placeholder="e.g. Local Development MSSQL"
                 :invalid="isDuplicateName"
-                class="w-full !text-xs !bg-dark-900/90 !border-dark-700 hover:!border-dark-600 focus:!border-accent !rounded-lg font-sans !py-1.5 !px-2.5"
+                class="w-full"
               />
             </div>
             <div>
               <div class="flex items-center justify-between mb-1">
                 <label class="block text-dark-300 font-medium text-xxs">{{ $t('connectionModal.alias') }}</label>
               </div>
-              <InputText
+              <SqInput
                 v-model="form.alias"
                 placeholder="PROD, DEV"
-                class="w-full !text-xs !bg-dark-900/90 !border-dark-700 hover:!border-dark-600 focus:!border-accent !rounded-lg font-mono uppercase !py-1.5 !px-2.5"
+                class="w-full font-mono uppercase"
               />
             </div>
           </div>
@@ -105,11 +105,11 @@
           <div class="grid grid-cols-5 gap-2.5">
             <div class="col-span-3">
               <label class="block text-dark-300 font-medium text-xxs mb-1">{{ $t('connectionModal.hostRequired') }}</label>
-              <InputText
+              <SqInput
                 v-model="form.host"
                 required
                 placeholder="localhost or 127.0.0.1"
-                class="w-full !text-xs !bg-dark-900/90 !border-dark-700 hover:!border-dark-600 focus:!border-accent !rounded-lg font-mono !py-1.5 !px-2.5"
+                class="w-full font-mono"
               />
             </div>
             <div class="col-span-2">
@@ -126,11 +126,11 @@
 
           <div>
             <label class="block text-dark-300 font-medium text-xxs mb-1">{{ $t('connectionModal.defaultDatabaseRequired') }}</label>
-            <InputText
+            <SqInput
               v-model="form.database"
               required
               placeholder="master"
-              class="w-full !text-xs !bg-dark-900/90 !border-dark-700 hover:!border-dark-600 focus:!border-accent !rounded-lg font-mono !py-1.5 !px-2.5"
+              class="w-full font-mono"
             />
           </div>
         </div>
@@ -146,11 +146,11 @@
         <div class="grid grid-cols-2 gap-2.5 pt-0.5">
           <div>
             <label class="block text-dark-300 font-medium text-xxs mb-1">{{ $t('connectionModal.usernameRequired') }}</label>
-            <InputText
+            <SqInput
               v-model="form.username"
               required
               placeholder="sa"
-              class="w-full !text-xs !bg-dark-900/90 !border-dark-700 hover:!border-dark-600 focus:!border-accent !rounded-lg font-mono !py-1.5 !px-2.5"
+              class="w-full font-mono"
             />
           </div>
           <div>
@@ -358,7 +358,7 @@
 import { reactive, ref, watch, computed } from 'vue';
 import Dialog from 'primevue/dialog';
 import { useDialogWindow } from '@/composables/useDialogWindow';
-import InputText from 'primevue/inputtext';
+import SqInput from '@/components/ui/SqInput.vue';
 import InputNumber from 'primevue/inputnumber';
 import Password from 'primevue/password';
 import ToggleSwitch from 'primevue/toggleswitch';

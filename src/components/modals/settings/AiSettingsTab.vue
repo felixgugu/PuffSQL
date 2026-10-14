@@ -23,11 +23,11 @@
       </div>
       <div class="flex items-center space-x-2">
         <div class="relative flex-1">
-          <InputText
+          <SqInput
             v-model="aiChatStore.config.apiKey"
             :type="showApiKey ? 'text' : 'password'"
             placeholder="請輸入 API Key (如 sk-...)"
-            class="w-full !text-xs !bg-dark-900 !border-dark-750 font-mono pr-8"
+            class="w-full font-mono pr-6"
           />
           <button
             type="button"
@@ -190,10 +190,10 @@
       <div class="space-y-4 pt-2">
         <div class="space-y-1">
           <label class="text-xs font-medium text-dark-200 block">選項名稱 (按鈕標籤) *</label>
-          <InputText
+          <SqInput
             v-model="promptForm.label"
             placeholder="例如：查詢最佳化、檢查死鎖風險..."
-            class="w-full !text-xs !bg-dark-900 !border-dark-700"
+            class="w-full"
           />
         </div>
         <div class="space-y-1">
@@ -233,7 +233,7 @@
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue';
-import InputText from 'primevue/inputtext';
+import SqInput from '@/components/ui/SqInput.vue';
 import Button from 'primevue/button';
 import Textarea from 'primevue/textarea';
 import Dialog from 'primevue/dialog';

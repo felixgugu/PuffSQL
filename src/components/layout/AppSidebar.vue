@@ -52,9 +52,7 @@
 
     <!-- Filter Search Box with ComboBox & Clear Button -->
     <div ref="filterContainerRef" class="p-2 border-b border-dark-700 flex-shrink-0 relative">
-      <div class="relative flex items-center">
-        <Search class="w-3.5 h-3.5 text-dark-500 absolute left-2 pointer-events-none" />
-        <InputText
+      <SqInput
           ref="filterInputRef"
           v-model="filterQuery"
           @keydown.enter.stop="handleKeyEnter"
@@ -63,11 +61,15 @@
           @keydown.esc.stop="handleKeyEsc"
           @blur="handleInputBlur"
           :placeholder="$t('sidebar.filterPlaceholder')"
-          class="w-full !bg-dark-900 !border-dark-700 !rounded !px-2 !py-1 !pl-7 !pr-12 !text-xs !text-dark-100 !font-sans"
-        />
-
-        <!-- Right Buttons inside Input -->
-        <div class="absolute right-1 flex items-center space-x-0.5">
+          size="sm"
+          class="w-full"
+        >
+          <template #prefix>
+            <Search class="w-3.5 h-3.5 text-dark-500" />
+          </template>
+          <!-- Right Buttons inside Input -->
+          <template #suffix>
+            <div class="flex items-center space-x-0.5">
           <!-- Clear Button (X) -->
           <button
             v-if="filterQuery"
@@ -92,7 +94,8 @@
             <ChevronDown :class="['w-3 h-3 transition-transform duration-150', isHistoryDropdownOpen ? 'rotate-180' : '']" />
           </button>
         </div>
-      </div>
+        </template>
+      </SqInput>
 
       <!-- ComboBox Dropdown Menu -->
       <div
@@ -716,7 +719,7 @@
 import { ref, onMounted, onUnmounted, reactive, nextTick, watch, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import Button from 'primevue/button';
-import InputText from 'primevue/inputtext';
+import SqInput from '@/components/ui/SqInput.vue';
 import ContextMenu from 'primevue/contextmenu';
 import SqChip from '@/components/ui/SqChip.vue';
 import {

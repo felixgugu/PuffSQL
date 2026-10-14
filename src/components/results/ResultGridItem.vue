@@ -18,27 +18,30 @@
           </template>
         </SqChip>
 
-        <!-- Quick Filter Input (PrimeVue InputText has no built-in clear, so the icon is overlaid) -->
-        <IconField class="w-44 sm:w-56">
-          <InputIcon class="pi pi-search text-dark-500 text-xs" />
-          <InputText
-            v-model="quickFilterInput"
-            type="text"
-            :placeholder="hasRows ? $t('results.filterPlaceholder') : $t('results.noDataToSearch')"
-            :disabled="!hasRows"
-            size="small"
-            class="w-full !bg-dark-900 !border-dark-700 !py-0.5 !pl-7 !pr-6 !text-xs disabled:opacity-50 disabled:cursor-not-allowed"
-          />
-          <button
-            v-if="quickFilterInput"
-            type="button"
-            class="absolute right-1.5 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center text-dark-500 hover:text-dark-100 transition-colors"
-            :title="$t('results.clearFilter')"
-            @click="clearQuickFilter"
-          >
-            <X class="w-3 h-3" />
-          </button>
-        </IconField>
+        <!-- Quick Filter Input: prefix/suffix slots replace PrimeVue's IconField/InputIcon pair -->
+        <SqInput
+          v-model="quickFilterInput"
+          type="text"
+          :placeholder="hasRows ? $t('results.filterPlaceholder') : $t('results.noDataToSearch')"
+          :disabled="!hasRows"
+          size="sm"
+          class="w-44 sm:w-56"
+        >
+          <template #prefix>
+            <Search class="w-3.5 h-3.5 text-dark-500" />
+          </template>
+          <template #suffix>
+            <button
+              v-if="quickFilterInput"
+              type="button"
+              class="flex items-center justify-center text-dark-500 hover:text-dark-100 transition-colors"
+              :title="$t('results.clearFilter')"
+              @click="clearQuickFilter"
+            >
+              <X class="w-3 h-3" />
+            </button>
+          </template>
+        </SqInput>
 
         <!-- Truncation Warning Badge (when max rows limit reached) -->
         <SqChip
@@ -598,9 +601,7 @@
 <script setup lang="ts">
 import { ref, computed, reactive, watch, toRaw, nextTick, onMounted, onBeforeUnmount } from 'vue';
 import Button from 'primevue/button';
-import InputText from 'primevue/inputtext';
-import IconField from 'primevue/iconfield';
-import InputIcon from 'primevue/inputicon';
+import SqInput from '@/components/ui/SqInput.vue';
 import SqChip from '@/components/ui/SqChip.vue';
 import Dialog from 'primevue/dialog';
 import {
@@ -619,6 +620,7 @@ import {
   TriangleAlert,
   Network,
   Lock,
+  Search,
 } from 'lucide-vue-next';
 import type {
   TabulatorCellComponent,
