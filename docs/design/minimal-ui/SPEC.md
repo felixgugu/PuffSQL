@@ -261,10 +261,18 @@ WCAG 1.4.11 的豁免）；分隔步 `#64748B` 對畫布 4.76:1；focus 指示�
   驗證：566 項測試通過（含重寫後的對比護欄 ×2、晶片底色 ×1、Tabulator 表面 ×1、預設模式 ×1）、
   `npm run typecheck`、`npm run build` 通過，並以 Vite dev + headless Chrome 實拍淺色與深色
   真實 App 畫面確認。
-- **P2 外殼：待做。** 實拍顯示標題列的按鈕仍是彩色（綠／藍／紫／琥珀並存），需依本規範逐一收斂
-  為單一操作色 + 中性灰；面板陰影、圓角與間距也尚未調整。
-- **P3 圖示：待做**（335 處 PrimeIcons → lucide）。
-- **P4 葉節點元件：待做**（見 PRIMEVUE-EVALUATION.md §3 對照表）。
+- **P2 外殼：已完成（2026-10-14）。** 標題列、側邊欄、分頁列、狀態列收斂為單一操作色 + 中性灰：
+  執行／執行全部與三個模式開關改綁操作色，六個裝飾性色（開檔／存檔／快速尋找／範本／AI／DBA）
+  改中性，側邊欄「使用中／已定位／待貼上」徽章改中性、開啟中列走選取態，分頁列移除陰影與
+  拖曳 ring/scale，狀態列連線燈改 token。`rg` 掃描 `src/components/layout` 對寫死的 Tailwind
+  色階已 0 命中。新增唯一允許的兩級陰影 token（`shadow-raised`／`shadow-overlay`）。
+- **P3 圖示：部分完成。** 外殼自有標記中的 PrimeIcons 已全數換成 lucide（含 DBA 按鈕補上
+  `aria-label`）。仍待處理：62 處 `<i class="pi ...">` 元素（主要在對話框與檢視器）與 128 個
+  PrimeVue `icon="pi ..."` prop（依賴 P4 換掉元件後改用 `#icon` slot），完成後才移除 primeicons。
+- **P4 葉節點元件：部分完成。** 已建立 `src/components/ui/SqChip.vue`（取代 Tag）與
+  `SqInput.vue`（取代 InputText），並遷移外殼與結果區（14 個 chip 與相關標記）。仍待處理：
+  16 個檔案／27 個渲染點仍用 PrimeVue Tag、13 個檔案仍用 InputText，以及 Checkbox、
+  ToggleSwitch、SelectButton、Divider、Badge、Card、ProgressBar（見 PRIMEVUE-EVALUATION.md §3）。
 
 - [ ] 全站只有一個操作藍 `#2E6F9E`（及其 hover／tint），沒有第二個彩色 CTA。
 - [ ] 淺色為預設：畫布白、外框淺灰、深灰文字；深色為配對變體且對比另行驗證。
