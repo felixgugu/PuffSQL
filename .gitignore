@@ -15,6 +15,8 @@ src-tauri/gen
 
 # Agent scaffolding (local tooling, not part of the app)
 .agents/
+codex-session-*.md
+skills-lock.json
 
 # Design-review scratch renders (regenerate with the command in docs/design/minimal-ui/README.md)
 .design-preview/
