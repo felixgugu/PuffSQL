@@ -570,3 +570,19 @@ failed to read plugin permissions: failed to read file
 
 - `npm test`：664 個通過；`npm run typecheck`、`npm run build`、`npm run icons:check` 皆通過。
 - 視覺核對（既有 harness）：標題列、SQL 編輯工具列三條分段容器、物件總管、結果工具列與複製分段條、設定對話框，外觀與切換前一致（同為 2px 筆畫）。
+
+## 已實作（2026-10-15）：品牌圖示改用新的 mascot，並修好 favicon 來源
+
+需求：用新提供的品牌圖（河豚 mascot）重新產生整組應用程式圖示。
+
+已實作：
+
+1. 來源 `src-tauri/icons/icon-source.png`（1100 × 1100、32bpp ARGB、四角 alpha = 0 的透明背景）納入版控，作為日後重建的單一來源。
+2. 以 `npx tauri icon src-tauri/icons/icon-source.png`（tauri-cli 2.11.4）重建 51 個檔案：Windows 桌面（`32x32`／`64x64`／`128x128`／`128x128@2x`／`icon.png`／`icon.ico`）、Windows Store（`StoreLogo` 與 `Square*Logo`）、macOS `icon.icns`，以及 android／ios 全套。應用程式只有兩處使用品牌圖示：Tauri 視窗／工作列圖示（`tauri.conf.json` 的 `bundle.icon`）與設定 → 關於面板引用的 `64x64.png`；標題列依規範不放 logo。
+3. `index.html` 的 favicon 原本指向不存在的 `/vite.svg`（Vite 預設殘留，dev 與 build 都是 404），改指 `/src-tauri/icons/64x64.png`：Vite 會把它當資產處理，build 時複製成 `dist/assets/64x64-<hash>.png` 並改寫 `href`，因此不必在 `public/` 再放一份複製品（符合 `app_brand_icon` 對「品牌圖示不重複」的要求）。
+
+驗收：
+
+- `npm test`：664 個通過（`app_brand_icon` 仍要求 `src-tauri/icons/64x64.png` 存在且 About 面板引用它）。
+- `npm run build`：通過；`dist/index.html` 的 favicon 指向 `dist/assets/64x64-*.png`（8060 bytes，已確認存在）。
+- 視覺抽查：`128x128.png`、`32x32.png`（小尺寸仍可辨識）與 `icon.ico` 解出的內框皆為新圖。
