@@ -521,3 +521,36 @@ failed to read plugin permissions: failed to read file
 
 - `npm test`：635 個通過（`tests/drag_drop_table.test.ts` 改為匯入實作而非複製字串樣板，新增單行、無 `TOP`、結尾換行、無 database 前綴、必要時才加中括弧、空白 schema 省略的斷言）。
 - `npm run typecheck`：通過。
+
+## 已實作（2026-10-15）：SQL 編輯頁專屬工具列
+
+需求：最上方標題列塞了 20 多個控制項；改成 SQL 編輯分頁在編輯區上方自帶一條工具列，把屬於編輯頁的按鈕移下來。
+
+已實作：
+
+1. `src/components/layout/SqlEditorToolbar.vue`（新增，並併入已刪除的 `SqlEditorToolbarActions.vue`）：36px（SPEC §5「編輯器工具列」）單列，`bg-dark-850` + 1px 下緣、無陰影、`flex-shrink-0`。左起為 Run／Stop 互換鈕、獨立的 Run All、細線分隔、剪下／複製／貼上、細線分隔、摺疊／展開／格式化；中段 `<div class="flex-1">` 彈性空白後，右側為 IO 統計、預估計畫、實際計畫三個開關與 Limit 選取器。按鈕尺寸、i18n key 與既有 tooltip 文案全部沿用原標題列的版本；剪貼三鍵不再有 ≤1440px 的隱藏規則。
+2. `src/components/layout/AppMain.vue`：在 `sql_editor` 分頁分支內、Monaco 之前插入該列，事件直接接到自己的 `runQuery`／`queryStore.cancelQuery`／`formatCode`／`runEditorAction`，不再經 `App.vue` 轉發；因為列本身就在 `v-if` 分支內，切到資料表資料／結構、執行計畫或 ER 圖時整列不渲染。
+3. `src/components/layout/AppHeader.vue`：移除 Run／Stop、Run All、剪貼摺疊叢集、格式化、IO 統計、預估計畫、實際計畫、Limit 與其 emit／import／`queryStore` 使用；標題列只留連線／資料庫選取、開檔／存檔、物件快搜、SQL 範本、AI 助手、DBA 工具箱、側欄／底部面板開關、設定與視窗控制，拖曳區與 `WindowControls` 契約不變。同日再移除標題列的「新增查詢分頁」按鈕：分頁列右端已有同樣的「+」且 `Ctrl + N` 也通，兩處重複；`editor.newTab` 只由 `AppMain` 的分頁列使用。
+4. `src/App.vue`：移除已被搬走的 4 條事件綁定與 `handleSqlEditorAction`；`handleRunQuery`／`handleCancelQuery`／`handleFormatSql` 保留給全域快捷鍵（Ctrl+Enter、Ctrl+Shift+Enter、Shift+Alt+F、Esc／Alt+Pause）。
+
+驗收：
+
+- `npm test`：640 個通過（`tests/sql_editor_toolbar_actions.test.ts` 改指向新元件並驗證動作順序 cut→copy→paste→foldAll→unfoldAll、一律顯示、AppMain 直接接線；新增 `tests/sql_editor_toolbar_layout.test.ts` 驗證 36px chrome 列、右組順序、Run／Stop 互換、只在 SQL 分頁渲染、標題列不再持有這些控制項；`tests/minimal_ui_primitives.test.ts` 的檔案清單改指新元件）。
+- `npm run typecheck`：通過。
+- 視覺核對：以 `docs/design/minimal-ui/harness/workspace.html` 與 `tabs.html#data` 各截一張，確認 SQL 分頁的工具列分組與右靠 Limit 正確，非 SQL 分頁不出現該列。
+
+## 已實作（2026-10-15）：工具列按鈕分組（分段容器）
+
+需求：把同一組動作收進一條共用外框的分段容器；查詢結果的四個複製格式合成一組並移除圖示。
+
+已實作：
+
+1. `src/components/ui/SqButtonGroup.vue`（新增）：外框 1px `--color-dark-700`、4px 圓角、`role="group"` + `aria-label`、段與段之間以 `.sq-btn + .sq-btn` 的 1px `--color-dark-750` 左緣細線分隔（`SqButton` 本來就有 1px 透明邊框，只改顏色，不需要額外元素或 gap）。刻意不加 `overflow: hidden`，改把首／末段的內側圓角設為 3px，避免裁掉 `SqButton` 畫在盒子外的 2px accent focus ring。形狀沿用既有 `SqSegmented` 的分段控制語言，因此不觸動 SPEC §6「膠囊形僅限狀態點」。**外框的高度算進控制高度**：段在群組內各縮 2px（xs/sm/md/lg = 18/22/26/30），整條外緣維持 20/24/28/32；先前的版本讓 28px 的 md 段變成 30px 高的外框，旁邊 24px 的 Limit 下拉因此明顯矮一截（實測 30 vs 24），Limit 一併改為 `size="md"` 後，編輯工具列（Run／三條分段／Limit）在 28px、結果工具列（重新整理／複製分段）在 24px 完全對齊。
+2. `src/components/layout/SqlEditorToolbar.vue`：`剪下／複製／貼上`、`摺疊／展開／格式化`、`IO 統計／預估執行計畫／實際執行計畫` 各成一條分段容器（`aria-label` 分別為剪貼、檢視與格式化、執行分析選項）；三顆執行分析仍維持獨立 toggle 語意（`aria-pressed` + accent）。列改為 `gap-1` 並讓群組各加 `ml-1`，群組之間只用間距分隔，細線只保留 Run All 之後那一條。Limit 選取器移除可見的「Limit:」字樣，改由 `header.maxRowsTooltip`（新增的 i18n key，zh-TW／en 皆有）以 `v-tooltip.bottom` 於 hover 提示，並同時作為 `aria-label`。
+3. `src/components/results/ResultGridItem.vue` + `src/composables/useGridExport.ts`：Copy TSV／CSV／JSON／MD 收進同一條分段容器並移除四個圖示（FileSpreadsheet／FileText／FileCode／Table2 與成功時的 Check），Refresh 與最大化鈕留在容器外；`useGridExport` 新增 `copiedJson`／`copiedMd`（比照既有的 2 秒計時器，抽成 `flashCopied()`），四段在複製成功後一致顯示 `common.copied`（已複製／Copied）2 秒，並以 `min-w-[68px]`／`min-w-[52px]` 固定段寬避免回饋時整條重排。資料表資料／結構檢視器的匯出鈕本次不動。
+4. `docs/design/minimal-ui/SPEC.md` §7 新增「按鈕群組（工具列分段）」條目。
+
+驗收：
+
+- `npm test`：647 個通過（新增 `tests/sq_button_group.test.ts` 驗證外框／圓角／段間細線／不裁切 focus ring／`role="group"`；新增 `tests/result_export_group.test.ts` 驗證四段無圖示、四段都會閃回饋、`copiedJson`／`copiedMd` 會設定且 2 秒後復位、空結果不閃；`tests/sql_editor_toolbar_layout.test.ts` 新增三個分段容器與「只剩一條細線」的斷言）。
+- `npm run typecheck`：通過。

@@ -74,6 +74,7 @@ export default {
     cancelQueryTooltip: 'Cancel running query (Esc / Alt + Pause)',
     formatSql: 'Format',
     formatSqlTooltip: 'Format SQL code (Shift + Alt + F)',
+    maxRowsTooltip: 'Maximum rows returned per query (LIMIT)',
     quickFinder: 'Search',
     quickFinderTooltip: 'Quick Object Finder (Ctrl + P)',
     exportSchema: 'Export Schema',

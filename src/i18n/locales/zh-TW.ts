@@ -74,6 +74,7 @@ export default {
     cancelQueryTooltip: '中斷執行中查詢 (Esc / Alt + Pause)',
     formatSql: '格式化',
     formatSqlTooltip: '格式化 SQL 代碼 (Shift + Alt + F)',
+    maxRowsTooltip: '每次查詢回傳的列數上限（LIMIT）',
     quickFinder: '快速搜尋',
     quickFinderTooltip: '快速物件檢索器 (Ctrl + P)',
     exportSchema: '匯出結構',

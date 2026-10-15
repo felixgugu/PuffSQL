@@ -134,59 +134,41 @@
           <template #icon><RefreshCw class="w-3.5 h-3.5" /></template>
         </SqButton>
 
-        <!-- Copy to TSV (Excel friendly) -->
-        <SqButton
-          type="button"
-          :label="copiedTsv ? 'Copied!' : 'Copy TSV'"
-          size="sm"
-          variant="outline"
-          @click="copyAsTsv"
-          :v-tooltip.top="$t('results.copyTsvTooltip')"
-        >
-          <template #icon>
-            <Check v-if="copiedTsv" class="w-3.5 h-3.5 text-ok" />
-            <FileSpreadsheet v-else class="w-3.5 h-3.5" />
-          </template>
-        </SqButton>
-
-        <!-- Copy to CSV -->
-        <SqButton
-          type="button"
-          :label="copiedCsv ? 'Copied!' : 'CSV'"
-          size="sm"
-          variant="outline"
-          @click="copyAsCsv"
-          :v-tooltip.top="$t('results.copyCsvTooltip')"
-        >
-          <template #icon>
-            <Check v-if="copiedCsv" class="w-3.5 h-3.5 text-ok" />
-            <FileText v-else class="w-3.5 h-3.5" />
-          </template>
-        </SqButton>
-
-        <!-- Copy as JSON -->
-        <SqButton
-          type="button"
-          label="JSON"
-          size="sm"
-          variant="outline"
-          @click="copyAsJson"
-          :v-tooltip.top="$t('results.copyJsonTooltip')"
-        >
-          <template #icon><FileCode class="w-3.5 h-3.5" /></template>
-        </SqButton>
-
-        <!-- Copy as Markdown -->
-        <SqButton
-          type="button"
-          label="MD"
-          size="sm"
-          variant="outline"
-          @click="copyAsMarkdown"
-          :v-tooltip.top="$t('results.copyMdTooltip')"
-        >
-          <template #icon><Table2 class="w-3.5 h-3.5" /></template>
-        </SqButton>
+        <!-- Copy Tools: one label-only strip (SPEC §7), no icons -->
+        <SqButtonGroup aria-label="複製查詢結果">
+          <SqButton
+            type="button"
+            :label="copiedTsv ? $t('common.copied') : 'Copy TSV'"
+            size="sm"
+            class="min-w-[68px]"
+            @click="copyAsTsv"
+            :v-tooltip.top="$t('results.copyTsvTooltip')"
+          />
+          <SqButton
+            type="button"
+            :label="copiedCsv ? $t('common.copied') : 'CSV'"
+            size="sm"
+            class="min-w-[52px]"
+            @click="copyAsCsv"
+            :v-tooltip.top="$t('results.copyCsvTooltip')"
+          />
+          <SqButton
+            type="button"
+            :label="copiedJson ? $t('common.copied') : 'JSON'"
+            size="sm"
+            class="min-w-[52px]"
+            @click="copyAsJson"
+            :v-tooltip.top="$t('results.copyJsonTooltip')"
+          />
+          <SqButton
+            type="button"
+            :label="copiedMd ? $t('common.copied') : 'MD'"
+            size="sm"
+            class="min-w-[52px]"
+            @click="copyAsMarkdown"
+            :v-tooltip.top="$t('results.copyMdTooltip')"
+          />
+        </SqButtonGroup>
 
 
         <!-- Maximize / Restore Toggle (when multiple result sets) -->
@@ -605,6 +587,7 @@
 <script setup lang="ts">
 import { ref, computed, reactive, watch, toRaw, nextTick, onMounted, onBeforeUnmount } from 'vue';
 import SqButton from '@/components/ui/SqButton.vue';
+import SqButtonGroup from '@/components/ui/SqButtonGroup.vue';
 import SqInput from '@/components/ui/SqInput.vue';
 import SqChip from '@/components/ui/SqChip.vue';
 import SqDialog from '@/components/ui/SqDialog.vue';
@@ -628,7 +611,6 @@ import {
   Search,
   Check,
   RefreshCw,
-  FileSpreadsheet,
   ArrowRight,
   SquareMinus,
   SquarePlus,
@@ -1321,6 +1303,8 @@ const gridExport = useGridExport({
 const {
   copiedTsv,
   copiedCsv,
+  copiedJson,
+  copiedMd,
   copyCellValue: exportCopyCellValue,
   copyColumnName: exportCopyColumnName,
   copyCurrentRow: exportCopyCurrentRow,

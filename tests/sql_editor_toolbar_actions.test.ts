@@ -10,14 +10,14 @@ function readSource(relativePath: string): string {
 }
 
 describe('SQL editor toolbar actions', () => {
-  test('toolbar renders the five actions in the requested order', () => {
-    const source = readSource('src/components/layout/SqlEditorToolbarActions.vue');
+  test('toolbar renders the clipboard and folding actions in the requested order', () => {
+    const source = readSource('src/components/layout/SqlEditorToolbar.vue');
     const actionOrder = [
       "action: 'cut'",
       "action: 'copy'",
       "action: 'paste'",
-      "action: 'unfoldAll'",
       "action: 'foldAll'",
+      "action: 'unfoldAll'",
     ];
 
     let previousIndex = -1;
@@ -27,7 +27,7 @@ describe('SQL editor toolbar actions', () => {
       previousIndex = currentIndex;
     }
 
-    assert.match(source, /:disabled="disabled"/, 'buttons should share the disabled prop');
+    assert.match(source, /:aria-label="item\.label"/, 'buttons carry their localized label');
     assert.match(source, /(?:label: '剪下'|label: t\('common\.cut'\))/, 'cut should have a localized label');
     assert.match(source, /(?:label: '複製'|label: t\('common\.copy'\))/, 'copy should have a localized label');
     assert.match(source, /(?:label: '貼上'|label: t\('common\.paste'\))/, 'paste should have a localized label');
@@ -35,38 +35,27 @@ describe('SQL editor toolbar actions', () => {
     assert.match(source, /(?:label: '收合'|label: t\('common\.collapse'\))/, 'fold should have a localized label');
   });
 
-  test('AppHeader places the actions immediately before Format SQL', () => {
-    const source = readSource('src/components/layout/AppHeader.vue');
-    const actionsIndex = source.indexOf('<SqlEditorToolbarActions');
-    const formatIndex = source.indexOf('<!-- Format SQL Button -->');
-
-    assert.ok(actionsIndex !== -1, 'AppHeader should render SqlEditorToolbarActions');
-    assert.ok(formatIndex !== -1, 'AppHeader should retain the Format SQL button');
-    assert.ok(actionsIndex < formatIndex, 'SQL editor actions should be placed before Format SQL');
-    assert.match(
-      source,
-      /:disabled="workspaceStore\.activeTab\?\.type !== 'sql_editor'"/,
-      'the actions should only be enabled for SQL editor tabs'
-    );
-    assert.match(
-      source,
-      /\(e: 'sql-editor-action', action: SqlEditorToolbarAction\): void;/,
-      'AppHeader should emit a typed SQL editor action'
-    );
-  });
-
-  test('App forwards the action through AppMain to MonacoEditor', () => {
-    const appSource = readSource('src/App.vue');
+  test('AppMain wires the toolbar straight to its own editor methods', () => {
     const mainSource = readSource('src/components/layout/AppMain.vue');
-    const editorSource = readSource('src/components/editor/MonacoEditor.vue');
 
-    assert.match(appSource, /@sql-editor-action="handleSqlEditorAction"/);
-    assert.match(appSource, /mainWorkspaceRef\.value\?\.runEditorAction\(action\)/);
+    for (const binding of [
+      '@run-query="runQuery"',
+      '@cancel-query="queryStore.cancelQuery"',
+      '@format-sql="formatCode"',
+      '@editor-action="runEditorAction"',
+    ]) {
+      assert.ok(mainSource.includes(binding), `${binding} should be bound on SqlEditorToolbar`);
+    }
+
     assert.match(mainSource, /function runEditorAction\(action: SqlEditorToolbarAction\)/);
     assert.match(mainSource, /monacoRef\.value\?\.runEditorAction\(action\)/);
     assert.match(mainSource, /defineExpose\(\{[\s\S]*?runEditorAction,/);
-    assert.match(editorSource, /function runEditorAction\(action: SqlEditorToolbarAction\)/);
-    assert.match(editorSource, /defineExpose\(\{[\s\S]*?runEditorAction,/);
+
+    // The action no longer travels through App.vue: the toolbar emits it and AppMain runs it.
+    const appSource = readSource('src/App.vue');
+    assert.doesNotMatch(appSource, /sql-editor-action/, 'App.vue should not relay editor actions');
+    assert.doesNotMatch(appSource, /runEditorAction/, 'App.vue should not relay editor actions');
+    assert.match(appSource, /mainWorkspaceRef\.value\?\.runQuery\(mode\)/, 'shortcuts still run through AppMain');
   });
 
   test('Monaco maps each action to the correct command and focuses before triggering', () => {
@@ -93,27 +82,12 @@ describe('SQL editor toolbar actions', () => {
     assert.ok(focusIndex < triggerIndex, 'focus must be restored before triggering the command');
   });
 
-  test('clipboard actions (cut, copy, paste) are hidden at minimum window width', () => {
-    const source = readSource('src/components/layout/SqlEditorToolbarActions.vue');
-    assert.match(
-      source,
-      /action:\s*'cut'[\s\S]*?class:\s*'[^']*toolbar-action-clipboard[^']*'/,
-      'cut action must have the toolbar-action-clipboard class'
-    );
-    assert.match(
-      source,
-      /action:\s*'copy'[\s\S]*?class:\s*'[^']*toolbar-action-clipboard[^']*'/,
-      'copy action must have the toolbar-action-clipboard class'
-    );
-    assert.match(
-      source,
-      /action:\s*'paste'[\s\S]*?class:\s*'[^']*toolbar-action-clipboard[^']*'/,
-      'paste action must have the toolbar-action-clipboard class'
-    );
-    assert.match(
-      source,
-      /@media\s*\(\s*max-width:\s*1440px\s*\)\s*\{[\s\S]*?\.toolbar-action-clipboard\s*\{[\s\S]*?display:\s*none\s*!important;/,
-      'scoped media query must hide toolbar-action-clipboard at minimum window width'
-    );
+  test('clipboard actions are always visible now that they own a dedicated row', () => {
+    const source = readSource('src/components/layout/SqlEditorToolbar.vue');
+
+    assert.doesNotMatch(source, /@media/, 'the width-based hide rule is gone');
+    assert.doesNotMatch(source, /toolbar-action-clipboard/, 'no action keeps a hiding class');
+    assert.doesNotMatch(source, /min-\[1440px\]/, 'no action is limited to wide windows');
+    assert.doesNotMatch(source, /<style/, 'the row needs no scoped overrides');
   });
 });

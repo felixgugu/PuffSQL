@@ -88,7 +88,8 @@ describe('minimal UI primitives (src/components/ui)', () => {
       'src/components/layout/AppSidebar.vue',
       'src/components/layout/AppBottomPanel.vue',
       'src/components/layout/AppMain.vue',
-      'src/components/layout/SqlEditorToolbarActions.vue',
+      'src/components/layout/SqlEditorToolbar.vue',
+      'src/components/ui/SqButtonGroup.vue',
     ]) {
       const source = readSource(file);
       assert.doesNotMatch(source, /primevue\/button/, `${file} must not import PrimeVue Button`);

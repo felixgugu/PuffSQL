@@ -120,6 +120,14 @@
     <!-- Active Tab Workspace Area (Monaco Editor / Table Data) -->
     <div class="flex-1 relative overflow-hidden bg-dark-900 flex flex-col">
       <div v-if="workspaceStore.activeTab?.type === 'sql_editor'" class="w-full h-full flex flex-col">
+        <!-- SQL Editor Toolbar (belongs to this page only) -->
+        <SqlEditorToolbar
+          @run-query="runQuery"
+          @cancel-query="queryStore.cancelQuery"
+          @format-sql="formatCode"
+          @editor-action="runEditorAction"
+        />
+
         <!-- Monaco SQL Editor Component -->
         <div class="flex-1 relative overflow-hidden" @mousedown="dispatchClearGridSelection">
           <MonacoEditor
@@ -190,6 +198,7 @@ import { useI18n } from 'vue-i18n';
 import SqButton from '@/components/ui/SqButton.vue';
 import SqChip from '@/components/ui/SqChip.vue';
 import SqMenu from '@/components/ui/SqMenu.vue';
+import SqlEditorToolbar from '@/components/layout/SqlEditorToolbar.vue';
 import { useContextMenu } from '@/composables/useContextMenu';
 import {
   Copy,

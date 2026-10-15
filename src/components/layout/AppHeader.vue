@@ -116,58 +116,7 @@
 
     <!-- End: Actions Toolbar & Settings -->
     <div class="flex items-center justify-end space-x-1 min-w-0 overflow-hidden">
-        <!-- Run / Stop Query Button -->
-        <SqButton
-          v-if="!queryStore.isExecuting"
-          tone="accent"
-          variant="solid"
-          class="w-14"
-          :aria-label="$t('header.runTooltip')"
-          v-tooltip.bottom="$t('header.runTooltip')"
-          @click="$emit('run-query', 'current')"
-        >
-          <template #icon><Play class="w-3.5 h-3.5" /></template>
-        </SqButton>
-        <SqButton
-          v-else
-          tone="danger"
-          variant="solid"
-          class="w-14"
-          :loading="queryStore.isCancelling"
-          :disabled="queryStore.isCancelling"
-          :aria-label="$t('header.cancelQueryTooltip')"
-          v-tooltip.bottom="queryStore.isCancelling ? $t('common.running') : $t('header.cancelQueryTooltip')"
-          @click="$emit('cancel-query')"
-        >
-          <template #icon><SquareMinus class="w-3.5 h-3.5" /></template>
-        </SqButton>
-
-        <!-- Run All Statements Button -->
-        <SqButton
-          tone="accent"
-          variant="outline"
-          class="w-14"
-          :disabled="queryStore.isExecuting"
-          :aria-label="$t('header.runAllTooltip')"
-          v-tooltip.bottom="$t('header.runAllTooltip')"
-          @click="$emit('run-query', 'all')"
-        >
-          <template #icon><SkipForward class="w-3.5 h-3.5" /></template>
-        </SqButton>
-
-        <div class="w-px h-4 bg-dark-700 mx-0.5 flex-shrink-0" />
-
-        <!-- SQL Editor Clipboard & Folding Actions -->
-        <SqlEditorToolbarActions
-          :disabled="workspaceStore.activeTab?.type !== 'sql_editor'"
-          @action="handleSqlEditorAction"
-        />
-
-        <!-- Format SQL Button -->
-        <SqButton :aria-label="$t('header.formatSqlTooltip')" v-tooltip.bottom="$t('header.formatSqlTooltip')" @click="$emit('format-sql')">
-          <template #icon><AlignLeft class="w-3.5 h-3.5" /></template>
-        </SqButton>
-
+        <!-- Editing, execution and plan controls moved into the SQL editor toolbar row above the editor. -->
         <!-- Open SQL File Button -->
         <SqButton :aria-label="$t('editor.openFile')" v-tooltip.bottom="$t('editor.openFile')" @click="$emit('open-sql-file')">
           <template #icon><FolderOpen class="w-3.5 h-3.5" /></template>
@@ -176,11 +125,6 @@
         <!-- Save SQL File Button -->
         <SqButton :aria-label="$t('editor.saveFile')" v-tooltip.bottom="$t('editor.saveFile')" @click="$emit('save-sql-file')">
           <template #icon><Save class="w-3.5 h-3.5" /></template>
-        </SqButton>
-
-        <!-- New Query Tab Button -->
-        <SqButton tone="accent" :aria-label="$t('editor.newTab')" v-tooltip.bottom="$t('editor.newTab')" @click="workspaceStore.addSqlTab()">
-          <template #icon><Plus class="w-3.5 h-3.5" /></template>
         </SqButton>
 
         <!-- Quick Object Finder Button (Ctrl + P) -->
@@ -250,66 +194,6 @@
 
         <div class="w-px h-4 bg-dark-700 mx-0.5 flex-shrink-0" />
 
-        <!-- Performance Analysis Toggle (SET STATISTICS IO, TIME ON) -->
-        <SqButton
-          :tone="queryStore.isStatsEnabled ? 'accent' : 'neutral'"
-          :active="queryStore.isStatsEnabled"
-          aria-label="效能分析 (SET STATISTICS IO, TIME ON)"
-          v-tooltip.bottom="'效能分析 (SET STATISTICS IO, TIME ON)'"
-          @click="queryStore.toggleStatsEnabled()"
-        >
-          <template #icon><Gauge class="w-3.5 h-3.5" /></template>
-        </SqButton>
-
-        <!-- Estimated Execution Plan Toggle (SET SHOWPLAN_ALL ON) -->
-        <SqButton
-          :tone="queryStore.isShowplanEnabled ? 'accent' : 'neutral'"
-          :active="queryStore.isShowplanEnabled"
-          aria-label="預估執行計畫 (SET SHOWPLAN_ALL ON)"
-          v-tooltip.bottom="'預估執行計畫 (SET SHOWPLAN_ALL ON)'"
-          @click="queryStore.toggleShowplanEnabled()"
-        >
-          <template #icon><Network class="w-3.5 h-3.5" /></template>
-        </SqButton>
-
-        <!-- Actual Execution Plan Toggle (SET STATISTICS XML ON) -->
-        <SqButton
-          :tone="queryStore.isActualPlanEnabled ? 'accent' : 'neutral'"
-          :active="queryStore.isActualPlanEnabled"
-          aria-label="實際執行計畫 (SET STATISTICS XML ON)"
-          v-tooltip.bottom="'實際執行計畫 (SET STATISTICS XML ON)'"
-          @click="queryStore.toggleActualPlanEnabled()"
-        >
-          <template #icon><Share2 class="w-3.5 h-3.5" /></template>
-        </SqButton>
-
-        <!-- Max Rows Limit Selector -->
-        <div class="flex items-center space-x-1 pl-1 text-dark-400 text-xxs font-mono">
-          <span>Limit:</span>
-          <SqSelect
-            :model-value="queryStore.maxRows ?? 'none'"
-            :options="limitOptions"
-            option-value="value"
-            option-label="label"
-            size="sm"
-            class="min-w-[75px] font-mono"
-            @update:model-value="val => onMaxRowsChange(val as string | number)"
-          >
-            <template #value="slotProps">
-              <span class="text-[11px] font-mono leading-none">
-                {{ limitOptions.find(o => o.value === slotProps.value)?.label ?? (slotProps.value === 'none' ? 'No Limit' : slotProps.value) }}
-              </span>
-            </template>
-            <template #option="slotProps">
-              <span class="text-[11px] font-mono py-0.5">
-                {{ slotProps.option.label }}
-              </span>
-            </template>
-          </SqSelect>
-        </div>
-
-        <div class="w-px h-4 bg-dark-700 mx-0.5 flex-shrink-0" />
-
         <!-- Toggle Sidebar -->
         <SqButton
           :tone="workspaceStore.isSidebarOpen ? 'accent' : 'neutral'"
@@ -352,45 +236,34 @@
 import { ref, computed } from 'vue';
 import SqSelect from '@/components/ui/SqSelect.vue';
 import {
-  AlignLeft,
   Book,
   ChartLine,
   Check,
   Database,
   FolderOpen,
-  Gauge,
-  Network,
   PanelLeft,
-  Play,
   Plus,
   Save,
   Search,
   Settings,
-  Share2,
-  SkipForward,
   Sparkles,
-  SquareMinus,
   SquarePlus,
 } from 'lucide-vue-next';
 import SqButton from '@/components/ui/SqButton.vue';
 import SqChip from '@/components/ui/SqChip.vue';
 import SqPopover from '@/components/ui/SqPopover.vue';
-import SqlEditorToolbarActions from '@/components/layout/SqlEditorToolbarActions.vue';
 import WindowControls from '@/components/layout/WindowControls.vue';
 // Single source of truth for the brand mark: the icon set shipped with the Tauri app.
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useConnectionStore } from '@/stores/connectionStore';
-import { useQueryStore } from '@/stores/queryStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { resolveConnectionLabelColor } from '@/utils/connectionColor';
 import { windowService } from '@/services/windowService';
 import { DBA_QUERIES, type DbaQueryItem } from '@/utils/dbaQueries';
 import type { ConnectionProfile } from '@/types/connection';
-import type { SqlEditorToolbarAction } from '@/types/editor';
 
 const workspaceStore = useWorkspaceStore();
 const connectionStore = useConnectionStore();
-const queryStore = useQueryStore();
 const settingsStore = useSettingsStore();
 /** Anchored popover state for the DBA toolbox: the trigger element drives the panel position. */
 const isDbaPopoverOpen = ref(false);
@@ -398,14 +271,6 @@ const dbaAnchorEl = ref<HTMLElement | null>(null);
 
 /** Windows 使用自繪標題列，其餘平台保留系統原生視窗裝飾。 */
 const showWindowControls = windowService.isCustomTitleBar();
-
-const limitOptions = [
-  { label: '1,000', value: 1000 },
-  { label: '5,000', value: 5000 },
-  { label: '10,000', value: 10000 },
-  { label: '50,000', value: 50000 },
-  { label: 'No Limit', value: 'none' },
-];
 
 const activeConnStyle = computed(() => {
   const conn = connectionStore.activeConnection;
@@ -450,10 +315,6 @@ function openDbaQuery(query: DbaQueryItem) {
 }
 
 const emit = defineEmits<{
-  (e: 'run-query', mode?: 'current' | 'all'): void;
-  (e: 'cancel-query'): void;
-  (e: 'sql-editor-action', action: SqlEditorToolbarAction): void;
-  (e: 'format-sql'): void;
   (e: 'open-sql-file'): void;
   (e: 'save-sql-file'): void;
   (e: 'open-connection-modal'): void;
@@ -462,10 +323,6 @@ const emit = defineEmits<{
   (e: 'open-sql-templates'): void;
   (e: 'open-ai-chat'): void;
 }>();
-
-function handleSqlEditorAction(action: SqlEditorToolbarAction) {
-  emit('sql-editor-action', action);
-}
 
 async function handleSelectConnection(connId: string) {
   if (!connId || (connectionStore.activeConnectionId === connId && connectionStore.status === 'connected')) {
@@ -488,9 +345,5 @@ async function onDatabaseChange(newDb: string) {
   if (!newDb) return;
   await connectionStore.switchDatabase(newDb);
   workspaceStore.updateActiveTabDatabase(newDb);
-}
-
-function onMaxRowsChange(val: string | number) {
-  queryStore.maxRows = val === 'none' ? null : Number(val);
 }
 </script>

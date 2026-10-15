@@ -2,10 +2,6 @@
   <div class="w-full h-full flex flex-col bg-dark-900 text-dark-100 overflow-hidden font-sans">
     <!-- Top Toolbar Header -->
     <AppHeader
-      @run-query="handleRunQuery"
-      @cancel-query="handleCancelQuery"
-      @sql-editor-action="handleSqlEditorAction"
-      @format-sql="handleFormatSql"
       @open-sql-file="handleOpenSqlFile"
       @save-sql-file="handleSaveSqlFile"
       @open-connection-modal="handleOpenNewConnection"
@@ -142,7 +138,6 @@ import { useSettingsStore } from '@/stores/settingsStore';
 import { useAiChatStore } from '@/stores/aiChatStore';
 import { themeManager } from '@/services/themeManager';
 import type { ConnectionProfile } from '@/types/connection';
-import type { SqlEditorToolbarAction } from '@/types/editor';
 import type { SqlTemplate } from '@/types/sqlTemplate';
 
 const workspaceStore = useWorkspaceStore();
@@ -273,10 +268,6 @@ function handleFormatSql() {
   } else {
     workspaceStore.formatActiveQuery();
   }
-}
-
-function handleSqlEditorAction(action: SqlEditorToolbarAction) {
-  mainWorkspaceRef.value?.runEditorAction(action);
 }
 
 function handleOpenSqlFile() {

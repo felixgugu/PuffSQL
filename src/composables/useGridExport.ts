@@ -16,6 +16,8 @@ export interface UseGridExportOptions {
 export interface UseGridExportReturn {
   copiedTsv: Ref<boolean>;
   copiedCsv: Ref<boolean>;
+  copiedJson: Ref<boolean>;
+  copiedMd: Ref<boolean>;
   copyCellValue: (value: unknown) => void;
   copyColumnName: (name: string) => void;
   copyCurrentRow: (row: CellValue[] | null | undefined) => void;
@@ -38,6 +40,16 @@ function escapeCsv(val: string): string {
 export function useGridExport(options: UseGridExportOptions): UseGridExportReturn {
   const copiedTsv = ref(false);
   const copiedCsv = ref(false);
+  const copiedJson = ref(false);
+  const copiedMd = ref(false);
+
+  /** The toolbar segments flash their label for two seconds after a successful copy. */
+  function flashCopied(flag: Ref<boolean>) {
+    flag.value = true;
+    setTimeout(() => {
+      flag.value = false;
+    }, 2000);
+  }
 
   function copyCellValue(value: unknown) {
     if (value !== null && value !== undefined) {
@@ -165,11 +177,8 @@ export function useGridExport(options: UseGridExportOptions): UseGridExportRetur
     const fullText = `${headers}\n${rowsText}`;
 
     navigator.clipboard.writeText(fullText).then(() => {
-      copiedTsv.value = true;
       options.showToast(`已複製全表為 TSV (${rows.length} 筆)`, 'success', 2000);
-      setTimeout(() => {
-        copiedTsv.value = false;
-      }, 2000);
+      flashCopied(copiedTsv);
     });
     options.onMenuClose?.();
   }
@@ -190,11 +199,8 @@ export function useGridExport(options: UseGridExportOptions): UseGridExportRetur
     const fullText = `${headers}\n${rowsText}`;
 
     navigator.clipboard.writeText(fullText).then(() => {
-      copiedCsv.value = true;
       options.showToast(`已複製全表為 CSV (${rows.length} 筆)`, 'success', 2000);
-      setTimeout(() => {
-        copiedCsv.value = false;
-      }, 2000);
+      flashCopied(copiedCsv);
     });
     options.onMenuClose?.();
   }
@@ -213,6 +219,7 @@ export function useGridExport(options: UseGridExportOptions): UseGridExportRetur
     const jsonStr = exportRowsAsJson(cols, rowsData);
     navigator.clipboard.writeText(jsonStr).then(() => {
       options.showToast(`已複製全表為 JSON 物件陣列 (${rows.length} 筆)`, 'success', 2000);
+      flashCopied(copiedJson);
     });
     options.onMenuClose?.();
   }
@@ -231,6 +238,7 @@ export function useGridExport(options: UseGridExportOptions): UseGridExportRetur
     const mdStr = exportRowsAsMarkdown(cols, rowsData);
     navigator.clipboard.writeText(mdStr).then(() => {
       options.showToast('已複製全表為 Markdown 表格', 'success', 2000);
+      flashCopied(copiedMd);
     });
     options.onMenuClose?.();
   }
@@ -238,6 +246,8 @@ export function useGridExport(options: UseGridExportOptions): UseGridExportRetur
   return {
     copiedTsv,
     copiedCsv,
+    copiedJson,
+    copiedMd,
     copyCellValue,
     copyColumnName,
     copyCurrentRow,
