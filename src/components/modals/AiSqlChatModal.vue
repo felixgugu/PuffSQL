@@ -328,7 +328,7 @@ import {
   SquarePlus,
   Trash2,
   X,
-} from 'lucide-vue-next';
+} from '@/components/icons';
 import SqTextarea from '@/components/ui/SqTextarea.vue';
 import SqChip from '@/components/ui/SqChip.vue';
 import { useToastStore } from '@/stores/toastStore';

@@ -26,15 +26,15 @@
 
 <script setup lang="ts">
 import { computed, useSlots } from 'vue';
-import { Loader2 } from 'lucide-vue-next';
+import { Loader2 } from '@/components/icons';
 
 /**
  * Minimal button (replaces PrimeVue Button).
  *
  * Three variants × a tone, four heights (24 / 28 / 32px, plus 20px for dense toolbars), one
  * radius and one focus ring — see SPEC §7. The call site supplies the icon through the `#icon`
- * slot (lucide), so no icon font and no `!w-7 !h-7 !p-0` class soup is needed: an icon-only
- * button is simply a button without a label.
+ * slot (a generated `@/components/icons` component), so no icon font and no `!w-7 !h-7 !p-0`
+ * class soup is needed: an icon-only button is simply a button without a label.
  */
 defineOptions({ inheritAttrs: false });
 

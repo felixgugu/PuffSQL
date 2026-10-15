@@ -312,7 +312,7 @@ import {
   Eye,
   Plus,
   RefreshCw,
-} from 'lucide-vue-next';
+} from '@/components/icons';
 import { useSqlFolderStore } from '@/stores/sqlFolderStore';
 import { useDialogWindow } from '@/composables/useDialogWindow';
 import type { MonitoredFolder, SqlFileNode } from '@/types/sqlFolder';

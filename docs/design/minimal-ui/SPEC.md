@@ -207,10 +207,13 @@ WCAG 1.4.11 的豁免）；分隔步 `#64748B` 對畫布 4.76:1；focus 指示�
 
 ## 8. 圖示
 
-改用 **lucide-vue-next**（已是專案依賴、SVG、可 tree-shake）：描邊固定 1.75px、色沿用文字色；
-尺寸 token `12 / 14 / 16 / 20`。**移除 PrimeIcons 字型**（現有 335 處 `pi pi-*` 用法與 4 個字型檔
-共約 284KB；理由與成本見 PRIMEVUE-EVALUATION.md）。裝飾性圖示加 `aria-hidden="true"`，
-純圖示控制項必須有 `aria-label` 與狀態（`aria-pressed` / `aria-expanded`）。
+使用專案自製的 **PuffSQL-Icons**（來源 `docs/PuffSQL-Icons/svg`，112 顆，24 × 24 viewBox、
+描邊 2px、圓角端點與轉角、色沿用文字色）：由 `npm run icons:build` 產生
+`src/components/icons/*.vue`，全站只從 `@/components/icons` 具名匯入，不再依賴任何第三方圖示套件
+（`icons:check` 與 `tests/icon_set.test.ts` 守住生成物與來源同步）。尺寸 token `12 / 14 / 16 / 20`。
+**移除 PrimeIcons 字型**（歷史：335 處 `pi pi-*` 用法與 4 個字型檔共約 284KB；理由與成本見
+PRIMEVUE-EVALUATION.md）。裝飾性圖示加 `aria-hidden="true"`，純圖示控制項必須有 `aria-label`
+與狀態（`aria-pressed` / `aria-expanded`）。
 
 ---
 
@@ -446,7 +449,8 @@ WCAG 1.4.11 的豁免）；分隔步 `#64748B` 對畫布 4.76:1；focus 指示�
 - [x] 訊息等級、連線狀態、欄位錯誤都有顏色以外的第二指示：訊息等級是語意色晶片 + 文字標籤
   （另有 `Msg`／`Line` 編號）、連線狀態為色點 + 文字、`TRUE`／`FALSE` 與 `NULL` 都有文字、
   `NULL` 另加斜體與虛線底。
-- [x] 移除 PrimeIcons 後每個圖示都有等義的 lucide 圖示，且純圖示按鈕具備 `aria-label`。
+- [x] 移除 PrimeIcons 後每個圖示都有等義的圖示（現為自製集 `@/components/icons`），
+  且純圖示按鈕具備 `aria-label`。
 - [x] focus 在淺色與深色都清楚可見：`outline: 2px solid rgb(var(--color-accent))`，而
   `--color-accent` 逐模式定義（`minimal_ui_primitives` 斷言 SqButton／SqInput 的 focus 規則）。
 - [x] `prefers-reduced-motion: reduce` 下無位移／淡入動畫（`motion_accessibility`）。

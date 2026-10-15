@@ -109,7 +109,7 @@
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import SqButton from '@/components/ui/SqButton.vue';
-import { Image, Trash2 } from 'lucide-vue-next';
+import { Image, Trash2 } from '@/components/icons';
 import SqSwitch from '@/components/ui/SqSwitch.vue';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';

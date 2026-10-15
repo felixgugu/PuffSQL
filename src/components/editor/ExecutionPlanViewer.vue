@@ -284,7 +284,7 @@ import {
   Sun,
   ZoomIn,
   ZoomOut,
-} from 'lucide-vue-next';
+} from '@/components/icons';
 import type { ExecutionPlanTab } from '@/types/workspace';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useSettingsStore } from '@/stores/settingsStore';

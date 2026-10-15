@@ -336,7 +336,7 @@ import {
   List,
   RefreshCw,
   Table2,
-} from 'lucide-vue-next';
+} from '@/components/icons';
 import {
   generateAlterColumnSql,
   generateDropColumnSql,

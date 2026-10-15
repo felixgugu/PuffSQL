@@ -76,7 +76,7 @@
 
 <script setup lang="ts">
 import SqButton from '@/components/ui/SqButton.vue';
-import { CircleStop, Sparkles, SquarePlus, X } from 'lucide-vue-next';
+import { CircleStop, Sparkles, SquarePlus, X } from '@/components/icons';
 import SqChip from '@/components/ui/SqChip.vue';
 import { useAiChatStore } from '@/stores/aiChatStore';
 

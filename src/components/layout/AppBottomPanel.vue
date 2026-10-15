@@ -242,7 +242,7 @@ import { useI18n } from 'vue-i18n';
 import SqButton from '@/components/ui/SqButton.vue';
 import SqMenu from '@/components/ui/SqMenu.vue';
 import { useContextMenu } from '@/composables/useContextMenu';
-import { Bookmark, BookmarkCheck, CopyPlus, Minus, Pencil, Pin, Wrench, X } from 'lucide-vue-next';
+import { Bookmark, BookmarkCheck, CopyPlus, Minus, Pencil, Pin, Wrench, X } from '@/components/icons';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useQueryStore } from '@/stores/queryStore';
 import { useSettingsStore } from '@/stores/settingsStore';

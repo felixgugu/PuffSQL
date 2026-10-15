@@ -40,7 +40,7 @@ import type { RectLike } from '@/utils/popoverPlacement';
 
 export interface SqMenuItem {
   label?: string;
-  /** A lucide component. Menu models are data, so the icon travels as a component reference. */
+  /** A PuffSQL icon component. Menu models are data, so the icon travels as a component reference. */
   icon?: Component;
   separator?: boolean;
   disabled?: boolean;

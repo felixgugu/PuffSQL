@@ -751,7 +751,7 @@ import {
   Trash2,
   X,
   ChevronsUp,
-} from 'lucide-vue-next';
+} from '@/components/icons';
 import ConfirmModal from '@/components/common/ConfirmModal.vue';
 import ExportSchemaModal from '@/components/modals/ExportSchemaModal.vue';
 import ResizableSplitter from '@/components/common/ResizableSplitter.vue';

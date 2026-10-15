@@ -348,7 +348,7 @@ import {
   Search,
   Table2,
   X,
-} from 'lucide-vue-next';
+} from '@/components/icons';
 import SqChip from '@/components/ui/SqChip.vue';
 import { useConnectionStore } from '@/stores/connectionStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';

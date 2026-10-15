@@ -522,7 +522,7 @@ import {
   Settings,
   Sparkles,
   Table2,
-} from 'lucide-vue-next';
+} from '@/components/icons';
 import SqSelect from '@/components/ui/SqSelect.vue';
 import SqSegmented from '@/components/ui/SqSegmented.vue';
 import SqSwitch from '@/components/ui/SqSwitch.vue';

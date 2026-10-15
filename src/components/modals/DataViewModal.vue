@@ -346,7 +346,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
-import { Search, SearchX, Copy } from 'lucide-vue-next';
+import { Search, SearchX, Copy } from '@/components/icons';
 import SqButton from '@/components/ui/SqButton.vue';
 import {
   ChevronLeft,
@@ -358,7 +358,7 @@ import {
   SquarePlus,
   Table2,
   X,
-} from 'lucide-vue-next';
+} from '@/components/icons';
 import SqChip from '@/components/ui/SqChip.vue';
 import { useDataViewStore } from '@/stores/dataViewStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';

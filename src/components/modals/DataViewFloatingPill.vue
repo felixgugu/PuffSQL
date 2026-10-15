@@ -61,7 +61,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { Eye, SquarePlus, X } from 'lucide-vue-next';
+import { Eye, SquarePlus, X } from '@/components/icons';
 import SqButton from '@/components/ui/SqButton.vue';
 import SqChip from '@/components/ui/SqChip.vue';
 import { useDataViewStore } from '@/stores/dataViewStore';

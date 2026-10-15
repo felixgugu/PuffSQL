@@ -503,7 +503,7 @@ import {
   Search,
   Trash2,
   X,
-} from 'lucide-vue-next';
+} from '@/components/icons';
 import { useSqlTemplateStore } from '@/stores/sqlTemplateStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useDialogWindow } from '@/composables/useDialogWindow';

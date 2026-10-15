@@ -170,7 +170,7 @@
 
 <script setup lang="ts">
 import { computed, inject, ref, onMounted } from 'vue';
-import { Table2, Key, Link2, X, CheckSquare } from 'lucide-vue-next';
+import { Table2, Key, Link2, X, CheckSquare } from '@/components/icons';
 import type { Node } from '@antv/x6';
 import type { ColumnItem } from '@/types/schema';
 import { useSettingsStore } from '@/stores/settingsStore';

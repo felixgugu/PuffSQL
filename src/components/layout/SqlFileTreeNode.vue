@@ -96,7 +96,7 @@ import {
   Folder,
   FolderOpen,
   FileCode,
-} from 'lucide-vue-next';
+} from '@/components/icons';
 import type { SqlFileNode } from '@/types/sqlFolder';
 import { useSqlFolderStore } from '@/stores/sqlFolderStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';

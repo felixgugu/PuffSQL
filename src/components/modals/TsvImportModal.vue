@@ -49,9 +49,9 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted } from 'vue';
-import { Upload } from 'lucide-vue-next';
+import { Upload } from '@/components/icons';
 import SqButton from '@/components/ui/SqButton.vue';
-import { X } from 'lucide-vue-next';
+import { X } from '@/components/icons';
 import SqChip from '@/components/ui/SqChip.vue';
 import TsvImportSourceStep from '@/components/modals/tsvImport/TsvImportSourceStep.vue';
 import TsvImportPreviewStep from '@/components/modals/tsvImport/TsvImportPreviewStep.vue';

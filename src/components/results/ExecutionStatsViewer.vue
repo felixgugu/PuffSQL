@@ -309,12 +309,12 @@
 import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import SqButton from '@/components/ui/SqButton.vue';
-import { Book, ChartColumn, Clock, Copy, Cpu, Database, HardDrive, Sparkles, Table2, Trash2, Zap } from 'lucide-vue-next';
+import { Book, ChartColumn, Clock, Copy, Cpu, Database, HardDrive, Sparkles, Table2, Trash2, Zap } from '@/components/icons';
 import SqChip from '@/components/ui/SqChip.vue';
-import { CircleCheck, TriangleAlert } from 'lucide-vue-next';
+import { CircleCheck, TriangleAlert } from '@/components/icons';
 import SqInput from '@/components/ui/SqInput.vue';
-import { Search } from 'lucide-vue-next';
-import { ChevronDown, ChevronUp } from 'lucide-vue-next';
+import { Search } from '@/components/icons';
+import { ChevronDown, ChevronUp } from '@/components/icons';
 import { useQueryStore } from '@/stores/queryStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useAiChatStore } from '@/stores/aiChatStore';

@@ -56,7 +56,7 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, useId, useSlots, watch } from 'vue';
-import { X } from 'lucide-vue-next';
+import { X } from '@/components/icons';
 import SqButton from '@/components/ui/SqButton.vue';
 import { focusFirstWithin, focusablesWithin, nextTrapIndex } from '@/utils/focusTrap';
 

@@ -38,7 +38,7 @@
 </template>
 
 <script setup lang="ts">
-import { Info, TriangleAlert } from 'lucide-vue-next';
+import { Info, TriangleAlert } from '@/components/icons';
 import SqDialog from '@/components/ui/SqDialog.vue';
 import SqButton from '@/components/ui/SqButton.vue';
 import { useDialogWindow } from '@/composables/useDialogWindow';

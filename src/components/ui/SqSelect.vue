@@ -55,7 +55,7 @@
 
 <script setup lang="ts" generic="T">
 import { computed, nextTick, ref, watch } from 'vue';
-import { Check, ChevronDown } from 'lucide-vue-next';
+import { Check, ChevronDown } from '@/components/icons';
 import SqPopover from '@/components/ui/SqPopover.vue';
 
 /**

@@ -120,7 +120,7 @@
 </template>
 
 <script setup lang="ts">
-import { ArrowRight, Ban, FileCode, ShieldCheck, TriangleAlert } from 'lucide-vue-next';
+import { ArrowRight, Ban, FileCode, ShieldCheck, TriangleAlert } from '@/components/icons';
 import SqDialog from '@/components/ui/SqDialog.vue';
 import SqButton from '@/components/ui/SqButton.vue';
 import SqChip from '@/components/ui/SqChip.vue';

@@ -90,7 +90,7 @@
 
 <script setup lang="ts">
 import { ref, computed, inject, onMounted } from 'vue';
-import { Type, X } from 'lucide-vue-next';
+import { Type, X } from '@/components/icons';
 import type { Node } from '@antv/x6';
 import { useSettingsStore } from '@/stores/settingsStore';
 

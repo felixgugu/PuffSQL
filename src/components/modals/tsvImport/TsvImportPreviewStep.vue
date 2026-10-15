@@ -258,7 +258,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import SqButton from '@/components/ui/SqButton.vue';
-import { ArrowLeft, Check, Database, Loader2 } from 'lucide-vue-next';
+import { ArrowLeft, Check, Database, Loader2 } from '@/components/icons';
 import { MAX_DISPLAYED_ERRORS, NULL_SENTINEL } from '@/utils/tsvImport';
 import { useTsvImportStore } from '@/stores/tsvImportStore';
 

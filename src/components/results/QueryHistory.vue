@@ -139,7 +139,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import SqButton from '@/components/ui/SqButton.vue';
-import { Check, ChevronDown, ChevronUp, Copy, FileText } from 'lucide-vue-next';
+import { Check, ChevronDown, ChevronUp, Copy, FileText } from '@/components/icons';
 import SqChip from '@/components/ui/SqChip.vue';
 import type { QueryHistoryItem } from '@/types/query';
 import { queryService } from '@/services/queryService';

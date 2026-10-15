@@ -82,7 +82,7 @@ describe('minimal UI primitives (src/components/ui)', () => {
     );
   });
 
-  test('the shell draws its buttons with SqButton and lucide, not PrimeVue', () => {
+  test('the shell draws its buttons with SqButton and the icon set, not PrimeVue', () => {
     for (const file of [
       'src/components/layout/AppHeader.vue',
       'src/components/layout/AppSidebar.vue',
@@ -99,7 +99,7 @@ describe('minimal UI primitives (src/components/ui)', () => {
 
   test('no icon font survives anywhere in src', () => {
     // The PrimeIcons class names and their lookup table are gone: every icon in the app is a
-    // lucide component, so a `pi pi-*` in a template would simply render nothing.
+    // generated SVG component, so a `pi pi-*` in a template would simply render nothing.
     const files = execSync('git ls-files "src/*"', { encoding: 'utf-8' })
       .split('\n')
       .filter((line) => line.trim().length > 0);
@@ -157,10 +157,9 @@ describe('minimal UI primitives (src/components/ui)', () => {
     ]) {
       assert.doesNotMatch(readSource(file), /<i class="pi pi-/, `${file} still uses a PrimeIcon`);
     }
-    // The header keeps PrimeVue's own icon props for the actions P4 has not replaced yet, but its
-    // database and DBA icons are lucide now.
+    // The header draws its own icons (database, DBA, run, …) from the app's icon set.
     const header = readSource('src/components/layout/AppHeader.vue');
     assert.doesNotMatch(header, /<i class="pi pi-/, 'the header must not use PrimeIcon elements');
-    assert.match(header, /from 'lucide-vue-next'/, 'the header draws its own icons with lucide');
+    assert.match(header, /from '@\/components\/icons'/, 'the header draws its own icons from the icon set');
   });
 });

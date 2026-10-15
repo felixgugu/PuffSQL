@@ -415,7 +415,7 @@ import {
   RefreshCw,
   RotateCcw,
   X,
-} from 'lucide-vue-next';
+} from '@/components/icons';
 import { queryService } from '@/services/queryService';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useDialogWindow } from '@/composables/useDialogWindow';

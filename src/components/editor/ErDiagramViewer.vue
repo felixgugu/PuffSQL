@@ -391,7 +391,7 @@ import {
   ZoomOut,
   Image,
   FileText,
-} from 'lucide-vue-next';
+} from '@/components/icons';
 import { Graph, Export } from '@antv/x6';
 import { register } from '@antv/x6-vue-shape';
 import dagre from 'dagre';

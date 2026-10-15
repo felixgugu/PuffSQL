@@ -29,7 +29,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Inbox, SearchX } from 'lucide-vue-next';
+import { Inbox, SearchX } from '@/components/icons';
 import { shortcutLabel } from '@/utils/shortcutKeys';
 
 const props = defineProps<{

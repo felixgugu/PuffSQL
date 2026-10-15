@@ -33,7 +33,7 @@
 </template>
 
 <script setup lang="ts">
-import { CircleCheck, CircleX, Info, TriangleAlert, X } from 'lucide-vue-next';
+import { CircleCheck, CircleX, Info, TriangleAlert, X } from '@/components/icons';
 import type { Component } from 'vue';
 import SqButton from '@/components/ui/SqButton.vue';
 import { useToastStore, type ToastSeverity } from '@/stores/toastStore';

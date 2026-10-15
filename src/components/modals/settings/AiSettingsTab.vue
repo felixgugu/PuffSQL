@@ -239,7 +239,7 @@ import {
   Trash2,
   TriangleAlert,
   Zap,
-} from 'lucide-vue-next';
+} from '@/components/icons';
 import SqTextarea from '@/components/ui/SqTextarea.vue';
 import SqDialog from '@/components/ui/SqDialog.vue';
 import { useAiChatStore } from '@/stores/aiChatStore';

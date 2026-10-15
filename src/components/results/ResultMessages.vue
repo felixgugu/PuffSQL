@@ -155,7 +155,7 @@ import {
   Copy,
   FileText,
   Sparkles,
-} from 'lucide-vue-next';
+} from '@/components/icons';
 import SqChip from '@/components/ui/SqChip.vue';
 import type { SessionMessageItem, QueryMessage } from '@/types/query';
 import type { SqlEditorTab } from '@/types/workspace';

@@ -270,7 +270,7 @@ import {
   FileSpreadsheet,
   RefreshCw,
   Table2,
-} from 'lucide-vue-next';
+} from '@/components/icons';
 import type {
   TabulatorCellComponent,
   TabulatorColumnDefinition,

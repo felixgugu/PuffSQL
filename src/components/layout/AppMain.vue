@@ -212,7 +212,7 @@ import {
   TableProperties,
   Workflow,
   X,
-} from 'lucide-vue-next';
+} from '@/components/icons';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useConnectionStore } from '@/stores/connectionStore';
 import { useQueryStore } from '@/stores/queryStore';

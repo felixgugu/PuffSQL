@@ -205,7 +205,7 @@ test('pruneResultTabsToActive keeps the pin and the active tab', async () => {
 
 test('the retention toggle sits in the result toolbar and in the settings modal', () => {
   const panel = readSource('src/components/layout/AppBottomPanel.vue');
-  // The stacked-tabs toggle is a lucide glyph inside a SqButton now, not an icon-font class.
+  // The stacked-tabs toggle is an icon-set glyph inside a SqButton now, not an icon-font class.
   assert.match(panel, /<CopyPlus class="w-3\.5 h-3\.5" \/>/, 'the toggle uses the stacked-tabs icon');
   assert.match(
     panel,

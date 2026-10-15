@@ -173,7 +173,7 @@ import {
   SkipForward,
   SquareMinus,
   UnfoldVertical,
-} from 'lucide-vue-next';
+} from '@/components/icons';
 import { useQueryStore } from '@/stores/queryStore';
 import type { SqlEditorToolbarAction } from '@/types/editor';
 

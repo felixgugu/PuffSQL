@@ -248,7 +248,7 @@ import {
   Settings,
   Sparkles,
   SquarePlus,
-} from 'lucide-vue-next';
+} from '@/components/icons';
 import SqButton from '@/components/ui/SqButton.vue';
 import SqChip from '@/components/ui/SqChip.vue';
 import SqPopover from '@/components/ui/SqPopover.vue';

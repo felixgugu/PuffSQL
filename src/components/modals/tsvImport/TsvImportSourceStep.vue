@@ -222,7 +222,7 @@
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import SqButton from '@/components/ui/SqButton.vue';
-import { ArrowRight, ArrowUpFromLine, Loader2 } from 'lucide-vue-next';
+import { ArrowRight, ArrowUpFromLine, Loader2 } from '@/components/icons';
 import { checkUtf8File, openTsvFile } from '@/utils/fileStorage';
 import { countUtf8Bytes, MAX_SOURCE_BYTES } from '@/utils/tsvImport';
 import { useTsvImportStore } from '@/stores/tsvImportStore';

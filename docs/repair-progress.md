@@ -554,3 +554,19 @@ failed to read plugin permissions: failed to read file
 
 - `npm test`：647 個通過（新增 `tests/sq_button_group.test.ts` 驗證外框／圓角／段間細線／不裁切 focus ring／`role="group"`；新增 `tests/result_export_group.test.ts` 驗證四段無圖示、四段都會閃回饋、`copiedJson`／`copiedMd` 會設定且 2 秒後復位、空結果不閃；`tests/sql_editor_toolbar_layout.test.ts` 新增三個分段容器與「只剩一條細線」的斷言）。
 - `npm run typecheck`：通過。
+
+## 已實作（2026-10-15）：全站圖示改為自製集 PuffSQL-Icons
+
+需求：把全站圖示從 `lucide-vue-next` 換成放在 `docs/PuffSQL-Icons` 的自製 SVG；第三方套件內建圖示暫不處理。
+
+已實作：
+
+1. `scripts/build-icons.mjs`（新增）：讀 `docs/PuffSQL-Icons/svg/*.svg` 產生 `src/components/icons/<Name>.vue` 與 `index.ts`。轉換只做必要的事——移除固定 `width`/`height`（尺寸由呼叫端的 `w-3.5 h-3.5` 決定）、固定 `viewBox="0 0 24 24"`（非 24 的來源包一層 `<g transform>` 縮放）、顏色一律 `currentColor`、`id`／`url(#…)` 加 `puffsql-<名稱>-` 前綴。新增 npm scripts `icons:build` 與 `icons:check`（後者驗證版控生成物與來源同步，供測試與 CI 使用）。
+2. 對照結果：程式 112 個 distinct 圖示與圖集 112 個檔案一對一，**零缺口**（來源集根標籤 112 檔完全一致：24×24、`fill="none"`、`stroke="currentColor"`、`stroke-width="2"`、圓角端點），因此不需要補圖或風格轉換。詳見 `docs/icon-migration-report.md`。
+3. 40 個檔案把 `from 'lucide-vue-next'` 改成 `from '@/components/icons'`，429 處模板完全沒動（元件名稱沿用原 lucide 名稱）；`lucide-vue-next` 自 `package.json` 與 node_modules 移除。
+4. 護欄：新增 `tests/icon_codegen.test.ts`（生成器單元測試：縮放包裹、`currentColor` 正規化、`id` 前綴、index 排序）與 `tests/icon_set.test.ts`（不得再匯入第三方圖示套件、index 與資料夾一致、每個元件留在 24×24 且無硬編色、生成物與來源同步、宣告式檢查 `package.json` 無圖示套件）；`minimal_ui_primitives` 對 AppHeader 的斷言改指 `@/components/icons`；`grid_layout`／`result_tab_retention` 的圖示斷言因名稱沿用而維持。SPEC §8 與 checklist 同步改寫為自製集。
+
+驗收：
+
+- `npm test`：664 個通過；`npm run typecheck`、`npm run build`、`npm run icons:check` 皆通過。
+- 視覺核對（既有 harness）：標題列、SQL 編輯工具列三條分段容器、物件總管、結果工具列與複製分段條、設定對話框，外觀與切換前一致（同為 2px 筆畫）。
