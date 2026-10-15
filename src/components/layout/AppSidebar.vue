@@ -1637,7 +1637,7 @@ async function handleOpenStructure() {
 
 function handleTableDragStart(e: DragEvent, connId: string, db: string, schema: string, table: string) {
   if (!e.dataTransfer) return;
-  const sql = generateTableSelectSql(db, schema, table);
+  const sql = generateTableSelectSql(schema, table);
   e.dataTransfer.setData(
     'application/sqlight-table',
     JSON.stringify({ connId, db, schema, table, sql })
@@ -1701,7 +1701,7 @@ async function handleGenerateSelect() {
       console.warn('Switch DB failed:', e);
     }
   }
-  const sql = generateTableSelectSql(contextMenu.database, contextMenu.schema, contextMenu.tableName);
+  const sql = generateTableSelectSql(contextMenu.schema, contextMenu.tableName);
   workspaceStore.addSqlTab(
     sql,
     `${contextMenu.tableName}.sql`,

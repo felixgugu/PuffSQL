@@ -599,7 +599,7 @@ function openTableStructure(item: QuickFinderItem) {
 }
 
 function generateSelectQuery(item: QuickFinderItem) {
-  const sql = generateTableSelectSql(item.database, item.schema, item.name);
+  const sql = generateTableSelectSql(item.schema, item.name);
   workspaceStore.addSqlTab(sql, `${item.name}.sql`, item.connId, item.database);
   closeModal();
 }

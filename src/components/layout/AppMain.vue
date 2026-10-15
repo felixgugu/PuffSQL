@@ -844,7 +844,7 @@ function handleBarDrop(e: DragEvent) {
   const plainText = e.dataTransfer?.getData('text/plain') || '';
   const tableName = tableInfo?.table || 'Query';
   const sql = tableInfo?.sql || (tableInfo?.schema && tableInfo?.table
-    ? generateTableSelectSql(tableInfo.db, tableInfo.schema, tableInfo.table)
+    ? generateTableSelectSql(tableInfo.schema, tableInfo.table)
     : plainText || 'SELECT * FROM sys.tables;\n');
 
   try {
@@ -919,7 +919,7 @@ async function handleTabItemDrop(e: DragEvent, tab: WorkspaceTab) {
   const plainText = e.dataTransfer?.getData('text/plain') || '';
   const tableName = tableInfo?.table || 'Query';
   const sql = tableInfo?.sql || (tableInfo?.schema && tableInfo?.table
-    ? generateTableSelectSql(tableInfo.db, tableInfo.schema, tableInfo.table)
+    ? generateTableSelectSql(tableInfo.schema, tableInfo.table)
     : plainText || 'SELECT * FROM sys.tables;\n');
 
   try {

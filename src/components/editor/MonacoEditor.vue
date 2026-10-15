@@ -645,7 +645,7 @@ onMounted(() => {
         if (data.sql) {
           sql = data.sql;
         } else {
-          sql = generateTableSelectSql(data.db, data.schema, data.table);
+          sql = generateTableSelectSql(data.schema, data.table);
         }
       } catch {
         sql = e.dataTransfer.getData('text/plain') || '';

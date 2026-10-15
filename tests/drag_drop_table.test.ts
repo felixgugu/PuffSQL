@@ -20,16 +20,20 @@ beforeEach(() => {
   setActivePinia(createPinia());
 });
 
-test('generateTableSelectSql generates a single-line SELECT with and without database prefix', () => {
-  const withDb = generateTableSelectSql('AdventureWorks', 'sales', 'Orders');
-  assert.equal(withDb, 'SELECT * FROM [AdventureWorks].[sales].[Orders];\n');
+test('generateTableSelectSql generates a single-line schema-qualified SELECT', () => {
+  assert.equal(
+    generateTableSelectSql('sales', 'Orders'),
+    'SELECT * FROM sales.Orders;\n'
+  );
 
-  const withoutDb = generateTableSelectSql('', 'dbo', 'Customers');
-  assert.equal(withoutDb, 'SELECT * FROM [dbo].[Customers];\n');
+  // No database prefix, even when the table came from another database.
+  const fromOtherDb = generateTableSelectSql('dbo', 'Customers');
+  assert.equal(fromOtherDb, 'SELECT * FROM dbo.Customers;\n');
+  assert.equal(fromOtherDb.includes('AdventureWorks'), false);
 });
 
 test('generateTableSelectSql drops TOP and stays on one line', () => {
-  const sql = generateTableSelectSql('Northwind', 'dbo', 'Products');
+  const sql = generateTableSelectSql('dbo', 'Products');
 
   assert.equal(sql.trim().split('\n').length, 1);
   assert.equal(/\bTOP\b/i.test(sql), false);
@@ -38,14 +42,17 @@ test('generateTableSelectSql drops TOP and stays on one line', () => {
   assert.equal(sql.endsWith(';\n'), true);
 });
 
-test('generateTableSelectSql escapes closing brackets and omits blank qualifiers', () => {
+test('generateTableSelectSql leaves identifiers bare unless brackets are required', () => {
+  assert.equal(generateTableSelectSql('dbo', 'Products'), 'SELECT * FROM dbo.Products;\n');
+  // Brackets are kept only where dropping them would break or change the statement.
   assert.equal(
-    generateTableSelectSql('MyDB', 'dbo', 'Odd]Name'),
-    'SELECT * FROM [MyDB].[dbo].[Odd]]Name];\n'
+    generateTableSelectSql('dbo', 'Order Details'),
+    'SELECT * FROM dbo.[Order Details];\n'
   );
+  assert.equal(generateTableSelectSql('dbo', 'Order'), 'SELECT * FROM dbo.[Order];\n');
   assert.equal(
-    generateTableSelectSql('   ', '  ', 'Plain'),
-    'SELECT * FROM [Plain];\n'
+    generateTableSelectSql('  ', 'Plain'),
+    'SELECT * FROM Plain;\n'
   );
 });
 
@@ -59,7 +66,7 @@ test('dropping table on tab bar opens a new SQL tab with SELECT statement', () =
     schema: 'dbo',
     table: 'Products',
   };
-  const sql = generateTableSelectSql(tableInfo.db, tableInfo.schema, tableInfo.table);
+  const sql = generateTableSelectSql(tableInfo.schema, tableInfo.table);
 
   store.addSqlTab(
     sql,
@@ -83,7 +90,7 @@ test('dropping table on existing empty SQL tab replaces content; non-empty appen
   const sqlTab = store.tabs.find((t) => t.type === 'sql_editor') as SqlEditorTab;
   assert.ok(sqlTab);
 
-  const newSql = 'SELECT * FROM [Sales].[Invoices];\n';
+  const newSql = 'SELECT * FROM Sales.Invoices;\n';
 
   // 1. When empty, replace
   sqlTab.query = '   ';
@@ -96,7 +103,7 @@ test('dropping table on existing empty SQL tab replaces content; non-empty appen
   assert.equal(sqlTab.query, newSql);
 
   // 2. When non-empty, append with double newline
-  const secondSql = 'SELECT * FROM [Sales].[Customers];\n';
+  const secondSql = 'SELECT * FROM Sales.Customers;\n';
   if (!sqlTab.query.trim()) {
     sqlTab.query = secondSql;
   } else {
@@ -112,7 +119,7 @@ test('application/sqlight-table JSON payload serializes and deserializes properl
     db: 'MyDB',
     schema: 'dbo',
     table: 'Users',
-    sql: 'SELECT * FROM [MyDB].[dbo].[Users];\n',
+    sql: 'SELECT * FROM dbo.Users;\n',
   };
 
   const serialized = JSON.stringify(payload);
