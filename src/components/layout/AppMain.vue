@@ -218,6 +218,7 @@ import { saveSqlToFile, openSqlFromFile } from '@/utils/fileStorage';
 import { sqlFolderService } from '@/services/sqlFolderService';
 import { getTabThemeStyle } from '@/utils/tabTheme';
 import { detectDangerousSqlStatements } from '@/utils/sqlGuard';
+import { generateTableSelectSql } from '@/utils/tableSelectSql';
 import { dispatchClearGridSelection } from '@/utils/tabulatorGrid';
 import { cancelFlip, captureFlipRects, playFlip } from '@/composables/useFlip';
 import type { SqlEditorToolbarAction } from '@/types/editor';
@@ -842,10 +843,9 @@ function handleBarDrop(e: DragEvent) {
 
   const plainText = e.dataTransfer?.getData('text/plain') || '';
   const tableName = tableInfo?.table || 'Query';
-  const dbPrefix = tableInfo?.db ? `[${tableInfo.db}].` : '';
   const sql = tableInfo?.sql || (tableInfo?.schema && tableInfo?.table
-    ? `SELECT TOP 1000\n  *\nFROM ${dbPrefix}[${tableInfo.schema}].[${tableInfo.table}];\n`
-    : plainText || 'SELECT TOP 1000 * FROM sys.tables;\n');
+    ? generateTableSelectSql(tableInfo.db, tableInfo.schema, tableInfo.table)
+    : plainText || 'SELECT * FROM sys.tables;\n');
 
   try {
     workspaceStore.addSqlTab(
@@ -918,10 +918,9 @@ async function handleTabItemDrop(e: DragEvent, tab: WorkspaceTab) {
 
   const plainText = e.dataTransfer?.getData('text/plain') || '';
   const tableName = tableInfo?.table || 'Query';
-  const dbPrefix = tableInfo?.db ? `[${tableInfo.db}].` : '';
   const sql = tableInfo?.sql || (tableInfo?.schema && tableInfo?.table
-    ? `SELECT TOP 1000\n  *\nFROM ${dbPrefix}[${tableInfo.schema}].[${tableInfo.table}];\n`
-    : plainText || 'SELECT TOP 1000 * FROM sys.tables;\n');
+    ? generateTableSelectSql(tableInfo.db, tableInfo.schema, tableInfo.table)
+    : plainText || 'SELECT * FROM sys.tables;\n');
 
   try {
     if (tab.type === 'er_diagram') {

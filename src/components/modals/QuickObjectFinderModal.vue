@@ -362,6 +362,7 @@ import {
   type QuickFinderObjectType,
   type ScoredQuickFinderItem,
 } from '@/utils/fuzzySearch';
+import { generateTableSelectSql } from '@/utils/tableSelectSql';
 
 const props = defineProps<{
   isOpen: boolean;
@@ -598,7 +599,7 @@ function openTableStructure(item: QuickFinderItem) {
 }
 
 function generateSelectQuery(item: QuickFinderItem) {
-  const sql = `SELECT TOP 1000\n  *\nFROM [${item.database}].[${item.schema}].[${item.name}];\n`;
+  const sql = generateTableSelectSql(item.database, item.schema, item.name);
   workspaceStore.addSqlTab(sql, `${item.name}.sql`, item.connId, item.database);
   closeModal();
 }

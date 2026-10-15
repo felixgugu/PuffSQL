@@ -2,6 +2,7 @@ import { test, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { createPinia, setActivePinia } from 'pinia';
 import { useWorkspaceStore } from '../src/stores/workspaceStore';
+import { generateTableSelectSql } from '../src/utils/tableSelectSql';
 import type { SqlEditorTab } from '../src/types/workspace';
 
 const data = new Map<string, string>();
@@ -19,22 +20,32 @@ beforeEach(() => {
   setActivePinia(createPinia());
 });
 
-test('generateTableSelectSql generates expected SQL with and without database prefix', () => {
-  function generateTableSelectSql(db: string, schema: string, table: string) {
-    const dbPrefix = db ? `[${db}].` : '';
-    return `SELECT TOP 1000\n  *\nFROM ${dbPrefix}[${schema}].[${table}];\n`;
-  }
-
+test('generateTableSelectSql generates a single-line SELECT with and without database prefix', () => {
   const withDb = generateTableSelectSql('AdventureWorks', 'sales', 'Orders');
-  assert.equal(
-    withDb,
-    'SELECT TOP 1000\n  *\nFROM [AdventureWorks].[sales].[Orders];\n'
-  );
+  assert.equal(withDb, 'SELECT * FROM [AdventureWorks].[sales].[Orders];\n');
 
   const withoutDb = generateTableSelectSql('', 'dbo', 'Customers');
+  assert.equal(withoutDb, 'SELECT * FROM [dbo].[Customers];\n');
+});
+
+test('generateTableSelectSql drops TOP and stays on one line', () => {
+  const sql = generateTableSelectSql('Northwind', 'dbo', 'Products');
+
+  assert.equal(sql.trim().split('\n').length, 1);
+  assert.equal(/\bTOP\b/i.test(sql), false);
+  assert.equal(sql.toLowerCase().includes('top 1000'), false);
+  // A trailing newline keeps the cursor on a fresh line after a drag-drop insert.
+  assert.equal(sql.endsWith(';\n'), true);
+});
+
+test('generateTableSelectSql escapes closing brackets and omits blank qualifiers', () => {
   assert.equal(
-    withoutDb,
-    'SELECT TOP 1000\n  *\nFROM [dbo].[Customers];\n'
+    generateTableSelectSql('MyDB', 'dbo', 'Odd]Name'),
+    'SELECT * FROM [MyDB].[dbo].[Odd]]Name];\n'
+  );
+  assert.equal(
+    generateTableSelectSql('   ', '  ', 'Plain'),
+    'SELECT * FROM [Plain];\n'
   );
 });
 
@@ -48,8 +59,7 @@ test('dropping table on tab bar opens a new SQL tab with SELECT statement', () =
     schema: 'dbo',
     table: 'Products',
   };
-  const dbPrefix = tableInfo.db ? `[${tableInfo.db}].` : '';
-  const sql = `SELECT TOP 1000\n  *\nFROM ${dbPrefix}[${tableInfo.schema}].[${tableInfo.table}];\n`;
+  const sql = generateTableSelectSql(tableInfo.db, tableInfo.schema, tableInfo.table);
 
   store.addSqlTab(
     sql,
@@ -73,7 +83,7 @@ test('dropping table on existing empty SQL tab replaces content; non-empty appen
   const sqlTab = store.tabs.find((t) => t.type === 'sql_editor') as SqlEditorTab;
   assert.ok(sqlTab);
 
-  const newSql = 'SELECT TOP 1000\n  *\nFROM [Sales].[Invoices];\n';
+  const newSql = 'SELECT * FROM [Sales].[Invoices];\n';
 
   // 1. When empty, replace
   sqlTab.query = '   ';
@@ -86,7 +96,7 @@ test('dropping table on existing empty SQL tab replaces content; non-empty appen
   assert.equal(sqlTab.query, newSql);
 
   // 2. When non-empty, append with double newline
-  const secondSql = 'SELECT TOP 1000\n  *\nFROM [Sales].[Customers];\n';
+  const secondSql = 'SELECT * FROM [Sales].[Customers];\n';
   if (!sqlTab.query.trim()) {
     sqlTab.query = secondSql;
   } else {
@@ -102,7 +112,7 @@ test('application/sqlight-table JSON payload serializes and deserializes properl
     db: 'MyDB',
     schema: 'dbo',
     table: 'Users',
-    sql: 'SELECT TOP 1000\n  *\nFROM [MyDB].[dbo].[Users];\n',
+    sql: 'SELECT * FROM [MyDB].[dbo].[Users];\n',
   };
 
   const serialized = JSON.stringify(payload);

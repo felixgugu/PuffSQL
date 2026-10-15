@@ -28,6 +28,7 @@ import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { extractStatementAtCursor, type ExtractedStatement } from '@/utils/sqlStatementExtractor';
 import { extractTableIdentifierAtCursor, type ExtractedTableIdentifier } from '@/utils/sqlIdentifierExtractor';
 import { analyzeSmartPasteContext } from '@/utils/sqlSmartPaste';
+import { generateTableSelectSql } from '@/utils/tableSelectSql';
 import { dispatchClearGridSelection } from '@/utils/tabulatorGrid';
 import { format as formatSql } from 'sql-formatter';
 import type { SqlEditorToolbarAction } from '@/types/editor';
@@ -644,8 +645,7 @@ onMounted(() => {
         if (data.sql) {
           sql = data.sql;
         } else {
-          const dbPrefix = data.db ? `[${data.db}].` : '';
-          sql = `SELECT TOP 1000\n  *\nFROM ${dbPrefix}[${data.schema}].[${data.table}];\n`;
+          sql = generateTableSelectSql(data.db, data.schema, data.table);
         }
       } catch {
         sql = e.dataTransfer.getData('text/plain') || '';

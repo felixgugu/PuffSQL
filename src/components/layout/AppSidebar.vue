@@ -769,6 +769,7 @@ import { connectionService } from '@/services/connectionService';
 import { wrapIdentifierIfNeeded } from '@/utils/sqlParser';
 import { resolveConnectionLabelColor } from '@/utils/connectionColor';
 import { generateCreateTableDdl } from '@/utils/ddlGenerator';
+import { generateTableSelectSql } from '@/utils/tableSelectSql';
 import { collapseAllTreeNodes } from '@/utils/explorerTreeState';
 import { useExplorerNodeCopy } from '@/composables/useExplorerNodeCopy';
 import {
@@ -1636,8 +1637,7 @@ async function handleOpenStructure() {
 
 function handleTableDragStart(e: DragEvent, connId: string, db: string, schema: string, table: string) {
   if (!e.dataTransfer) return;
-  const dbPrefix = db ? `[${db}].` : '';
-  const sql = `SELECT TOP 1000\n  *\nFROM ${dbPrefix}[${schema}].[${table}];\n`;
+  const sql = generateTableSelectSql(db, schema, table);
   e.dataTransfer.setData(
     'application/sqlight-table',
     JSON.stringify({ connId, db, schema, table, sql })
@@ -1701,8 +1701,7 @@ async function handleGenerateSelect() {
       console.warn('Switch DB failed:', e);
     }
   }
-  const dbPrefix = contextMenu.database ? `[${contextMenu.database}].` : '';
-  const sql = `SELECT TOP 1000\n  *\nFROM ${dbPrefix}[${contextMenu.schema}].[${contextMenu.tableName}];\n`;
+  const sql = generateTableSelectSql(contextMenu.database, contextMenu.schema, contextMenu.tableName);
   workspaceStore.addSqlTab(
     sql,
     `${contextMenu.tableName}.sql`,
