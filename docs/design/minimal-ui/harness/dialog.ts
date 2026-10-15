@@ -1,6 +1,5 @@
 import { createApp, defineComponent, h, onMounted, ref, withDirectives } from 'vue';
 import { createPinia } from 'pinia';
-import PrimeVue from 'primevue/config';
 import { i18n } from '@/i18n';
 import '@/assets/main.css';
 import tooltip from '@/directives/tooltip';
@@ -16,7 +15,7 @@ import SettingsModal from '@/components/modals/SettingsModal.vue';
 import ConnectionModal from '@/components/modals/ConnectionModal.vue';
 import { useDialogWindow } from '@/composables/useDialogWindow';
 import { useToastStore } from '@/stores/toastStore';
-import { Database, X } from 'lucide-vue-next';
+import { Database, X } from '@/components/icons';
 
 // `#dark` renders the paired dark variant, `#overlay` shows one dialog over its real fixed mask,
 // `#pair` is the close-up used to check the footer and the title bar at readable size.
@@ -327,7 +326,6 @@ document.head.appendChild(style);
 const app = createApp(Harness);
 app.use(createPinia());
 app.use(i18n);
-app.use(PrimeVue, { theme: { options: { darkModeSelector: '.dark', cssLayer: false } } });
 app.directive('tooltip', tooltip);
 app.mount('#harness');
 
