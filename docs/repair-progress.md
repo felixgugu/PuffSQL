@@ -502,3 +502,20 @@ failed to read plugin permissions: failed to read file
 
 - `npm test`：566 個通過（新增 `tests/result_message_flash.test.ts`：hex→rgba 與三碼／壞值退路、設定預設值、訊息以抵達時間而非掛載順序判定、淡出與 reduced-motion、每個訊息只閃一次、卸載時清除計時器、編輯器與訊息共用同一個色票助手、執行只有訊息的語句會蓋上 `freshAt`；`tests/sql_editor_toolbar_actions.test.ts` 的切片錨點由 `function hexToRgba` 改為 `function updateHighlightStyle`）。
 - `npm run typecheck`：通過。
+
+## 已實作（2026-10-15）：資料表拖曳產生的 SELECT 改為單行並移除 TOP 1000
+
+需求：把資料表拖進 SQL 編輯器時，自動產生的語句改為一行，並取消 `TOP 1000`。
+
+已實作：
+
+1. `src/utils/tableSelectSql.ts`（新增）：純函式 `generateTableSelectSql(db, schema, table)` 產生單行的 `SELECT * FROM [db].[schema].[table];`，不再內建 `TOP 1000`；識別字改用既有的 `escapeIdentifier()`（名稱中的 `]` 會加倍），空的 db／schema 直接省略該段。結尾保留換行，讓拖曳插入後游標落在下一行，並維持既有插入邏輯的 `endsWith('\n')` 判斷。
+2. `src/components/layout/AppSidebar.vue`：`handleTableDragStart()` 寫入 `application/sqlight-table` 與 `text/plain` 的拖曳 payload，以及右鍵「產生 SELECT 語法」的 `handleGenerateSelect()`，都改呼叫同一支產生器，移除各自的字串樣板。
+3. `src/components/editor/MonacoEditor.vue`：拖曳落點在 payload 缺 `sql` 欄位時的備援樣板改用同一支產生器。
+4. `src/components/layout/AppMain.vue`：分頁列與分頁項目兩個落點的備援樣板同步改用產生器；純文字落點的最後備援 `SELECT TOP 1000 * FROM sys.tables;` 一併改為 `SELECT * FROM sys.tables;`。
+5. `src/components/modals/QuickObjectFinderModal.vue`：物件快搜的 SELECT 按鈕與 Ctrl+Enter 走同一支產生器。第 4、5 點雖非拖曳路徑，但產生的是同一個「單表 SELECT」語意，一併統一以免同一個使用意圖產生兩種語法。
+
+驗收：
+
+- `npm test`：635 個通過（`tests/drag_drop_table.test.ts` 改為匯入實作而非複製字串樣板，新增單行、無 `TOP`、結尾換行、`]` 轉義、空白 db／schema 省略的斷言）。
+- `npm run typecheck`：通過。
