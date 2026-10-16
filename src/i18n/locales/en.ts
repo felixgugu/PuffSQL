@@ -249,6 +249,8 @@ export default {
     pasteTooltip: 'Paste from clipboard (Ctrl + V)',
     unfoldAllTooltip: 'Unfold all code regions',
     foldAllTooltip: 'Fold all code regions',
+    guardDisableTooltip: 'Disable this statement: every line gets a leading -- so it is skipped',
+    guardDisabledTooltip: 'This statement is disabled and will be skipped. Click to restore (removes the leading --)',
   },
   results: {
     tabResults: 'Results',

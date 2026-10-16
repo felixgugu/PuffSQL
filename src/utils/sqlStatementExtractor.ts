@@ -7,7 +7,7 @@ export interface ExtractedStatement {
   };
 }
 
-interface LineMeta {
+export interface LineMeta {
   lineIndex: number;
   codeOnly: string;
   isGo: boolean;
@@ -25,7 +25,7 @@ interface LineMeta {
  *
  * This accurately detects GO batch boundaries and statement boundaries.
  */
-function parseSqlLines(fullText: string): { lines: string[]; lineMetas: LineMeta[] } {
+export function parseSqlLines(fullText: string): { lines: string[]; lineMetas: LineMeta[] } {
   const lines = fullText.split(/\r?\n/);
   const lineMetas: LineMeta[] = [];
 
@@ -188,6 +188,82 @@ function parseSqlLines(fullText: string): { lines: string[]; lineMetas: LineMeta
   return { lines, lineMetas };
 }
 
+/** A batch carrying transactions, variables or control blocks has to be executed intact. */
+const CONTROL_FLOW_OR_TRANSACTION =
+  /\b(BEGIN\s+TRAN|\bBEGIN\s+TRANSACTION|\bBEGIN\s+TRY|\bBEGIN\s+CATCH|\bIF\b|\bWHILE\b|\bDECLARE\b|\bSET\s+@)\b/i;
+
+export interface SqlStatementRange {
+  /** 1-based, inclusive. */
+  startLine: number;
+  /** 1-based, inclusive. */
+  endLine: number;
+}
+
+/**
+ * Collects the statements of one GO batch. A batch that carries control flow or transactions stays
+ * whole (T-SQL cannot split it); otherwise a statement begins right after the line holding the
+ * previous ';' and ends at the line holding the next one. Blank lines never terminate a statement,
+ * and blank edge lines belong to no statement at all.
+ */
+function collectBatchRanges(
+  lineMetas: LineMeta[],
+  batchStart: number,
+  batchEnd: number,
+  out: SqlStatementRange[]
+): void {
+  let bStart = batchStart;
+  while (bStart <= batchEnd && lineMetas[bStart]?.isBlank) bStart++;
+  let bEnd = batchEnd;
+  while (bEnd >= bStart && lineMetas[bEnd]?.isBlank) bEnd--;
+  if (bStart > bEnd) return;
+
+  const batchCode = lineMetas
+    .slice(bStart, bEnd + 1)
+    .map((m) => m.codeOnly)
+    .join('\n');
+
+  if (CONTROL_FLOW_OR_TRANSACTION.test(batchCode)) {
+    out.push({ startLine: bStart + 1, endLine: bEnd + 1 });
+    return;
+  }
+
+  let stmtStart = bStart;
+  for (let i = bStart; i <= bEnd; i++) {
+    const endsHere = i === bEnd || lineMetas[i]?.codeOnly.includes(';');
+    if (!endsHere) continue;
+
+    let s = stmtStart;
+    while (s <= i && lineMetas[s]?.isBlank) s++;
+    let e = i;
+    while (e >= s && lineMetas[e]?.isBlank) e--;
+    if (s <= e) {
+      out.push({ startLine: s + 1, endLine: e + 1 });
+    }
+    stmtStart = i + 1;
+  }
+}
+
+/**
+ * Enumerates every execution unit in the script, one entry per statement, using exactly the
+ * boundaries the cursor-based extractor resolves: GO separates batches, a batch with transactions
+ * or control flow stays whole, everything else splits on top-level semicolons.
+ */
+export function listStatementRanges(fullText: string): SqlStatementRange[] {
+  if (!fullText || !fullText.trim()) return [];
+
+  const { lineMetas } = parseSqlLines(fullText);
+  if (lineMetas.length === 0) return [];
+
+  const ranges: SqlStatementRange[] = [];
+  let batchStart = 0;
+  for (let i = 0; i <= lineMetas.length; i++) {
+    if (i < lineMetas.length && !lineMetas[i]?.isGo) continue;
+    collectBatchRanges(lineMetas, batchStart, i - 1, ranges);
+    batchStart = i + 1;
+  }
+  return ranges;
+}
+
 /**
  * Extracts the single SQL statement or execution unit at the current cursor position,
  * or returns the active selection if present.
@@ -209,107 +285,23 @@ export function extractStatementAtCursor(
     return { sql: '', isSelection: false };
   }
 
-  const { lines, lineMetas } = parseSqlLines(fullText);
-  if (lineMetas.length === 0) {
+  const lines = fullText.split(/\r?\n/);
+  const cursorLine = Math.max(1, Math.min(cursorLineNumber, lines.length));
+
+  // A cursor on a GO line, or on a blank line between statements, resolves to no statement.
+  const range = listStatementRanges(fullText).find(
+    (r) => cursorLine >= r.startLine && cursorLine <= r.endLine
+  );
+  if (!range) {
     return { sql: '', isSelection: false };
   }
-
-  const targetLineIdx = Math.max(0, Math.min(cursorLineNumber - 1, lineMetas.length - 1));
-
-  // If cursor is on a GO separator line itself, execute nothing
-  if (lineMetas[targetLineIdx]?.isGo) {
-    return { sql: '', isSelection: false };
-  }
-
-  // 2. Identify the batch boundary enclosing the target line
-  let batchStart = 0;
-  for (let k = targetLineIdx; k >= 0; k--) {
-    if (lineMetas[k]?.isGo) {
-      batchStart = k + 1;
-      break;
-    }
-  }
-
-  let batchEnd = lineMetas.length - 1;
-  for (let k = targetLineIdx; k < lineMetas.length; k++) {
-    if (lineMetas[k]?.isGo) {
-      batchEnd = k - 1;
-      break;
-    }
-  }
-
-  if (batchStart > batchEnd) {
-    return { sql: '', isSelection: false };
-  }
-
-  // 3. Check if batch contains control flow, transactions, or variables
-  // In T-SQL, batches with transactions/control blocks must be kept intact
-  const batchCode = lineMetas
-    .slice(batchStart, batchEnd + 1)
-    .map((m) => m.codeOnly)
-    .join('\n');
-
-  const hasControlFlowOrTransaction =
-    /\b(BEGIN\s+TRAN|\bBEGIN\s+TRANSACTION|\bBEGIN\s+TRY|\bBEGIN\s+CATCH|\bIF\b|\bWHILE\b|\bDECLARE\b|\bSET\s+@)\b/i.test(
-      batchCode
-    );
-
-  if (hasControlFlowOrTransaction) {
-    let bStart = batchStart;
-    while (bStart <= batchEnd && lineMetas[bStart]?.isBlank) bStart++;
-    let bEnd = batchEnd;
-    while (bEnd >= bStart && lineMetas[bEnd]?.isBlank) bEnd--;
-
-    if (bStart > bEnd) {
-      return { sql: '', isSelection: false };
-    }
-
-    const sql = lines.slice(bStart, bEnd + 1).join('\n').trim();
-    return {
-      sql,
-      isSelection: false,
-      range: {
-        startLineNumber: bStart + 1,
-        endLineNumber: bEnd + 1,
-      },
-    };
-  }
-
-  // 4. Batch does not have control flow: identify single statement around cursor
-  // A statement begins after the previous ';' and ends at the next ';' or batch boundary.
-  // Blank lines inside a query DO NOT terminate the statement.
-  let stmtStart = targetLineIdx;
-  while (stmtStart > batchStart) {
-    if (lineMetas[stmtStart - 1]?.codeOnly.includes(';')) {
-      break;
-    }
-    stmtStart--;
-  }
-
-  let stmtEnd = targetLineIdx;
-  while (stmtEnd < batchEnd) {
-    if (lineMetas[stmtEnd]?.codeOnly.includes(';')) {
-      break;
-    }
-    stmtEnd++;
-  }
-
-  // Trim empty lines
-  while (stmtStart <= stmtEnd && lineMetas[stmtStart]?.isBlank) stmtStart++;
-  while (stmtEnd >= stmtStart && lineMetas[stmtEnd]?.isBlank) stmtEnd--;
-
-  if (stmtStart > stmtEnd) {
-    return { sql: '', isSelection: false };
-  }
-
-  const sql = lines.slice(stmtStart, stmtEnd + 1).join('\n').trim();
 
   return {
-    sql,
+    sql: lines.slice(range.startLine - 1, range.endLine).join('\n').trim(),
     isSelection: false,
     range: {
-      startLineNumber: stmtStart + 1,
-      endLineNumber: stmtEnd + 1,
+      startLineNumber: range.startLine,
+      endLineNumber: range.endLine,
     },
   };
 }

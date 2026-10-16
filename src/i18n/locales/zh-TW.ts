@@ -249,6 +249,8 @@ export default {
     pasteTooltip: '貼上剪貼簿內容 (Ctrl + V)',
     unfoldAllTooltip: '展開整份 SQL 的所有區塊',
     foldAllTooltip: '收合整份 SQL 的所有區塊',
+    guardDisableTooltip: '停用此語句：每行開頭加上 -- ，執行整頁時就會略過',
+    guardDisabledTooltip: '此語句已停用，執行時會略過。點擊可恢復（移除每行開頭的 --）',
   },
   results: {
     tabResults: '結果',

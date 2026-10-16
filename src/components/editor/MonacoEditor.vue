@@ -37,6 +37,7 @@ import { extractTableIdentifierAtCursor, type ExtractedTableIdentifier } from '@
 import { analyzeSmartPasteContext } from '@/utils/sqlSmartPaste';
 import { generateTableSelectSql } from '@/utils/tableSelectSql';
 import { dispatchClearGridSelection } from '@/utils/tabulatorGrid';
+import { useEditorStatementGuard, type EditorStatementGuard } from '@/composables/useEditorStatementGuard';
 import { format as formatSql } from 'sql-formatter';
 import type { QueryRunMode, SqlEditorToolbarAction } from '@/types/editor';
 
@@ -63,6 +64,7 @@ let dragOverHandler: ((e: DragEvent) => void) | null = null;
 let dropHandler: ((e: DragEvent) => void) | null = null;
 let editorMouseDownHandler: ((e: MouseEvent) => void) | null = null;
 let triggerSuggestEventListener: (() => void) | null = null;
+let statementGuard: EditorStatementGuard | null = null;
 
 const SQL_EDITOR_ACTION_COMMANDS: Record<SqlEditorToolbarAction, string> = {
   cut: 'editor.action.clipboardCutAction',
@@ -357,6 +359,9 @@ onMounted(() => {
     minimap: { enabled: false },
     scrollBeyondLastLine: false,
     lineNumbers: 'on',
+    // The leftmost narrow strip, left of the line numbers. Monaco reserves it by default; the
+    // statement guard paints its Ban glyph there, so the layout is unchanged from before.
+    glyphMargin: true,
     renderLineHighlight: 'all',
     tabSize: settingsStore.editorTabSize,
     insertSpaces: true,
@@ -405,6 +410,11 @@ onMounted(() => {
       });
     }
   });
+
+  // Per-statement safety switch for UPDATE/INSERT/DELETE/ALTER/CREATE/DROP/TRUNCATE.
+  if (!props.readOnly) {
+    statementGuard = useEditorStatementGuard(monaco, editorInstance);
+  }
 
   editorInstance.onDidChangeModelContent(() => {
     if (editorInstance) {
@@ -861,6 +871,10 @@ onBeforeUnmount(() => {
   if (highlightDecorations) {
     highlightDecorations.clear();
     highlightDecorations = null;
+  }
+  if (statementGuard) {
+    statementGuard.dispose();
+    statementGuard = null;
   }
   if (editorInstance) {
     if (props.tabId) {

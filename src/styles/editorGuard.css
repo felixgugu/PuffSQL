@@ -1,0 +1,38 @@
+/*
+ * Statement guard glyph.
+ *
+ * The glyph lane sits left of the line numbers and is painted by the editor theme, so the mark is
+ * applied as a mask: only the colour below is ours, and it comes from the theme tokens. Monaco sizes
+ * the node itself (`lineHeight` x `lineHeight`), which is why nothing here sets width or height.
+ */
+.sqlight-stmt-guard {
+  background-color: rgb(var(--color-dark-500));
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='m6 6 12 12'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='m6 6 12 12'/%3E%3C/svg%3E");
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 14px 14px;
+  mask-size: 14px 14px;
+  /* Only a hint until the pointer is on it: the mark offers an action, it does not shout. */
+  opacity: 0.45;
+  cursor: pointer;
+}
+
+.sqlight-stmt-guard:hover {
+  background-color: rgb(var(--color-dark-300));
+  opacity: 0.9;
+}
+
+.sqlight-stmt-guard-off {
+  background-color: rgb(var(--color-danger));
+  opacity: 1;
+}
+
+/* Declared last, and with the same specificity as the hover rule above, so a disabled statement
+   keeps its danger colour under the pointer instead of turning into a hint. */
+.sqlight-stmt-guard-off:hover {
+  background-color: rgb(var(--color-danger));
+  opacity: 1;
+}

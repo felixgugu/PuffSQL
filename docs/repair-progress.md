@@ -823,3 +823,33 @@ let prefix = &trimmed[..2];        // ← 中文第 2 個位元組不是字元�
 - `npm test` 709 項、`npm run typecheck`、`npm run build` 通過。
 
 未在自動化中涵蓋：browser dev 的 mock 在該 CDP session 裡沒有作用中的連線（標題列顯示「連線管理...」），連 Ctrl+Enter 也一樣跑不動，因此「送出的 SQL 只有選取 vs 整份」無法在該環境端到端比對；它依賴的 `getSelectedOrFullQuery()` 是既有且已在多處使用的實作，語意由上述護欄與 `tests/statements.test.ts` 的「selection remains an explicit execution override」共同釘住。
+
+## 已實作（2026-10-17）：危險語句一鍵註解（行號左側 Ban 圖示）
+
+需求：一整頁 SQL 裡可能夾著 DELETE / UPDATE 這類危險語句，懶得逐句手動補 `--`，一不小心按了「執行整頁」就會出事。希望在 SQL 編輯器行號左邊、只有 mouseover 才出現一個開關；勾選後那一組語句自動上註解，並常駐顯示。
+
+決策（使用者確認）：關鍵字沿用既有 7 種（`UPDATE/INSERT/DELETE/ALTER/CREATE/DROP/TRUNCATE`，與 `sqlGuard` 同一份清單）；註解方式為逐行行首加 `-- `；開關固定在語句第一行；以 `Ban` 禁止圈圖示取代 checkbox（淡色＝可停用、危險色常駐＝已停用）；範圍以「單一語句」計（與 Ctrl+Enter 完全相同）；執行時不顯示任何略過提示。
+
+已實作：
+
+1. **共用切句**：`src/utils/sqlStatementExtractor.ts` 導出 `parseSqlLines` 與新的 `listStatementRanges()`（GO 分批次；含 `IF/WHILE/BEGIN TRAN/DECLARE` 的批次整段視為一句；其餘依分號切句）。`extractStatementAtCursor` 改為從這份清單挑游標所在區間，讓「單句執行」與開關的界定不會各自漂移；`tests/statements.test.ts` 一行未改仍綠。
+2. **純函式 `src/utils/sqlStatementGuard.ts`**：`analyzeGuardedStatements()` 分兩路讀——活的語句走原文解析（註解仍被遮罩，所以「只是提到關鍵字」的註解不會長出開關），已停用的語句走 `commentedWindows()`（由連續空白／`--` 行組成的視窗，逐行還原一層註解後再解析）。兩路都套同一條 `trimToStatementStart()`：語句起點下移到第一個真正以語句關鍵字開頭的行，因此語句前方的註解不會被吃進範圍、還原時也不會被變成程式碼。`buildToggleEdits()`：停用＝每個非空白行行首插入 `-- `，啟用＝移除一層 `-- `（或 `--`），空白行永不動；兩者精確互逆——語句內使用者自己的整行註解會先變 `-- -- …` 再還原。停用狀態只存在文字裡，沒有新增 store。
+3. **編輯器串接**：`src/components/editor/MonacoEditor.vue` 明寫 `glyphMargin: true`（Monaco 0.56 預設即為 true，該窄欄本來就存在，因此版面沒有任何位移），並新增 `src/composables/useEditorStatementGuard.ts`：裝飾走 `glyphMarginClassName`／`glyphMarginHoverMessage`，未停用的語句只在 hover（含行號／glyph 欄）時於第一行露出淡色 Ban，已停用的語句不論 hover 都常駐。點擊由 `onMouseDown` 過濾 `MouseTargetType.GUTTER_GLYPH_MARGIN`，以 `executeEdits('statement-guard', …)` ＋ `pushUndoStop()` 套用（一次點擊＝一步 undo），並把原選取狀態原封不動傳回（Monaco 本身在 gutter 上就不會搶焦點或移動游標，故不需要 preventDefault）。內容變更後 150ms 重新分析，結果以模型版本號快取；唯讀編輯器不啟用。
+4. **樣式與主題**：新增 `src/styles/editorGuard.css`（`main.ts` 於 main.css 之後載入），沿用 `tabulatorTheme.css` 既有的 data-URI mask 手法繪製 `Ban`，顏色全走 token（未停用＝`--color-dark-500` + `opacity .45`，hover 自身提亮；已停用＝`--color-danger`）。`src/utils/editorThemeTokens.ts` 兩套主題各補 `editorHoverWidget.background/foreground/border`（沿用 `menu.*` 同一批色階），讓 hover 說明框與表面主題一致。
+5. **i18n**：`editor.guardDisableTooltip`／`editor.guardDisabledTooltip` 於 zh-TW 與 en 同步新增。
+
+驗證：
+
+- `tests/sql_statement_guard.test.ts`（純函式）：7 種關鍵字各只產生一個開關；字串、註解、`[bracket]`、`updates`、`UPDATE_DATE` 都不誤判；分號／GO／控制流批次的界定；停用後仍被認得且 `disabled` 正確；停用→啟用的往返在 CRLF、行內尾註解、使用者自己的整行註解、空白行的情況下都逐字還原；停用後 `detectDangerousSqlStatements()` 對整份腳本已無危險語句；語句前方的註解不會被讀成語句。
+- `tests/editor_statement_guard.test.ts`（原始碼護欄）：glyph margin 開啟、composable 掛載與卸載、只在 `GUTTER_GLYPH_MARGIN` 上切換、單一 undo、不使用 `emit`／不碰 `queryService`、CSS 走 token 且不含 raw Tailwind hue／圓角／陰影、兩語系文案齊備。
+- 真瀏覽器（headless Chrome + CDP 真實滑鼠／鍵盤事件、`npx vite --port 1425`）18 項全過：SELECT 語句 hover 不出現開關；DELETE 語句 hover 在自身第一行露出淡色 Ban（落在 glyph 欄內、mask 生效）；hover 出現說明「停用此語句：每行開頭加上 -- ，執行整頁時就會略過」（Monaco hover widget，讀到 `--vscode-editorHoverWidget-*` = `#fafafa`／`#262626`／`#e5e5e5`）；點擊後整段每行加上 `-- `，滑鼠移開後以 danger 色常駐；再點一次逐字還原；`Ctrl+Z` 一步還原整段；點擊 glyph 不會清掉使用者選取；四行的 UPDATE 語句在中間行 hover 時開關仍錨在第一行、點擊會註解整個語句；深色主題常駐色 = `rgb(249, 112, 102)`、淺色 = `rgb(180, 35, 24)`。
+- 真 SQL Server（本機 `127.0.0.1,1433`、scratch DB `PuffSQL_Verify_Scratch`）：建立 `dbo.StatementGuardProof` 三列後，把「整頁 SQL」原文（含 `-- DELETE FROM dbo.StatementGuardProof;`）以單一批次執行——兩個 SELECT 照常回傳（3、3），資料表仍是 3 列；把註解移除後再跑同一句，3 列清空。證明「略過」確實來自註解，而不是別的原因。
+- `npm test` 729 項、`npm run typecheck`、`npm run build` 全過。
+
+未涵蓋／已知邊界：
+
+- 使用者手寫、且整段剛好長得跟「開關停用過的形狀」一模一樣的註解區塊，會被讀成已停用語句——這是純文字推斷的必然結果；範圍經 `trimToStatementStart()` 收斂，點擊只會動那幾行且完全可逆。
+- 語句起始關鍵字清單（`SELECT/INSERT/UPDATE/…/IF/WHILE/BEGIN/…`）只用於「把讀回來的註解區塊認成語句」；若某個受保護語句的第一行是清單外的 token，重新載入後就不會顯示常駐圖示（安全方向的失誤：只少了提示，不會誤改文字）。
+- 停用語句緊接著活程式碼（中間沒有空行、`;` 或 GO）時，Ctrl+Enter 的既有語句界定本來就會把前面那行註解算進同一個語句，開關沿用同一份界定，因此該情境下兩個候選範圍會重疊、其中一個圖示會被蓋住。
+- hover 說明用 Monaco 內建 hover widget（裝飾節點由 Monaco 產生，專案的 tooltip directive 掛不上去）；切換語系後既有裝飾文字會在下次 hover／重建時更新。
+- 依使用者選擇，執行時不顯示「已略過 N 段」提示。

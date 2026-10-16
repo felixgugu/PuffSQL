@@ -4,6 +4,7 @@ import App from './App.vue';
 import './assets/main.css';
 import 'tabulator-tables/dist/css/tabulator.css';
 import './styles/tabulatorTheme.css';
+import './styles/editorGuard.css';
 
 import tooltip from './directives/tooltip';
 

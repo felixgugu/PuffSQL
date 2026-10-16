@@ -62,6 +62,10 @@ export function buildEditorTheme(surfaceName: string, mode: 'dark' | 'light'): M
         'menu.selectionBorder': '#00000000',
         'menu.separatorBackground': pal['700'],
         'menu.border': pal['700'],
+        // The only hover the editor uses is the statement guard's explanation in the glyph lane.
+        'editorHoverWidget.background': pal['800'],
+        'editorHoverWidget.foreground': pal['200'],
+        'editorHoverWidget.border': pal['700'],
       },
     };
   }
@@ -84,6 +88,9 @@ export function buildEditorTheme(surfaceName: string, mode: 'dark' | 'light'): M
       'menu.selectionBorder': '#00000000',
       'menu.separatorBackground': pal['200'],
       'menu.border': pal['200'],
+      'editorHoverWidget.background': pal['50'],
+      'editorHoverWidget.foreground': pal['800'],
+      'editorHoverWidget.border': pal['200'],
     },
   };
 }
