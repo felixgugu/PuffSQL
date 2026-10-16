@@ -2,6 +2,25 @@ use crate::models::query::QueryResult;
 use crate::services::ConnectionManager;
 use tauri::State;
 
+/// Runs the work on its own task so a *panic* becomes an error instead of a silent dead task.
+///
+/// A panicking command used to take its task down with it, and the front end's `invoke` promise
+/// then never settled: the editor sat in "executing" forever, reported nothing, and the cancel
+/// button did nothing because the request it wanted to cancel no longer existed. Awaiting the join
+/// handle is what turns that into a message the user (and the message panel) can act on.
+async fn isolated<F, T>(work: F) -> Result<T, String>
+where
+    F: std::future::Future<Output = Result<T, String>> + Send + 'static,
+    T: Send + 'static,
+{
+    match tauri::async_runtime::spawn(work).await {
+        Ok(result) => result,
+        Err(join_error) => Err(format!(
+            "內部錯誤：查詢工作已中止（{join_error}）。請重試；若持續發生，請把這行訊息回報。"
+        )),
+    }
+}
+
 #[tauri::command]
 pub async fn execute_query(
     connection_id: String,
@@ -11,10 +30,14 @@ pub async fn execute_query(
     request_id: Option<String>,
     manager: State<'_, ConnectionManager>,
 ) -> Result<QueryResult, String> {
-    manager
-        .execute_query(&connection_id, database.as_deref(), &sql, max_rows, request_id.as_deref())
-        .await
-        .map_err(|e| e.to_string())
+    let manager = manager.inner().clone();
+    isolated(async move {
+        manager
+            .execute_query(&connection_id, database.as_deref(), &sql, max_rows, request_id.as_deref())
+            .await
+            .map_err(|e| e.to_string())
+    })
+    .await
 }
 
 #[tauri::command]
@@ -23,10 +46,14 @@ pub async fn cancel_query(
     request_id: Option<String>,
     manager: State<'_, ConnectionManager>,
 ) -> Result<(), String> {
-    manager
-        .cancel_query(&connection_id, request_id.as_deref())
-        .await
-        .map_err(|e| e.to_string())
+    let manager = manager.inner().clone();
+    isolated(async move {
+        manager
+            .cancel_query(&connection_id, request_id.as_deref())
+            .await
+            .map_err(|e| e.to_string())
+    })
+    .await
 }
 
 #[tauri::command]

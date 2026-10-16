@@ -760,3 +760,31 @@ failed to read plugin permissions: failed to read file
 
 護欄：新增 `tests/sq_select_options.test.ts`（2 項）——選項必須用 `min-height` 而非固定 `height`、且必須保留垂直內距；連線選單的 `#option` slot 不得再畫自己的 `Check`、`Check` import 必須移除，而選取狀態由 `SqSelect` 負責。`npm test` 707 項、`npm run typecheck`、`npm run build` 通過。
 
+## 已修正（2026-10-16）：送出含中文的 SQL 讓查詢卡死、停不了也不報錯
+
+症狀：編輯器裡有一行中文（例如隨手打上的「無線滑鼠」）再接一段 `SELECT`，按 Ctrl+Enter 之後查詢永遠停在「執行中」，按取消沒反應，訊息面板也沒有任何錯誤。
+
+根因（**Rust 端 panic，不是伺服器問題**）：`src-tauri/src/drivers/mssql/batch.rs` 的 `is_go_command` 用位元組切片判斷 GO：
+
+```rust
+let prefix = &trimmed[..2];        // ← 中文第 2 個位元組不是字元邊界
+```
+
+只要某一行以多位元組字元開頭（中文、重音字母、emoji），`&line[..2]` 就會 panic（`byte index 2 is not a char boundary`）。這個 panic 發生在 `execute_query` 的第一步（批次分割），於是 Tauri 命令的工作直接被殺掉——**前端 invoke 的 promise 永遠不會 settle**，所以畫面永遠是「執行中」、不會報錯、取消也無效（要取消的請求根本沒建立）。
+
+同一支檔案裡 `detect_use_database` 的 `trimmed[..3]` 有同樣的位元組切片問題（emoji 開頭的行會 panic），`parse_go_count` 的 `trimmed[2..]` 也是。
+
+修正：
+
+1. `batch.rs` 新增 `starts_with_ascii_ci(text, prefix)`——以**位元組**比對 ASCII 關鍵字，永不切到字元中間（UTF-8 的續位元組不可能是 ASCII 字母）。`is_go_command`、`parse_go_count`、`detect_use_database` 都改用它在先，之後才做（此時已保證是 ASCII 邊界的）切片；`detect_use_database` 另外把 `as_bytes()[3]` 改成 `get(3)`。
+2. `commands/query_commands.rs` 新增 `isolated()`：把查詢工作丟到自己的 task 並 **await 它的 join handle**。任何未來的 panic 都會轉成看得見的錯誤訊息（「內部錯誤：查詢工作已中止（…）」），而不是讓 UI 無聲卡死；`execute_query` 與 `cancel_query` 都走這條路。
+
+驗證（對真實 SQL Server 2022，走應用程式自己的 Rust 路徑）：
+
+- 修正前：`split_sql_batches("無線滑鼠\n\nSELECT * FROM SalesDemo.Products;")` **panic**（`batch.rs:209`）。
+- 修正後：同一段 SQL 在 **0.79ms** 內回傳 `[error] Token error: 'Could not find stored procedure '無線滑鼠'.' … (code: 2812)`——也就是使用者期待的「直接報錯」。另以 SqlClient 直連確認過伺服器對這段批次本來就是立刻回兩個錯誤（`Could not find stored procedure '無線滑鼠'`、`Invalid object name 'SalesDemo.Products'`），所以問題完全在客戶端。
+
+護欄：`batch.rs` 新增 3 項測試——`multibyte_lines_never_panic_the_splitter`（中文、重音字母、emoji、全形字母、單一中文字都不得 panic，且不被誤判為 GO／USE）、`go_and_use_detection_still_work_after_the_safe_prefix_check`（`GO`／`go 5`／`Go`／`goto`／裸 `use` 等邊界仍正確）、`a_stray_line_travels_with_the_statement_below_it`（記錄「游標在零散文字上時，該行會跟著下面以 `;` 結尾的語句一起送出」這個既有行為）。
+
+驗收：`cargo test --lib` 33 項、`npm test` 707 項、`npm run typecheck`、`npm run build` 通過。
+

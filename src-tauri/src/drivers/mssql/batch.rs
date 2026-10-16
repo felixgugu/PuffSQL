@@ -198,19 +198,12 @@ pub fn split_sql_batches(full_text: &str) -> Vec<SqlBatch> {
 /// - `GO 5`
 /// - `GO 10`
 fn is_go_command(trimmed: &str) -> bool {
-    if trimmed.is_empty() {
+    if !starts_with_ascii_ci(trimmed, "go") {
         return false;
     }
 
-    if trimmed.len() < 2 {
-        return false;
-    }
-
-    let prefix = &trimmed[..2];
-    if !prefix.eq_ignore_ascii_case("go") {
-        return false;
-    }
-
+    // Safe to index by bytes from here: the first two bytes are known to be ASCII "go", so byte 2
+    // is a character boundary.
     let remainder = trimmed[2..].trim_start();
     if remainder.is_empty() {
         return true;
@@ -220,10 +213,22 @@ fn is_go_command(trimmed: &str) -> bool {
     remainder.chars().all(|c| c.is_ascii_digit())
 }
 
+/// ASCII-case-insensitive prefix test that can never split a UTF-8 character.
+///
+/// The obvious `&sql[..2]` panics the moment byte 2 lands inside a multi-byte character — a line of
+/// Chinese text, an accented word, an emoji — and a panicking splitter takes the whole query task
+/// down with it: the editor then spins forever with no error and a cancel button that does nothing.
+/// Comparing *bytes* against an ASCII needle is safe instead, because a UTF-8 continuation byte is
+/// never an ASCII letter.
+fn starts_with_ascii_ci(text: &str, prefix: &str) -> bool {
+    text.len() >= prefix.len()
+        && text.as_bytes()[..prefix.len()].eq_ignore_ascii_case(prefix.as_bytes())
+}
+
 /// Parses the optional repeat count from a GO command string.
 /// E.g. "GO 5" -> Some(5), "GO" -> None.
 fn parse_go_count(trimmed: &str) -> Option<usize> {
-    if trimmed.len() <= 2 {
+    if !starts_with_ascii_ci(trimmed, "go") {
         return None;
     }
     let remainder = trimmed[2..].trim();
@@ -272,12 +277,13 @@ fn flush_batch(lines: &[(usize, &str)], repeat_count: usize) -> Option<SqlBatch>
 /// Returns the unquoted database name if detected.
 pub fn detect_use_database(sql: &str) -> Option<String> {
     let trimmed = sql.trim();
-    if trimmed.len() < 4 {
+    if !starts_with_ascii_ci(trimmed, "use") {
         return None;
     }
-    if !trimmed[..3].eq_ignore_ascii_case("use") || !trimmed.as_bytes()[3].is_ascii_whitespace() {
+    if !matches!(trimmed.as_bytes().get(3), Some(byte) if byte.is_ascii_whitespace()) {
         return None;
     }
+    // Safe to index by bytes: the first three bytes are known to be ASCII "use".
     let rest = trimmed[3..].trim();
     if rest.starts_with('[') {
         let closing = rest.find(']')?;
@@ -436,5 +442,49 @@ mod tests {
         assert_eq!(detect_use_database("SELECT * FROM tbl;"), None);
         assert_eq!(detect_use_database("USER_NAME()"), None);
         assert_eq!(detect_use_database(""), None);
+    }
+
+    /// The editor is full of Chinese comments and strings. A line of multi-byte text used to panic
+    /// the splitter ("byte index 2 is not a char boundary"), which killed the query task: the UI
+    /// stayed in "executing" forever with no error and a cancel button that did nothing.
+    #[test]
+    fn multibyte_lines_never_panic_the_splitter() {
+        for line in ["無線滑鼠", "資料表 (12)", "é", "😀 emoji", "ｇｏ", "中", "a中b"] {
+            let sql = format!("{line}\n\nSELECT 1;\n");
+            let batches = split_sql_batches(&sql);
+
+            assert_eq!(batches.len(), 1, "{line} must stay a single batch");
+            assert!(batches[0].sql.contains("SELECT 1;"), "{line} keeps its statement");
+            assert!(!is_go_command(line), "{line} is not a GO boundary");
+            assert!(!is_go_command(&line.to_uppercase()), "{line} is not a GO boundary");
+            assert_eq!(detect_use_database(line), None, "{line} is not a USE batch");
+        }
+    }
+
+    #[test]
+    fn go_and_use_detection_still_work_after_the_safe_prefix_check() {
+        assert!(is_go_command("GO"));
+        assert!(is_go_command("go 5"));
+        assert!(is_go_command("Go\n"));
+        assert!(!is_go_command("g"));
+        assert!(!is_go_command("goto"));
+        assert_eq!(parse_go_count("GO 5"), Some(5));
+        assert_eq!(parse_go_count("GO"), None);
+        assert_eq!(parse_go_count("無線滑鼠"), None);
+        assert_eq!(detect_use_database("use"), None, "a bare `use` has no database");
+        assert_eq!(detect_use_database("use;"), None);
+    }
+
+    /// Documents what the editor sends when the cursor sits on a stray line above a statement: the
+    /// statement range is `;`-based, so both lines travel together and the *server* reports the
+    /// syntax error. The front end is not supposed to guess here — but it must survive it.
+    #[test]
+    fn a_stray_line_travels_with_the_statement_below_it() {
+        let sql = "無線滑鼠\n\nSELECT * FROM SalesDemo.Products;";
+        let batches = split_sql_batches(sql);
+
+        assert_eq!(batches.len(), 1);
+        assert_eq!(batches[0].sql, sql);
+        assert_eq!(batches[0].start_line, 1);
     }
 }
