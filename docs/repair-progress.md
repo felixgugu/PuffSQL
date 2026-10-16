@@ -693,3 +693,13 @@ failed to read plugin permissions: failed to read file
 
 驗收：`npm test` 703 項通過（`minimal_ui_primitives` 對狀態列「必須 import SqChip」的斷言仍成立，因為狀態與 SPID 仍用 SqChip）、`npm run typecheck`、`npm run build` 通過；以 headless 截圖核對：左下角只剩 `SPID: 55`，右下角為 `狀態／Engine／PuffSQL v0.2.0`。
 
+## 已修正（2026-10-16）：物件總管子節點的徽章改為純文字
+
+症狀：展開資料表後，約束／索引／觸發程序列右側的 `CK`／`PK`／`NONCLUSTERED` 等是帶外框的晶片，整排看起來像按鈕，而且晶片的內距與 1px 邊框把這些列撐得比上面的欄位列高，樹的節奏因此不齊（欄位列 20px、物件列約 24px，節距忽大忽小）。
+
+修正：`src/components/layout/ExplorerObjectRows.vue` 的徽章改成純文字 `[PK]`／`[NONCLUSTERED]`／`[AFTER INSERT, UPDATE]`——移除 `border`／`bg`／`px`／`py`／`rounded`，只留 `text-xxs` 與色彩（一般 `text-dark-500`、停用 `text-warn`）；與欄位列右側的型別標籤同一種處理。
+
+驗收：以 CDP 在真實頁面展開 `dbo.Users` 後量測 15 列子節點——欄位、約束、索引、觸發程序**一律 20px 高、節距 22px**（先前物件列因晶片而更高）；徽章 computed style 為 11px、`border-width: 0px`。`npm test` 703 項、`npm run typecheck`、`npm run build` 通過。
+
+備註：`[AFTER INSERT, UPDATE]` 這類較長的標籤在側邊欄預設寬度下會壓縮同一列的物件名稱（完整內容仍在列的 tooltip）；把側邊欄拉寬即可，若需要也可以改成只顯示 `[AFTER]`／`[INSTEAD OF]`，事件留在 tooltip。
+

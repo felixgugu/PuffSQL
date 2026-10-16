@@ -14,11 +14,16 @@
     >
       <component :is="row.icon" class="w-2.5 h-2.5 flex-shrink-0" :class="row.color" />
       <span class="truncate flex-1 text-dark-300 group-hover:text-dark-100">{{ row.name }}</span>
+      <!--
+        The kind reads as `[PK]` / `[NONCLUSTERED]` instead of a bordered chip. A box on every row
+        made the list look like a column of buttons, and the chip's padding and border pushed the
+        object rows taller than the column rows above them, which is what broke the tree's rhythm.
+      -->
       <span
-        class="text-xxs px-1 py-0.5 rounded border border-dark-700 bg-dark-750 flex-shrink-0 font-sans"
-        :class="row.disabled ? 'text-warn' : 'text-dark-400'"
+        class="text-xxs flex-shrink-0 font-sans"
+        :class="row.disabled ? 'text-warn' : 'text-dark-500'"
       >
-        {{ row.badge }}
+        [{{ row.badge }}]
       </span>
     </div>
   </div>
