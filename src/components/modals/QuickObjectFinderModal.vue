@@ -218,7 +218,6 @@
             >
               <template #icon><Table2 class="w-3.5 h-3.5" /></template>
             </SqButton>
-            />
             <SqButton
               type="button"
               :label="$t('quickFinder.structureBtn')"
@@ -229,7 +228,6 @@
             >
               <template #icon><List class="w-3.5 h-3.5" /></template>
             </SqButton>
-            />
             <SqButton
               type="button"
               :label="$t('quickFinder.selectBtn')"
@@ -240,7 +238,6 @@
             >
               <template #icon><FileEdit class="w-3.5 h-3.5" /></template>
             </SqButton>
-            />
           </template>
 
           <!-- For Stored Procedures: Definition, EXEC -->
@@ -255,7 +252,6 @@
             >
               <template #icon><FileCode class="w-3.5 h-3.5" /></template>
             </SqButton>
-            />
             <SqButton
               type="button"
               :label="$t('quickFinder.execBtn')"
@@ -266,7 +262,6 @@
             >
               <template #icon><Play class="w-3.5 h-3.5" /></template>
             </SqButton>
-            />
           </template>
 
           <!-- For Functions: Definition, SELECT -->

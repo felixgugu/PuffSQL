@@ -51,8 +51,6 @@
         >
           <template #icon><X class="w-3.5 h-3.5" /></template>
         </SqButton>
-          class="!w-7 !h-7 !p-0 !rounded-md !border-0 hover:!bg-dark-750"
-        />
 
         <!-- Close Button -->
         <SqButton
@@ -94,12 +92,10 @@
             :loading="templateStore.isLoading"
             @click="handleReloadFromDisk"
             :disabled="templateStore.isLoading"
+            v-tooltip.top="$t('sqlTemplates.reloadTooltip')"
           >
             <template #icon><RefreshCw class="w-3.5 h-3.5" /></template>
           </SqButton>
-            v-tooltip.top="$t('sqlTemplates.reloadTooltip')"
-            class="!text-xxs !py-1 !px-2"
-          />
 
           <SqButton
             type="button"
@@ -112,7 +108,6 @@
           >
             <template #icon><Plus class="w-3.5 h-3.5" /></template>
           </SqButton>
-          />
         </div>
       </div>
     </div>

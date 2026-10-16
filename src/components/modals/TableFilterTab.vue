@@ -216,7 +216,6 @@
               >
                 <template #icon><Pencil class="w-3.5 h-3.5" /></template>
               </SqButton>
-              />
               <SqButton
                 type="button"
                 tone="danger"
