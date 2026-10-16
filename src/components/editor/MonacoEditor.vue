@@ -38,7 +38,7 @@ import { analyzeSmartPasteContext } from '@/utils/sqlSmartPaste';
 import { generateTableSelectSql } from '@/utils/tableSelectSql';
 import { dispatchClearGridSelection } from '@/utils/tabulatorGrid';
 import { format as formatSql } from 'sql-formatter';
-import type { SqlEditorToolbarAction } from '@/types/editor';
+import type { QueryRunMode, SqlEditorToolbarAction } from '@/types/editor';
 
 const props = defineProps<{
   modelValue: string;
@@ -162,9 +162,13 @@ function getFullDocumentQuery(): string {
   return editorInstance.getValue();
 }
 
-function getExecutableQuery(mode: 'current' | 'all' = 'current'): string {
+function getExecutableQuery(mode: QueryRunMode = 'current'): string {
   if (mode === 'all') {
     return getFullDocumentQuery();
+  }
+  // F5 follows SSMS: run what is selected, and only fall back to the whole script otherwise.
+  if (mode === 'selection-or-all') {
+    return getSelectedOrFullQuery().sql;
   }
   return getStatementAtCursor().sql;
 }

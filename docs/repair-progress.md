@@ -803,3 +803,23 @@ let prefix = &trimmed[..2];        // ← 中文第 2 個位元組不是字元�
 驗證：`npm test` 708 項通過（`theme_settings` 改為斷言「只出貨一組色盤」與 `migrateStoredSettings` 會丟棄舊色盤名；`theme_contrast` 的所有對比檢查現在只對 neutral 這一組跑）；`npm run typecheck`、`npm run build` 通過。以 headless 瀏覽器核對：app 啟動無例外、runtime token 已是 neutral（淺色 `--color-dark-900: 255 255 255`、`--color-dark-850: 250 250 250`、`--color-dark-500: 82 82 82`），外觀頁不再出現「表面底色」字樣或其他色盤名稱。
 
 備註：`surfaceColor` 這條設定與 `applySurfaceColor()` 仍保留在程式裡（只是永遠是 neutral）——它同時是深淺色 token 的套用途徑，拿掉它得把色盤寫死在多處；要的話可以再做一次純清理。實作過程中一度漏改 `editorThemeTokens` 的舊色盤 fallback 導致 app 啟動失敗，已補上並以「乾淨重新載入無例外」驗證。
+
+## 已實作（2026-10-16）：F5 執行（SSMS 習慣）
+
+需求：支援 SQL 的 F5 執行（使用者習慣 SSMS），語意與 SSMS 相同——有選取就跑選取，沒有選取就跑整頁。
+
+已實作：
+
+1. 型別：`src/types/editor.ts` 新增 `QueryRunMode = 'current' | 'all' | 'selection-or-all'`；原本四處各自手寫 `'current' | 'all'` 的地方（`SqlEditorToolbar` 的 `run-query` emit、`AppMain.runQuery`、`MonacoEditor.getExecutableQuery`、`App.handleRunQuery`）改用同一條聯集。
+2. 抽取邏輯：`MonacoEditor.getExecutableQuery` 新增 `'selection-or-all'` 分支，直接回傳既有的 `getSelectedOrFullQuery().sql`（該函式本來就是「有選取用選取、否則整份文件」，原供 AI 助手使用），沒有新增第二套選取判斷。
+3. 快速鍵：`App.vue` 的 `handleGlobalKeydown` 新增 F5 分支——只在「`e.key === 'F5'` 且四個修飾鍵皆未按下」且「`workspaceStore.activeTab?.type === 'sql_editor'`」時 `preventDefault()` 並呼叫 `handleRunQuery('selection-or-all')`；其他分頁或帶修飾鍵時完全不攔截，F5 維持 WebView 原本的重新載入。既有的 Ctrl+Enter（游標所在語句）與 Ctrl+Shift+Enter（整頁）行為不變。F5 沒有另外註冊 Monaco 編輯器命令：那條路徑會在有焦點的編輯器裡被 Monaco 的 keybinding 先攔走，而全域處理器兩種情況都收得到（實測確認）。
+4. 提示：`ResultsEmptyState` 的快捷鍵表在兩條執行提示之後插入 `{ keys: 'F5', label: '執行選取，否則執行整頁' }`（F5 無修飾鍵，用字面值、不經 `shortcutLabel`）；`editor.runTooltip` 與 `editor.runAllTooltip` 於括號內追加 `、F5`／`, F5`，兩顆鈕各自與 F5 的實際行為相符；zh-TW 與 en 同步新增 `results.emptyHintRunF5`。
+
+驗證：
+
+- 以 CDP 送真實按鍵與真實滑鼠在 browser dev 上量測：在 SQL 編輯器分頁按 F5 會走到與 Ctrl+Enter 完全相同的執行路徑（同一狀態下兩者都同樣被連線守衛擋下並出現同一個 toast，證明管線一致）；F5 期間寫在 `window` 的標記未被清掉，證明 `preventDefault()` 生效、WebView 不會重新載入；Shift+End 選取後 Monaco 的 `.selected-text` 節點數為 1，選取有被建立。
+- 結果區空狀態的快捷鍵表實際渲染出 `F5 / 執行選取，否則執行整頁`（讀頁面 innerText 核對）。
+- 護欄：`tests/results_empty_state.test.ts` 新增 `F5 runs the selection, or the whole script when nothing is selected`——斷言 App.vue 的 F5 分支只認無修飾鍵、以 SQL 編輯器分頁為條件、必須 `preventDefault()`、必須派發 `'selection-or-all'`，並斷言 `getExecutableQuery` 把該模式接到 `getSelectedOrFullQuery()`、模式聯集定義在 `types/editor.ts`；既有的快捷鍵廣告測試也加驗 F5 提示列存在。
+- `npm test` 709 項、`npm run typecheck`、`npm run build` 通過。
+
+未在自動化中涵蓋：browser dev 的 mock 在該 CDP session 裡沒有作用中的連線（標題列顯示「連線管理...」），連 Ctrl+Enter 也一樣跑不動，因此「送出的 SQL 只有選取 vs 整份」無法在該環境端到端比對；它依賴的 `getSelectedOrFullQuery()` 是既有且已在多處使用的實作，語意由上述護欄與 `tests/statements.test.ts` 的「selection remains an explicit execution override」共同釘住。

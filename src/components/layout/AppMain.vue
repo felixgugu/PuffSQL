@@ -232,7 +232,7 @@ import { detectDangerousSqlStatements } from '@/utils/sqlGuard';
 import { generateTableSelectSql } from '@/utils/tableSelectSql';
 import { dispatchClearGridSelection } from '@/utils/tabulatorGrid';
 import { cancelFlip, captureFlipRects, playFlip } from '@/composables/useFlip';
-import type { SqlEditorToolbarAction } from '@/types/editor';
+import type { QueryRunMode, SqlEditorToolbarAction } from '@/types/editor';
 import type { SqlEditorTab, TableDataTab, TableStructureTab, ExecutionPlanTab, ErDiagramTab, WorkspaceTab } from '@/types/workspace';
 
 const { t } = useI18n();
@@ -690,7 +690,7 @@ async function executeSql(connId: string, db: string, targetSql: string) {
   }
 }
 
-async function runQuery(mode: 'current' | 'all' = 'current', queryOverride?: string) {
+async function runQuery(mode: QueryRunMode = 'current', queryOverride?: string) {
   let targetSql = queryOverride;
   if (!targetSql && monacoRef.value) {
     targetSql = monacoRef.value.getExecutableQuery(mode);

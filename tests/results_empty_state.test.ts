@@ -65,9 +65,41 @@ describe('Results empty state', () => {
     assert.match(app, /e\.key === 'Enter'/, 'Ctrl + Enter runs the current statement');
     assert.match(app, /e\.key === 'p' \|\| e\.key === 'P'/, 'Ctrl + P opens the object finder');
     assert.match(app, /e\.key === 'i' \|\| e\.key === 'I'/, 'Ctrl + I opens the AI assistant');
+    assert.match(app, /e\.key === 'F5'/, 'F5 runs the query without a modifier');
+    assert.match(
+      source,
+      /\{ keys: 'F5', label: t\('results\.emptyHintRunF5'\) \}/,
+      'F5 is printed as a bare key, not through shortcutLabel'
+    );
 
     // No platform-blind hint text may be hardcoded in the component.
     assert.doesNotMatch(source, /'Ctrl \+/, 'hints must go through shortcutLabel');
+  });
+
+  test('F5 runs the selection, or the whole script when nothing is selected', () => {
+    const app = readSource('src/App.vue');
+    const branch = /if \(e\.key === 'F5'[\s\S]{0,420}?\n  \}/.exec(app)?.[0] ?? '';
+
+    assert.ok(branch.length > 0, 'App.vue must handle F5');
+    assert.match(branch, /!e\.ctrlKey && !e\.metaKey && !e\.shiftKey && !e\.altKey/, 'only the bare F5');
+    assert.match(
+      branch,
+      /workspaceStore\.activeTab\?\.type === 'sql_editor'/,
+      'only while a SQL editor tab is active — elsewhere F5 stays the WebView reload'
+    );
+    assert.match(branch, /e\.preventDefault\(\)/, 'a reload must never interrupt a run');
+    assert.match(branch, /handleRunQuery\('selection-or-all'\)/, 'it asks for the SSMS mode');
+
+    assert.match(
+      readSource('src/components/editor/MonacoEditor.vue'),
+      /mode === 'selection-or-all'[\s\S]{0,140}?getSelectedOrFullQuery\(\)\.sql/,
+      'the SSMS mode reuses the existing selection-or-document helper'
+    );
+    assert.match(
+      readSource('src/types/editor.ts'),
+      /export type QueryRunMode = 'current' \| 'all' \| 'selection-or-all'/,
+      'the run modes live in one shared union'
+    );
   });
 
   test('both grid surfaces render the shared empty state instead of a bare label', () => {

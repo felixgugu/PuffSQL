@@ -175,13 +175,13 @@ import {
   UnfoldVertical,
 } from '@/components/icons';
 import { useQueryStore } from '@/stores/queryStore';
-import type { SqlEditorToolbarAction } from '@/types/editor';
+import type { QueryRunMode, SqlEditorToolbarAction } from '@/types/editor';
 
 const { t } = useI18n();
 const queryStore = useQueryStore();
 
 const emit = defineEmits<{
-  (e: 'run-query', mode: 'current' | 'all'): void;
+  (e: 'run-query', mode: QueryRunMode): void;
   (e: 'cancel-query'): void;
   (e: 'format-sql'): void;
   (e: 'editor-action', action: SqlEditorToolbarAction): void;

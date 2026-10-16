@@ -134,6 +134,7 @@ import SqToast from '@/components/ui/SqToast.vue';
 import { useSplitter } from '@/composables/useSplitter';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useQueryStore } from '@/stores/queryStore';
+import type { QueryRunMode } from '@/types/editor';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useAiChatStore } from '@/stores/aiChatStore';
 import { themeManager } from '@/services/themeManager';
@@ -254,7 +255,7 @@ function toggleMaximizeBottomPanel() {
   }
 }
 
-function handleRunQuery(mode: 'current' | 'all' = 'current') {
+function handleRunQuery(mode: QueryRunMode = 'current') {
   mainWorkspaceRef.value?.runQuery(mode);
 }
 
@@ -298,6 +299,17 @@ function handleGlobalKeydown(e: KeyboardEvent) {
   if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'Enter') {
     e.preventDefault();
     handleRunQuery('all');
+    return;
+  }
+
+  // F5 -> the SSMS habit: run the selection if there is one, otherwise the whole script. Only while
+  // a SQL editor tab is active, and only the bare key: everywhere else (and with any modifier) F5
+  // keeps doing whatever the WebView does with it.
+  if (e.key === 'F5' && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey) {
+    if (workspaceStore.activeTab?.type === 'sql_editor') {
+      e.preventDefault();
+      handleRunQuery('selection-or-all');
+    }
     return;
   }
 

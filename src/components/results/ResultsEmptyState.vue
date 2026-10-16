@@ -59,6 +59,7 @@ const description = computed(() =>
 const hints = computed(() => [
   { keys: shortcutLabel('Enter', userAgent), label: t('results.emptyHintRun') },
   { keys: shortcutLabel('Shift + Enter', userAgent), label: t('results.emptyHintRunAll') },
+  { keys: 'F5', label: t('results.emptyHintRunF5') },
   { keys: shortcutLabel('P', userAgent), label: t('results.emptyHintFinder') },
   { keys: shortcutLabel('I', userAgent), label: t('results.emptyHintAi') },
 ]);
