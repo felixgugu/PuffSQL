@@ -18,6 +18,7 @@
       <div
         ref="resultsTabsBarRef"
         @wheel="handleResultTabsWheel"
+        @mousedown.middle.prevent
         class="flex-1 min-w-0 h-full flex items-end px-0.5 overflow-x-auto overflow-y-hidden select-none"
         :class="{ 'results-inactive': workspaceStore.bottomPanelTab !== 'results' }"
       >
@@ -27,6 +28,7 @@
           @pointerdown="onTabPointerDown($event, idx)"
           @click="handleTabClick(rtab.id)"
           @contextmenu.prevent="openTabContextMenu($event, rtab)"
+          @auxclick.middle.prevent="queryStore.deleteResultTab(rtab.id)"
           :data-flip-key="rtab.id"
           :class="[
             'result-tab-item h-7 px-2 flex items-center space-x-1.5 text-xxs tabular-nums cursor-grab active:cursor-grabbing transition-all duration-100 group max-w-[220px] border flex-shrink-0 select-none touch-none relative',

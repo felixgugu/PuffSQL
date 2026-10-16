@@ -718,3 +718,22 @@ failed to read plugin permissions: failed to read file
 - 移除 `.query-tabs-scroll` 的 `scrollbar-width` / `scrollbar-color`，讓既有的 `::-webkit-scrollbar { height: 4px }` 生效（並在原處留下註解說明原因，避免又被加回去）。
 
 驗證：以 CDP 在真實頁面開 12 個分頁（強制水平溢出）後量測——分頁列 40px、padding-top 4px、水平捲軸 4px（`offsetHeight − clientHeight`）、分頁高 29px 且標籤完整未被切；截圖核對捲軸落在分頁下方，`Query 1.sql … DF_Orders_Status_dr…` 標籤全部可讀。`npm test` 703 項、`npm run typecheck`、`npm run build` 通過。
+
+## 已實作（2026-10-16）：分頁支援滑鼠中鍵關閉
+
+需求：分頁要能像瀏覽器一樣用滑鼠中鍵關閉。
+
+已實作：兩條分頁列都加上中鍵關閉，且各自沿用原本的關閉路徑（不新增第二條關閉邏輯）：
+
+- `AppMain.vue`（編輯器分頁）：分頁加 `@auxclick.middle.prevent="workspaceStore.closeTab(tab.id)"`——與該分頁的 × 鈕同一個 store action（最後一個分頁被關掉時的行為也一致：自動開一個新的查詢分頁）。
+- `AppBottomPanel.vue`（結果分頁）：分頁加 `@auxclick.middle.prevent="queryStore.deleteResultTab(rtab.id)"`——同樣與其 × 鈕一致（最後一個結果分頁受保護，不關閉）。
+- 兩條分頁列的捲動容器都加 `@mousedown.middle.prevent`，避免 Windows 在中鍵按下時啟動自動捲動。
+
+中鍵不會啟用被點的分頁（瀏覽器行為）：關閉走的是 `auxclick`，而分頁只在 `@click`（左鍵）時才切換；`onTabPointerDown` 本來就有 `if (e.button !== 0) return;`，所以中鍵也不會開始拖曳排序。
+
+驗證：以 CDP 送**真實**中鍵輸入（非合成事件）——
+
+- 編輯器分頁：`["Query 1.sql","Query 2.sql","Query 3.sql"]` 對 `Query 2.sql` 按中鍵後變成 `["Query 1.sql","Query 3.sql"]`，且使用中的分頁仍停在 `Query 1.sql`（沒有被切換）。
+- 結果分頁：`["3.Users","2.Users","1.Users"]` 對 `3.Users` 按中鍵後變成 `["2.Users","1.Users"]`；再對僅剩的那一個按中鍵維持 1 個（與 × 鈕一致）。
+
+護欄：新增 `tests/tab_middle_click_close.test.ts`（2 項）——兩條分頁列的中鍵處理必須指向與 × 鈕相同的 store action、捲動容器必須吞掉中鍵的 mousedown、且 `onTabPointerDown` 必須保留左鍵以外的按鍵判斷。`npm test` 705 項、`npm run typecheck`、`npm run build` 通過。

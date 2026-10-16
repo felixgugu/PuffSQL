@@ -12,6 +12,7 @@
       <div
         ref="queryTabsBarRef"
         @wheel="handleTabsWheel"
+        @mousedown.middle.prevent
         class="query-tabs-scroll flex-1 flex items-end overflow-x-auto overflow-y-hidden select-none h-full"
       >
         <!-- Tabs List -->
@@ -21,6 +22,7 @@
           @pointerdown="onTabPointerDown($event, idx)"
           @click="handleTabClick(tab.id)"
           @contextmenu.prevent="openTabContextMenu($event, tab)"
+          @auxclick.middle.prevent="workspaceStore.closeTab(tab.id)"
           @dragover.stop.prevent="handleTabItemDragOver($event, tab)"
           @dragleave.stop="handleTabItemDragLeave($event, tab)"
           @drop.stop.prevent="handleTabItemDrop($event, tab)"
