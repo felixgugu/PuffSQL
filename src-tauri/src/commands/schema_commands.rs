@@ -1,4 +1,6 @@
-use crate::models::schema::{ColumnItem, DatabaseItem, ForeignKeyItem, TableItem, TableSchema};
+use crate::models::schema::{
+    ColumnItem, DatabaseItem, ForeignKeyItem, TableItem, TableObjects, TableSchema,
+};
 use crate::services::ConnectionManager;
 use tauri::State;
 
@@ -41,6 +43,20 @@ pub async fn get_columns(
             &schema,
             &table,
         )
+        .await
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn get_table_objects(
+    connection_id: String,
+    database: Option<String>,
+    schema: String,
+    table: String,
+    manager: State<'_, ConnectionManager>,
+) -> Result<TableObjects, String> {
+    manager
+        .get_table_objects(&connection_id, database.as_deref(), &schema, &table)
         .await
         .map_err(|e| e.to_string())
 }

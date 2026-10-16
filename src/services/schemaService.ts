@@ -1,5 +1,12 @@
 import { invokeCommand } from './api';
-import type { DatabaseItem, TableItem, ColumnItem, TableSchema, ForeignKeyItem } from '@/types/schema';
+import type {
+  DatabaseItem,
+  TableItem,
+  ColumnItem,
+  TableObjects,
+  TableSchema,
+  ForeignKeyItem,
+} from '@/types/schema';
 
 export const schemaService = {
   async getDatabases(connectionId: string): Promise<DatabaseItem[]> {
@@ -43,6 +50,24 @@ export const schemaService = {
       database,
       schema,
       table,
+    });
+  },
+
+  /**
+   * Columns, constraints, indexes and triggers of one object, in a single round trip — what the
+   * Explorer lists under a table or view node, and what the CREATE script is built from.
+   */
+  async getTableObjects(
+    connectionId: string,
+    schema: string,
+    table: string,
+    database?: string
+  ): Promise<TableObjects> {
+    return invokeCommand<TableObjects>('get_table_objects', {
+      connectionId,
+      schema,
+      table,
+      database,
     });
   },
 

@@ -1,11 +1,16 @@
 use crate::drivers::DatabaseConnection;
 use crate::drivers::mssql::import_sql;
+use crate::drivers::mssql::metadata_sql;
 use crate::error::{AppError, AppResult};
 use crate::models::import::{ImportCapabilities, ImportResult, ImportRowError, ImportRowPayload};
 use crate::models::query::{CellValue, ColumnDef, QueryMessage, QueryResult, ResultSet};
-use crate::models::schema::{ColumnItem, DatabaseItem, ForeignKeyItem, SchemaItem, TableItem, TableSchema};
+use crate::models::schema::{
+    ColumnItem, DatabaseItem, ForeignKeyItem, IndexColumnRef, KeyColumnRef, SchemaItem, TableConstraintItem,
+    TableIndexItem, TableItem, TableObjects, TableSchema, TableTriggerItem,
+};
 use async_trait::async_trait;
 use chrono::{NaiveDate, NaiveDateTime, NaiveTime, Timelike, Utc};
+use std::collections::BTreeMap;
 use std::time::Instant;
 use tiberius::{Client, Column, ColumnData, FromSql, Row};
 use tokio::net::TcpStream;
@@ -193,6 +198,55 @@ impl SqlServerConnection {
             return Some(s.eq_ignore_ascii_case("yes") || s == "1" || s.eq_ignore_ascii_case("true"));
         }
         None
+    }
+
+    fn col_i64(row: &Row, idx: usize) -> Option<i64> {
+        if let Ok(Some(v)) = row.try_get::<i64, _>(idx) {
+            return Some(v);
+        }
+        Self::col_i32(row, idx).map(i64::from)
+    }
+
+    /// Reads a string column whose SQL side marks "absent" with `ISNULL(..., N'')`.
+    fn col_text(row: &Row, idx: usize) -> Option<String> {
+        Self::col_str(row, idx)
+            .map(|value| value.trim().to_string())
+            .filter(|value| !value.is_empty())
+    }
+
+    /// Column list off the first result set of [`metadata_sql::columns_select`].
+    fn read_columns(rows: &[Row]) -> Vec<ColumnItem> {
+        let mut columns = Vec::new();
+
+        for row in rows {
+            let name = Self::col_str(row, 0).unwrap_or("").to_string();
+            if name.is_empty() {
+                continue;
+            }
+
+            let is_identity = Self::col_bool(row, 7).unwrap_or(false);
+            columns.push(ColumnItem {
+                name,
+                data_type: Self::col_str(row, 1).unwrap_or("").to_string(),
+                max_length: Self::col_i32(row, 2),
+                precision: Self::col_i32(row, 3),
+                scale: Self::col_i32(row, 4),
+                is_nullable: Self::col_bool(row, 5).unwrap_or(true),
+                is_primary_key: Self::col_bool(row, 6).unwrap_or(false),
+                is_identity,
+                is_computed: Self::col_bool(row, 8).unwrap_or(false),
+                is_row_version: Self::col_bool(row, 9).unwrap_or(false),
+                default_definition: Self::col_text(row, 10),
+                collation: Self::col_text(row, 11),
+                computed_expression: Self::col_text(row, 12),
+                is_persisted: Self::col_bool(row, 13).unwrap_or(false),
+                // A column without an identity property has no seed to report.
+                identity_seed: if is_identity { Some(Self::col_i64(row, 14).unwrap_or(1)) } else { None },
+                identity_increment: if is_identity { Some(Self::col_i64(row, 15).unwrap_or(1)) } else { None },
+            });
+        }
+
+        columns
     }
 
     /// Executes a script and drains the response; used for transaction control statements.
@@ -503,71 +557,44 @@ impl DatabaseConnection for SqlServerConnection {
             }
         }
 
-        let sql = format!(
-            r#"
-            SELECT 
-                c.COLUMN_NAME,
-                c.DATA_TYPE,
-                CAST(c.CHARACTER_MAXIMUM_LENGTH AS INT) AS CHARACTER_MAXIMUM_LENGTH,
-                CAST(c.NUMERIC_PRECISION AS INT) AS NUMERIC_PRECISION,
-                CAST(c.NUMERIC_SCALE AS INT) AS NUMERIC_SCALE,
-                CASE WHEN c.IS_NULLABLE = 'YES' THEN 1 ELSE 0 END AS IS_NULLABLE,
-                CASE WHEN pk.COLUMN_NAME IS NOT NULL THEN 1 ELSE 0 END AS IS_PRIMARY_KEY,
-                CAST(ISNULL(COLUMNPROPERTY(OBJECT_ID(c.TABLE_SCHEMA + '.' + c.TABLE_NAME), c.COLUMN_NAME, 'IsIdentity'), 0) AS INT) AS IS_IDENTITY,
-                CAST(ISNULL(COLUMNPROPERTY(OBJECT_ID(c.TABLE_SCHEMA + '.' + c.TABLE_NAME), c.COLUMN_NAME, 'IsComputed'), 0) AS INT) AS IS_COMPUTED,
-                CASE WHEN c.DATA_TYPE IN ('timestamp', 'rowversion') THEN 1 ELSE 0 END AS IS_ROW_VERSION
-            FROM INFORMATION_SCHEMA.COLUMNS c
-            LEFT JOIN (
-                SELECT ku.TABLE_SCHEMA, ku.TABLE_NAME, ku.COLUMN_NAME
-                FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc
-                JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE ku
-                    ON tc.CONSTRAINT_NAME = ku.CONSTRAINT_NAME
-                    AND tc.TABLE_SCHEMA = ku.TABLE_SCHEMA
-                WHERE tc.CONSTRAINT_TYPE = 'PRIMARY KEY'
-            ) pk ON c.TABLE_SCHEMA = pk.TABLE_SCHEMA 
-                AND c.TABLE_NAME = pk.TABLE_NAME 
-                AND c.COLUMN_NAME = pk.COLUMN_NAME
-            WHERE c.TABLE_SCHEMA = '{schema}' AND c.TABLE_NAME = '{table}'
-            ORDER BY c.ORDINAL_POSITION;
-            "#,
-            schema = schema.replace('\'', "''"),
-            table = table.replace('\'', "''")
-        );
-
-        let stream = self.client.simple_query(sql).await?;
+        let stream = self
+            .client
+            .simple_query(metadata_sql::columns_select(schema, table))
+            .await?;
         let results = stream.into_results().await?;
-        let mut columns = Vec::new();
 
-        if let Some(rows) = results.first() {
-            for row in rows {
-                let name = Self::col_str(row, 0).unwrap_or("").to_string();
-                let data_type = Self::col_str(row, 1).unwrap_or("").to_string();
-                let max_length = Self::col_i32(row, 2);
-                let precision = Self::col_i32(row, 3);
-                let scale = Self::col_i32(row, 4);
-                let is_nullable = Self::col_bool(row, 5).unwrap_or(true);
-                let is_primary_key = Self::col_bool(row, 6).unwrap_or(false);
-                let is_identity = Self::col_bool(row, 7).unwrap_or(false);
-                let is_computed = Self::col_bool(row, 8).unwrap_or(false);
-                let is_row_version = Self::col_bool(row, 9).unwrap_or(false);
+        Ok(Self::read_columns(results.first().map(Vec::as_slice).unwrap_or(&[])))
+    }
 
-                if !name.is_empty() {
-                    columns.push(ColumnItem {
-                        name,
-                        data_type,
-                        max_length,
-                        precision,
-                        scale,
-                        is_nullable,
-                        is_primary_key,
-                        is_identity,
-                        is_computed,
-                        is_row_version,
-                    });
-                }
+    /// One round trip for everything the Explorer shows under a table or view node.
+    ///
+    /// The batch layout is documented on [`metadata_sql`]; the constraint, index and trigger sets
+    /// arrive as one row per column, so they are grouped by name here instead of inside SQL (which
+    /// would need `STRING_AGG` and therefore SQL Server 2017).
+    async fn get_table_objects(
+        &mut self,
+        database: Option<&str>,
+        schema: &str,
+        table: &str,
+    ) -> AppResult<TableObjects> {
+        if let Some(db) = database {
+            if !db.is_empty() && self.current_database != db {
+                self.switch_database(db).await?;
             }
         }
-        Ok(columns)
+
+        let stream = self
+            .client
+            .simple_query(metadata_sql::table_objects_batch(schema, table))
+            .await?;
+        let results = stream.into_results().await?;
+
+        Ok(TableObjects {
+            columns: Self::read_columns(results.first().map(Vec::as_slice).unwrap_or(&[])),
+            constraints: Self::read_constraints(&results),
+            indexes: Self::read_indexes(results.get(5).map(Vec::as_slice).unwrap_or(&[])),
+            triggers: Self::read_triggers(results.get(6).map(Vec::as_slice).unwrap_or(&[])),
+        })
     }
 
     async fn get_foreign_keys(
@@ -752,6 +779,14 @@ impl DatabaseConnection for SqlServerConnection {
                             is_identity,
                             is_computed,
                             is_row_version,
+                            // The whole-database snapshot only feeds the completion cache and the
+                            // ER diagram, so it skips the DDL-only attributes on purpose.
+                            default_definition: None,
+                            collation: None,
+                            computed_expression: None,
+                            is_persisted: false,
+                            identity_seed: None,
+                            identity_increment: None,
                         });
                     }
                 }
@@ -970,5 +1005,164 @@ impl DatabaseConnection for SqlServerConnection {
             errors: Vec::new(),
             execution_time_ms: start.elapsed().as_millis() as u64,
         })
+    }
+}
+
+/// Row-to-model mapping for the metadata batch. These are inherent helpers rather than part of the
+/// connection protocol, so they sit in their own impl block instead of the trait impl above.
+impl SqlServerConnection {
+    /// Constraints from result sets 1–4 (PRIMARY KEY / UNIQUE, CHECK, DEFAULT, FOREIGN KEY).
+    fn read_constraints(results: &[Vec<Row>]) -> Vec<TableConstraintItem> {
+        let mut constraints: BTreeMap<String, TableConstraintItem> = BTreeMap::new();
+
+        for row in results.get(1).map(Vec::as_slice).unwrap_or(&[]) {
+            let Some(name) = Self::col_text(row, 0) else { continue };
+            let entry = constraints.entry(name.clone()).or_insert_with(|| TableConstraintItem {
+                name,
+                kind: Self::col_str(row, 1).unwrap_or("PRIMARY_KEY").to_string(),
+                key_columns: Vec::new(),
+                definition: None,
+                default_column: None,
+                is_clustered: Self::col_bool(row, 3),
+                is_disabled: Self::col_bool(row, 2).unwrap_or(false),
+                // Trust is only recorded for CHECK and FOREIGN KEY constraints.
+                is_not_trusted: false,
+                ref_schema: None,
+                ref_table: None,
+                ref_columns: Vec::new(),
+                on_delete: None,
+                on_update: None,
+            });
+            if let Some(column) = Self::col_text(row, 4) {
+                entry.key_columns.push(KeyColumnRef {
+                    name: column,
+                    descending: Self::col_bool(row, 5).unwrap_or(false),
+                });
+            }
+        }
+
+        for row in results.get(2).map(Vec::as_slice).unwrap_or(&[]) {
+            let Some(name) = Self::col_text(row, 0) else { continue };
+            constraints.entry(name.clone()).or_insert_with(|| TableConstraintItem {
+                name,
+                kind: "CHECK".to_string(),
+                key_columns: Vec::new(),
+                definition: Self::col_text(row, 3),
+                default_column: None,
+                is_clustered: None,
+                is_disabled: Self::col_bool(row, 1).unwrap_or(false),
+                is_not_trusted: Self::col_bool(row, 2).unwrap_or(false),
+                ref_schema: None,
+                ref_table: None,
+                ref_columns: Vec::new(),
+                on_delete: None,
+                on_update: None,
+            });
+        }
+
+        for row in results.get(3).map(Vec::as_slice).unwrap_or(&[]) {
+            let Some(name) = Self::col_text(row, 0) else { continue };
+            constraints.entry(name.clone()).or_insert_with(|| TableConstraintItem {
+                name,
+                kind: "DEFAULT".to_string(),
+                key_columns: Vec::new(),
+                definition: Self::col_text(row, 1),
+                default_column: Self::col_text(row, 2),
+                is_clustered: None,
+                // A DEFAULT constraint cannot be disabled or untrusted.
+                is_disabled: false,
+                is_not_trusted: false,
+                ref_schema: None,
+                ref_table: None,
+                ref_columns: Vec::new(),
+                on_delete: None,
+                on_update: None,
+            });
+        }
+
+        for row in results.get(4).map(Vec::as_slice).unwrap_or(&[]) {
+            let Some(name) = Self::col_text(row, 0) else { continue };
+            let entry = constraints.entry(name.clone()).or_insert_with(|| TableConstraintItem {
+                name,
+                kind: "FOREIGN_KEY".to_string(),
+                key_columns: Vec::new(),
+                definition: None,
+                default_column: None,
+                is_clustered: None,
+                is_disabled: Self::col_bool(row, 1).unwrap_or(false),
+                is_not_trusted: Self::col_bool(row, 2).unwrap_or(false),
+                ref_schema: Self::col_text(row, 5),
+                ref_table: Self::col_text(row, 6),
+                ref_columns: Vec::new(),
+                on_delete: Self::col_text(row, 3),
+                on_update: Self::col_text(row, 4),
+            });
+            if let Some(column) = Self::col_text(row, 7) {
+                entry.key_columns.push(KeyColumnRef {
+                    name: column,
+                    descending: false,
+                });
+            }
+            if let Some(column) = Self::col_text(row, 8) {
+                entry.ref_columns.push(column);
+            }
+        }
+
+        constraints.into_values().collect()
+    }
+
+    /// Indexes from result set 5, key columns first and included columns after them.
+    fn read_indexes(rows: &[Row]) -> Vec<TableIndexItem> {
+        let mut indexes: BTreeMap<String, TableIndexItem> = BTreeMap::new();
+
+        for row in rows {
+            let Some(name) = Self::col_text(row, 0) else { continue };
+            let entry = indexes.entry(name.clone()).or_insert_with(|| TableIndexItem {
+                name,
+                type_desc: Self::col_str(row, 1).unwrap_or("").to_string(),
+                is_unique: Self::col_bool(row, 2).unwrap_or(false),
+                is_primary_key: Self::col_bool(row, 3).unwrap_or(false),
+                is_unique_constraint: Self::col_bool(row, 4).unwrap_or(false),
+                is_disabled: Self::col_bool(row, 5).unwrap_or(false),
+                columns: Vec::new(),
+                filter_definition: Self::col_text(row, 6),
+            });
+            if let Some(column) = Self::col_text(row, 7) {
+                entry.columns.push(IndexColumnRef {
+                    name: column,
+                    descending: Self::col_bool(row, 8).unwrap_or(false),
+                    is_included: Self::col_bool(row, 9).unwrap_or(false),
+                });
+            }
+        }
+
+        indexes.into_values().collect()
+    }
+
+    /// Triggers from result set 6, with the event list the server reported.
+    fn read_triggers(rows: &[Row]) -> Vec<TableTriggerItem> {
+        let mut triggers = Vec::new();
+
+        for row in rows {
+            let Some(name) = Self::col_text(row, 0) else { continue };
+            let events = Self::col_text(row, 4)
+                .map(|list| {
+                    list.split(',')
+                        .map(|event| event.trim().to_string())
+                        .filter(|event| !event.is_empty())
+                        .collect::<Vec<String>>()
+                })
+                .unwrap_or_default();
+
+            triggers.push(TableTriggerItem {
+                name,
+                is_instead_of: Self::col_bool(row, 1).unwrap_or(false),
+                is_disabled: Self::col_bool(row, 2).unwrap_or(false),
+                definition: Self::col_text(row, 3),
+                events,
+            });
+        }
+
+        triggers
     }
 }

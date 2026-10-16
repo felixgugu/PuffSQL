@@ -586,3 +586,79 @@ failed to read plugin permissions: failed to read file
 - `npm test`：664 個通過（`app_brand_icon` 仍要求 `src-tauri/icons/64x64.png` 存在且 About 面板引用它）。
 - `npm run build`：通過；`dist/index.html` 的 favicon 指向 `dist/assets/64x64-*.png`（8060 bytes，已確認存在）。
 - 視覺抽查：`128x128.png`、`32x32.png`（小尺寸仍可辨識）與 `icon.ico` 解出的內框皆為新圖。
+
+## 已修正（2026-10-16）：標題列印出裸露的標籤殘骸
+
+症狀：使用者截圖顯示「常用 SQL 範本庫」彈窗的標題列直接印出
+`class="!w-7 !h-7 !p-0 !rounded-md !border-0 hover:!bg-dark-750" />`、
+`v-tooltip.top="$t('sqlTemplates.reloadTooltip')" class="!text-xxs !py-1 !px-2" />` 這類原始模板文字；
+物件快搜與篩選規則清單則是在每顆圖示鈕後面多出一個 `/>`。
+
+根因：P4g（`b121b5f`，範本／物件快搜／AI 設定改用 SqButton）把 PrimeVue `<Button … />` 改寫成
+`<SqButton …><template #icon>…</template></SqButton>` 時，舊自關閉標籤尾端的屬性行忘了刪。殘骸在模板裡是
+合法的**文字內容**，所以 Vue 模板編譯、`vue-tsc` 與 `build` 全都不報錯，只在畫面上照字面印出來——
+同一個 commit 訊息記錄過的「漏改結束標籤」會被編譯器擋下（Invalid end tag），這一種不會。
+
+修正（3 檔 9 處）：
+
+1. `src/components/modals/SqlTemplateModal.vue`：清除鈕後的 `class="!w-7 …"` 與 `/>`、重新載入鈕後的
+   `v-tooltip`／`class` 兩行與 `/>`、新增自訂範本鈕後的 `/>`。重新載入鈕的 tooltip 語意還原成元件的
+   `v-tooltip.top`（`sqlTemplates.reloadTooltip`，原本被留在舊標籤上）；`!text-xxs !py-1 !px-2` 這類覆寫
+   依 SPEC §7 由 `size="sm"` 取代，不再寫回。
+2. `src/components/modals/QuickObjectFinderModal.vue`：每列動作鈕後的 5 處 `/>`。
+3. `src/components/modals/TableFilterTab.vue`：編輯規則鈕後的 1 處 `/>`。
+
+護欄：新增 `tests/template_markup_leak.test.ts`，掃描所有版控 `.vue` 的 `<template>`：前一行已用 `>` 收尾、
+這一行卻是 `/>` 或屬性時即失敗。對修正前的 HEAD 會準確列出上述 9 處（行號一致），對修正後為 0，
+在 168 個 `.vue` 上零偽陽性（合法換行標籤的屬性只會接在 `<Component` 之後，不接在 `>` 之後）。
+
+驗收：
+
+- `npm test`：665 個通過（新增 1 個）；`npm run typecheck`、`npm run build` 皆通過。
+- 視覺核對：沿用設計包 harness 手法（暫時掛載真實 `SqlTemplateModal`，截圖後即刪）在 headless Edge 截圖，
+  標題列只剩分類籤、「重新載入」與「新增自訂範本」，無殘骸文字。
+- 注意：`dist-portable/` 是修正前的建置產物，需重新 `npm run build:portable` 才會反映此修正。
+
+## 已實作（2026-10-16）：完整 CREATE 指令碼，物件總管列出約束／索引／觸發程序
+
+需求：右鍵「指令碼為 CREATE」原本只產生欄位與主鍵，缺 DEFAULT／CHECK／UNIQUE／FK／索引／觸發程序；展開資料表後只看得到欄位，希望把這些物件也列進樹上，用圖示與顏色區分即可，不必再分資料夾。
+
+已實作：
+
+1. 後端新增 `get_table_objects` 命令（`drivers/mssql/metadata_sql.rs` 純函式產生 SQL + `connection.rs` 解析、`ConnectionManager`、`schema_commands`、`lib.rs` 註冊）。單一批次七個結果集：欄位、PK／UNIQUE、CHECK、DEFAULT、FK、索引、觸發程序，一次往返取回；解析分組放在 Rust（避免 `STRING_AGG` 而需 SQL Server 2017），維持 2012 相容。欄位查詢仍以 `INFORMATION_SCHEMA.COLUMNS` 為基底（`maxLength` 語意不變），再 LEFT JOIN `sys.columns`／`sys.default_constraints`／`sys.computed_columns`／`sys.identity_columns` 補上 DEFAULT、定序、計算欄位運算式、PERSISTED 與 identity 種子／增量。
+2. 物件總管：`loadedColumns` 快取改為 `tableObjects`（資料表與檢視表共用同一條展開路徑、同一份快照），新元件 `ExplorerObjectRows.vue` 在欄位列之後列出約束、索引、觸發程序——**不加資料夾**，以圖示＋語意色（PK `text-warn`／UQ `text-ok`／CK `text-info`／DF `text-plan`／FK `text-accent`／索引 `text-ok`／觸發程序 `text-warn`）＋右側徽章區分，鍵欄位、INCLUDE、篩選條件放在 tooltip。主鍵／唯一約束背後的索引不重複列出。
+3. 右鍵動作（`explorerObjectMenuItems`）：複製名稱、產生 CREATE 語法、產生 DROP 語法；索引另有 REBUILD／REORGANIZE；觸發程序另有「檢視定義」（雙擊亦可，優先用快取中的 `sys.sql_modules.definition`，讀不到才退回 `OBJECT_DEFINITION`）。雙擊約束／索引直接產生其指令碼。
+4. DDL 產生器：`generateCreateTableDdl` 改為組合式輸出——欄位（計算欄位 `AS (…) PERSISTED`、具名 DEFAULT、`COLLATE`、`IDENTITY(seed,inc)`）→ 索引 → 外鍵 → 觸發程序，順序即為可重播順序；PK／UNIQUE／CHECK／DEFAULT 內嵌 `CREATE TABLE` 並使用資料庫中的真實約束名稱（移除原本合成的 `PK_<table>` 與提示註解）；停用或未受信任的約束在腳本尾端補 `ALTER TABLE … NOCHECK CONSTRAINT`。物件層級指令碼抽到 `src/utils/objectScriptGenerator.ts`（索引／約束／觸發程序各 CREATE／DROP 與索引維護），非 rowstore 索引與讀不到定義的觸發程序改以中文註解說明，不產生錯誤 SQL。
+5. i18n 新增 11 條（zh-TW／en 同步）：`scriptDrop`、`indexRebuild`、`indexReorganize`、`disabledObject`、`indexKeys`、`indexIncludes`、`indexFilter`、`references`、`dblclickViewDefinition`、`generatedObjectScript`、`objectScriptFailed`。
+
+驗收：
+
+- `npm test`：688 個通過（新增 `tests/ddl_generator.test.ts` 9 項、`tests/object_script_generator.test.ts` 14 項、`tests/table_objects.test.ts` 7 項來源守門）；`npm run typecheck`、`npm run build` 皆通過。
+- `cargo test --lib`：29 個通過（`metadata_sql` 4 項：涵蓋七個結果集、2012 相容、識別字轉義、事件排序）；`cargo check` 通過。
+- 手動核對：瀏覽器模式（mock payload）展開 Users 表可見約束／索引／觸發程序，右鍵產生完整 CREATE 腳本。
+
+### 後續：在真實 SQL Server 上驗證，修掉 5 個只有真機才會現形的錯誤
+
+症狀：使用者實際展開資料表時跳出 `載入物件失敗: Database error: Invalid column name 'is_disabled'.`
+
+根因：目錄查詢與產生器只用單元測試的字串斷言驗證過，沒有真的送到伺服器。使用者提供本機 SQL Server 2022（127.0.0.1:1433 容器）的測試帳密後逐項驗證，共修掉：
+
+1. `sys.key_constraints` 沒有 `is_disabled`／`is_not_trusted`：PK／UNIQUE 的停用狀態在**背後索引**（`ALTER TABLE … NOCHECK CONSTRAINT` 就是把該索引停用），而 trust 只有 CHECK／FOREIGN KEY 才有 → 改讀 `sys.indexes.is_disabled`，`is_not_trusted` 固定 false。`is_enforced` 是 SQL Server 2022 才有的欄位，不能拿來當相容解。
+2. `sys.indexes` 沒有 `is_clustered`：叢集性一律由 `i.type = 1` 判定。
+3. `sys.default_constraints` 沒有 `is_disabled`／`is_not_trusted`：DEFAULT 約束不會被停用或標記未受信任 → 移除這兩個欄位。
+4. 欄位查詢不再用 `OBJECT_ID(schema + '.' + table)` / `COLUMNPROPERTY` 判斷 identity 與 computed（表名含空白或 `]` 時會解析失敗），改由 `sys.identity_columns`／`sys.computed_columns` 的 join 直接判定。
+5. `CREATE TABLE` 不接受資料表層級的 `DEFAULT (…) FOR [col]`（那是 `ALTER TABLE ADD CONSTRAINT` 的語法），且**外鍵欄位清單不接受 `ASC`／`DESC`** → DEFAULT 改掛在欄位行（`[Qty] [int] NOT NULL CONSTRAINT [DF_Orders_Qty] DEFAULT ((1))`，名稱保留），FK／REFERENCES 改用純欄位清單。
+
+同時修正兩個語意問題：「未受信任」先前用 `NOCHECK CONSTRAINT` 收尾，那其實是**停用**（重建後的約束會比原表寬鬆）→ CHECK 改用 `WITH NOCHECK ADD CONSTRAINT`、外鍵在語句中加 `WITH NOCHECK`，真正停用者才用 `NOCHECK CONSTRAINT`；相鄰觸發程序之間也不再出現 `GO` 後又一個 `GO`。
+
+驗證方法（真機往返，非字串斷言）：
+
+- 建立 `PuffSQL_Verify_Scratch`：自訂 identity 種子（100,5）、`PERSISTED` 計算欄位、具名 DEFAULT ×2、非預設定序欄位、PK／UNIQUE／CHECK／**未受信任的 CHECK**／FK（`ON DELETE SET NULL`）、篩選索引（DESC 鍵 + INCLUDE + WHERE）、兩個觸發程序（其中一個停用），外加表名含空白的 `[Order Details]`。
+- 用 **Rust 端真實的 `get_table_objects`** 取得 payload（＝應用程式實際走的程式碼路徑）→ 前端 `generateCreateTableDdl` 產生腳本 → 在 `PuffSQL_Verify_Rebuilt` 重播 → 再以同一批次 dump 重建表的 payload，程式化逐欄位比對：**columns／constraints／indexes／triggers 完全一致（IDENTICAL）**，含 identity 種子、定序、計算欄位運算式、PERSISTED、約束名稱、鍵序 DESC、INCLUDE、篩選條件、trigger 事件與停用狀態。表名含空白的表同樣正確。
+- 過程中另外發現「驗證工具」本身的兩個陷阱（與產品無關，但值得記下）：批次切分若用貪婪的 `\s*` 會吃掉註解行的換行，讓下一句被併進註解；以及 Windows PowerShell 5.1 的 `Get-Content` 預設以 ANSI 讀取無 BOM 的 UTF-8 `.sql`，中文位元組誤配對時會把換行吃掉。應用程式本身走 Rust（UTF-8）與 `batch.rs` 的狀態機，不受影響。
+
+護欄：`metadata_sql` 新增 `catalog_lookups_only_use_columns_that_exist`（把上述不存在的欄位與 `is_clustered` 釘成禁止項，並要求 identity／computed 不得再用 `OBJECT_ID`）；`tests/ddl_generator.test.ts` 新增 DEFAULT 必須落在欄位行、`CREATE TABLE` 內不得出現 `FOR [col]`、未受信任／停用各自的正確語句、批次分隔不重複等斷言；`tests/object_script_generator.test.ts` 新增 FK 不得帶 ASC／DESC 與 CHECK 的 `WITH NOCHECK` 形式。
+
+驗收：`cargo test --lib` 30 個通過；`npm test` 700 個通過；`npm run typecheck`、`npm run build` 通過。
+
+測試資料：`PuffSQL_Verify_Scratch`（來源，含各種複雜物件）與 `PuffSQL_Verify_Rebuilt`（往返驗證用）依使用者指示保留在該 SQL Server 執行個體上，可隨時 `DROP DATABASE` 清除。

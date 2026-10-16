@@ -4,7 +4,9 @@ use crate::error::{AppError, AppResult};
 use crate::models::connection::{ConnectionProfile, SaveConnectionRequest};
 use crate::models::import::{ImportCapabilities, ImportResult, ImportRowPayload};
 use crate::models::query::{QueryMessage, QueryResult};
-use crate::models::schema::{ColumnItem, DatabaseItem, ForeignKeyItem, TableItem, TableSchema};
+use crate::models::schema::{
+    ColumnItem, DatabaseItem, ForeignKeyItem, TableItem, TableObjects, TableSchema,
+};
 use crate::services::credential_store::CredentialStore;
 use crate::services::query_logger::QueryLogger;
 use crate::services::storage_service::StorageService;
@@ -497,6 +499,18 @@ impl ConnectionManager {
         let conn_arc = self.get_or_connect(id).await?;
         let mut conn = conn_arc.lock().await;
         conn.get_columns(database, schema, table).await
+    }
+
+    pub async fn get_table_objects(
+        &self,
+        id: &str,
+        database: Option<&str>,
+        schema: &str,
+        table: &str,
+    ) -> AppResult<TableObjects> {
+        let conn_arc = self.get_or_connect(id).await?;
+        let mut conn = conn_arc.lock().await;
+        conn.get_table_objects(database, schema, table).await
     }
 
     pub async fn get_foreign_keys(

@@ -376,7 +376,7 @@
                           class="py-0.5 px-1 text-xxs text-dark-400 flex items-center space-x-1.5"
                         >
                           <RotateCw class="w-2.5 h-2.5 animate-spin text-accent" />
-                          <span>{{ $t('sidebar.loadingColumns') }}</span>
+                          <span>{{ $t('sidebar.loadingObjects') }}</span>
                         </div>
 
                         <div
@@ -417,6 +417,16 @@
                             {{ $t('sidebar.pendingPaste') }}
                           </span>
                         </div>
+
+                        <!-- Constraints, indexes and triggers: no folders, the icon colour is the kind -->
+                        <ExplorerObjectRows
+                          :constraints="getTableObjects(conn.id, db, table.schema, table.name)?.constraints ?? []"
+                          :indexes="getTableObjects(conn.id, db, table.schema, table.name)?.indexes ?? []"
+                          :triggers="getTableObjects(conn.id, db, table.schema, table.name)?.triggers ?? []"
+                          @hover="handleObjectHover"
+                          @open="(kind, name) => handleExplorerObjectOpen(kind, name, conn.id, db, table.schema, table.name)"
+                          @contextmenu="(event, kind, name) => openExplorerObjectContextMenu(event, kind, name, conn.id, db, table.schema, table.name)"
+                        />
                       </div>
                     </div>
                   </div>
@@ -500,7 +510,7 @@
                           class="py-0.5 px-1 text-xxs text-dark-400 flex items-center space-x-1.5"
                         >
                           <RotateCw class="w-2.5 h-2.5 animate-spin text-accent" />
-                          <span>{{ $t('sidebar.loadingColumns') }}</span>
+                          <span>{{ $t('sidebar.loadingObjects') }}</span>
                         </div>
 
                         <div
@@ -534,6 +544,16 @@
                             {{ col.dataType }}
                           </span>
                         </div>
+
+                        <!-- Indexed views keep their indexes and INSTEAD OF triggers here too -->
+                        <ExplorerObjectRows
+                          :constraints="getTableObjects(conn.id, db, view.schema, view.name)?.constraints ?? []"
+                          :indexes="getTableObjects(conn.id, db, view.schema, view.name)?.indexes ?? []"
+                          :triggers="getTableObjects(conn.id, db, view.schema, view.name)?.triggers ?? []"
+                          @hover="handleObjectHover"
+                          @open="(kind, name) => handleExplorerObjectOpen(kind, name, conn.id, db, view.schema, view.name)"
+                          @contextmenu="(event, kind, name) => openExplorerObjectContextMenu(event, kind, name, conn.id, db, view.schema, view.name)"
+                        />
                       </div>
                     </div>
                   </div>
@@ -684,6 +704,7 @@
     <SqMenu v-model="connMenu.isOpen.value" :anchor-rect="connMenu.rect.value" :items="connMenuItems" aria-label="連線選單" />
     <SqMenu v-model="dbMenu.isOpen.value" :anchor-rect="dbMenu.rect.value" :items="dbMenuItems" aria-label="資料庫選單" />
     <SqMenu v-model="columnMenu.isOpen.value" :anchor-rect="columnMenu.rect.value" :items="columnMenuItems" aria-label="欄位選單" />
+    <SqMenu v-model="explorerObjectMenu.isOpen.value" :anchor-rect="explorerObjectMenu.rect.value" :items="explorerObjectMenuItems" aria-label="約束與索引選單" />
 
     <!-- Export Schema CSV Modal -->
     <ExportSchemaModal
@@ -751,11 +772,13 @@ import {
   Trash2,
   X,
   ChevronsUp,
+  Wrench,
 } from '@/components/icons';
 import ConfirmModal from '@/components/common/ConfirmModal.vue';
 import ExportSchemaModal from '@/components/modals/ExportSchemaModal.vue';
 import ResizableSplitter from '@/components/common/ResizableSplitter.vue';
 import SqlFolderExplorer from './SqlFolderExplorer.vue';
+import ExplorerObjectRows from './ExplorerObjectRows.vue';
 import { useSplitter } from '@/composables/useSplitter';
 import { useConnectionStore } from '@/stores/connectionStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
@@ -769,6 +792,16 @@ import { connectionService } from '@/services/connectionService';
 import { wrapIdentifierIfNeeded } from '@/utils/sqlParser';
 import { resolveConnectionLabelColor } from '@/utils/connectionColor';
 import { generateCreateTableDdl } from '@/utils/ddlGenerator';
+import {
+  generateConstraintCreateScript,
+  generateConstraintDropScript,
+  generateIndexCreateScript,
+  generateIndexDropScript,
+  generateIndexRebuildScript,
+  generateIndexReorganizeScript,
+  generateTriggerCreateScript,
+  generateTriggerDropScript,
+} from '@/utils/objectScriptGenerator';
 import { generateTableSelectSql } from '@/utils/tableSelectSql';
 import { collapseAllTreeNodes } from '@/utils/explorerTreeState';
 import { useExplorerNodeCopy } from '@/composables/useExplorerNodeCopy';
@@ -779,7 +812,7 @@ import {
   removeFilterHistoryItem,
   clearFilterHistory,
 } from '@/utils/filterHistory';
-import type { TableItem, ColumnItem, RoutineItem } from '@/types/schema';
+import type { TableItem, ColumnItem, RoutineItem, TableObjects } from '@/types/schema';
 import type { ConnectionProfile } from '@/types/connection';
 import type { ExtractedTableIdentifier } from '@/utils/sqlIdentifierExtractor';
 
@@ -1036,7 +1069,12 @@ const expandedConns = reactive<Record<string, boolean>>({});
 const expandedDbs = reactive<Record<string, boolean>>({});
 const expandedFolders = reactive<Record<string, boolean>>({});
 const expandedTables = reactive<Record<string, boolean>>({});
-const loadedColumns = reactive<Record<string, ColumnItem[]>>({});
+/**
+ * Everything the Explorer knows about one expanded table or view. Columns, constraints, indexes and
+ * triggers arrive together from `get_table_objects`, so the tree and the generated script always
+ * read the same snapshot.
+ */
+const tableObjects = reactive<Record<string, TableObjects>>({});
 const tablesByDb = schemaStore.tablesByDb;
 const loadingTablesByDb = schemaStore.loadingTablesByDb;
 const loadingColumns = reactive<Record<string, boolean>>({});
@@ -1320,19 +1358,13 @@ async function toggleTable(connId: string, db: string, schema: string, tableName
   const key = tableKey(connId, db, schema, tableName);
   expandedTables[key] = !expandedTables[key];
 
-  if (expandedTables[key] && !loadedColumns[key]) {
+  if (expandedTables[key] && !tableObjects[key]) {
     loadingColumns[key] = true;
     try {
-      const cols = await schemaService.getColumns(
-        connId,
-        schema,
-        tableName,
-        db
-      );
-      loadedColumns[key] = cols;
+      tableObjects[key] = await schemaService.getTableObjects(connId, schema, tableName, db);
     } catch (err: unknown) {
-      console.error('Failed to load columns:', err);
-      alert(`載入欄位失敗: ${err instanceof Error ? err.message : String(err)}`);
+      console.error('Failed to load table objects:', err);
+      alert(`載入物件失敗: ${err instanceof Error ? err.message : String(err)}`);
       expandedTables[key] = false;
     } finally {
       loadingColumns[key] = false;
@@ -1340,14 +1372,27 @@ async function toggleTable(connId: string, db: string, schema: string, tableName
   }
 }
 
+function getTableObjects(connId: string, db: string, schema: string, tableName: string) {
+  return tableObjects[tableKey(connId, db, schema, tableName)];
+}
+
 function getTableColumns(connId: string, db: string, schema: string, tableName: string) {
-  return loadedColumns[tableKey(connId, db, schema, tableName)] ?? [];
+  return getTableObjects(connId, db, schema, tableName)?.columns ?? [];
+}
+
+function handleObjectHover(name: string | null) {
+  if (name) {
+    setHovered(name);
+  } else {
+    clearHovered();
+  }
 }
 
 const objectMenu = useContextMenu();
 const connMenu = useContextMenu();
 const dbMenu = useContextMenu();
 const columnMenu = useContextMenu();
+const explorerObjectMenu = useContextMenu();
 
 const objectMenuItems = computed(() => {
   const isTable = contextMenu.objectType === 'TABLE';
@@ -1566,6 +1611,205 @@ function openColumnContextMenu(event: MouseEvent, col: ColumnItem) {
   columnMenu.openAt(event);
 }
 
+// Constraint / index / trigger context menu: the same "copy name" entry as every other node,
+// plus the script the node stands for.
+type ExplorerObjectKind = 'constraint' | 'index' | 'trigger';
+
+const explorerObjectContext = reactive<{
+  kind: ExplorerObjectKind;
+  name: string;
+  connId: string;
+  database: string;
+  schema: string;
+  tableName: string;
+}>({ kind: 'constraint', name: '', connId: '', database: '', schema: '', tableName: '' });
+
+const explorerObjectMenuItems = computed(() => {
+  const items: any[] = [
+    {
+      label: t('sidebar.copyName'),
+      icon: Copy,
+      command: () => copyName(explorerObjectContext.name),
+    },
+    { separator: true },
+  ];
+
+  if (explorerObjectContext.kind === 'trigger') {
+    items.push({
+      label: t('sidebar.viewDefinition'),
+      icon: FileCode,
+      command: () => handleOpenTriggerDefinition(),
+    });
+  }
+
+  items.push({
+    label: t('sidebar.scriptCreate'),
+    icon: FileText,
+    command: () => handleGenerateObjectScript('CREATE'),
+  });
+  items.push({
+    label: t('sidebar.scriptDrop'),
+    icon: Trash2,
+    command: () => handleGenerateObjectScript('DROP'),
+  });
+
+  if (explorerObjectContext.kind === 'index') {
+    items.push({ separator: true });
+    items.push({
+      label: t('sidebar.indexRebuild'),
+      icon: RefreshCw,
+      command: () => handleGenerateIndexMaintenance('REBUILD'),
+    });
+    items.push({
+      label: t('sidebar.indexReorganize'),
+      icon: Wrench,
+      command: () => handleGenerateIndexMaintenance('REORGANIZE'),
+    });
+  }
+
+  return items;
+});
+
+function openExplorerObjectContextMenu(
+  event: MouseEvent,
+  kind: ExplorerObjectKind,
+  name: string,
+  connId: string,
+  db: string,
+  schema: string,
+  tableName: string
+) {
+  explorerObjectContext.kind = kind;
+  explorerObjectContext.name = name;
+  explorerObjectContext.connId = connId;
+  explorerObjectContext.database = db;
+  explorerObjectContext.schema = schema;
+  explorerObjectContext.tableName = tableName;
+  explorerObjectMenu.openAt(event);
+}
+
+/** The payload the tree and the scripts share; fetched on first use and then reused. */
+async function ensureTableObjects(
+  connId: string,
+  database: string,
+  schema: string,
+  tableName: string
+): Promise<TableObjects> {
+  const key = tableKey(connId, database, schema, tableName);
+  const cached = tableObjects[key];
+  if (cached) return cached;
+
+  const loaded = await schemaService.getTableObjects(connId, schema, tableName, database);
+  tableObjects[key] = loaded;
+  return loaded;
+}
+
+function openObjectScriptTab(script: string, fileName: string, objectName: string) {
+  workspaceStore.addSqlTab(script, fileName);
+  workspaceStore.showToast(t('sidebar.generatedObjectScript', { name: objectName }), 'success', 2500);
+}
+
+async function handleGenerateObjectScript(action: 'CREATE' | 'DROP') {
+  const { connId, database, schema, tableName, kind, name } = explorerObjectContext;
+  explorerObjectMenu.close();
+
+  let objects: TableObjects;
+  try {
+    objects = await ensureTableObjects(connId, database, schema, tableName);
+  } catch (err) {
+    console.error('Failed to load table objects for the object script:', err);
+    workspaceStore.showToast(t('sidebar.objectScriptFailed'), 'error', 3000);
+    return;
+  }
+
+  const options = { schema, table: tableName };
+  const save = (sql: string | null, fileName: string) => {
+    if (!sql) {
+      workspaceStore.showToast(t('sidebar.objectScriptFailed'), 'error', 3000);
+      return;
+    }
+    openObjectScriptTab(sql, fileName, name);
+  };
+
+  if (kind === 'index') {
+    const index = objects.indexes.find((item) => item.name === name);
+    if (!index) return save(null, '');
+    save(
+      action === 'CREATE' ? generateIndexCreateScript(index, options) : generateIndexDropScript(index, options),
+      `${name}_${action.toLowerCase()}.sql`
+    );
+  } else if (kind === 'constraint') {
+    const constraint = objects.constraints.find((item) => item.name === name);
+    if (!constraint) return save(null, '');
+    save(
+      action === 'CREATE'
+        ? generateConstraintCreateScript(constraint, options)
+        : generateConstraintDropScript(constraint.name, options),
+      `${name}_${action.toLowerCase()}.sql`
+    );
+  } else {
+    const trigger = objects.triggers.find((item) => item.name === name);
+    if (!trigger) return save(null, '');
+    save(
+      action === 'CREATE'
+        ? generateTriggerCreateScript(trigger, options)
+        : generateTriggerDropScript(trigger.name, options),
+      `${name}_${action.toLowerCase()}.sql`
+    );
+  }
+}
+
+async function handleGenerateIndexMaintenance(action: 'REBUILD' | 'REORGANIZE') {
+  const { schema, tableName, name } = explorerObjectContext;
+  explorerObjectMenu.close();
+
+  const options = { schema, table: tableName };
+  const sql = action === 'REBUILD'
+    ? generateIndexRebuildScript(name, options)
+    : generateIndexReorganizeScript(name, options);
+  openObjectScriptTab(sql, `${name}_${action.toLowerCase()}.sql`, name);
+}
+
+async function handleOpenTriggerDefinition() {
+  const { connId, database, schema, tableName, name } = explorerObjectContext;
+  explorerObjectMenu.close();
+
+  // The payload already carries the definition, so the extra round trip is only for the case where
+  // the server refused to hand it over (encrypted object, missing VIEW DEFINITION).
+  const definition = tableObjects[tableKey(connId, database, schema, tableName)]?.triggers.find(
+    (item) => item.name === name
+  )?.definition;
+  if (definition) {
+    workspaceStore.addSqlTab(definition, `${schema}.${name}.sql`);
+    workspaceStore.showToast(t('sidebar.loadedSqlDef', { schema, name }), 'success', 2500);
+    return;
+  }
+  await handleViewDefinition(connId, database, schema, name);
+}
+
+/** Double-click: a trigger opens its definition, a constraint or index goes straight to its script. */
+async function handleExplorerObjectOpen(
+  kind: ExplorerObjectKind,
+  name: string,
+  connId: string,
+  db: string,
+  schema: string,
+  tableName: string
+) {
+  explorerObjectContext.kind = kind;
+  explorerObjectContext.name = name;
+  explorerObjectContext.connId = connId;
+  explorerObjectContext.database = db;
+  explorerObjectContext.schema = schema;
+  explorerObjectContext.tableName = tableName;
+
+  if (kind === 'trigger') {
+    await handleOpenTriggerDefinition();
+    return;
+  }
+  await handleGenerateObjectScript('CREATE');
+}
+
 function openContextMenu(
   event: MouseEvent,
   connId: string,
@@ -1726,22 +1970,22 @@ async function handleTsvImport() {
 
 async function handleGenerateCreateTableDdl() {
   const { connId, database, schema, tableName } = contextMenu;
-  const key = tableKey(connId, database, schema, tableName);
-  let cols = loadedColumns[key];
-  if (!cols || cols.length === 0) {
-    try {
-      cols = await schemaService.getColumns(connId, schema, tableName, database);
-      loadedColumns[key] = cols;
-    } catch (err) {
-      console.error('Failed to get columns for DDL:', err);
-    }
+
+  let objects: TableObjects | undefined;
+  try {
+    objects = await ensureTableObjects(connId, database, schema, tableName);
+  } catch (err) {
+    console.error('Failed to get table objects for DDL:', err);
   }
 
   const ddl = generateCreateTableDdl({
     tableName,
     schema,
     database,
-    columns: cols || [],
+    columns: objects?.columns ?? [],
+    constraints: objects?.constraints,
+    indexes: objects?.indexes,
+    triggers: objects?.triggers,
   });
 
   workspaceStore.addSqlTab(ddl, `${tableName}_ddl.sql`);
@@ -1949,15 +2193,15 @@ async function locateTable(options: ExtractedTableIdentifier & { database?: stri
   // If table or view, expand it and load columns if not loaded
   if (matchedType === 'TABLE' || matchedType === 'VIEW') {
     expandedTables[targetKey] = true;
-    if (!loadedColumns[targetKey]) {
+    if (!tableObjects[targetKey]) {
       loadingColumns[targetKey] = true;
       schemaService
-        .getColumns(targetConnId, matchedSchema, matchedName, targetDb)
-        .then((cols) => {
-          loadedColumns[targetKey] = cols;
+        .getTableObjects(targetConnId, matchedSchema, matchedName, targetDb)
+        .then((objects) => {
+          tableObjects[targetKey] = objects;
         })
         .catch((err) => {
-          console.warn('Failed to load columns for located table:', err);
+          console.warn('Failed to load objects for located table:', err);
         })
         .finally(() => {
           loadingColumns[targetKey] = false;

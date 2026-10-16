@@ -45,6 +45,7 @@ pub fn run() {
             get_databases,
             get_tables,
             get_columns,
+            get_table_objects,
             get_foreign_keys,
             get_database_schema,
             switch_database,

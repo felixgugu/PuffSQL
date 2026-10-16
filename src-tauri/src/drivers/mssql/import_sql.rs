@@ -433,6 +433,12 @@ mod tests {
             is_identity: false,
             is_computed: false,
             is_row_version: false,
+            default_definition: None,
+            collation: None,
+            computed_expression: None,
+            is_persisted: false,
+            identity_seed: None,
+            identity_increment: None,
         }
     }
 
