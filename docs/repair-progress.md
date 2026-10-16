@@ -662,3 +662,24 @@ failed to read plugin permissions: failed to read file
 驗收：`cargo test --lib` 30 個通過；`npm test` 700 個通過；`npm run typecheck`、`npm run build` 通過。
 
 測試資料：`PuffSQL_Verify_Scratch`（來源，含各種複雜物件）與 `PuffSQL_Verify_Rebuilt`（往返驗證用）依使用者指示保留在該 SQL Server 執行個體上，可隨時 `DROP DATABASE` 清除。
+
+## 已修正（2026-10-16）：SQL 編輯器右鍵選單被壓在分隔線下面
+
+症狀：在編輯器按右鍵，Monaco 的選單畫在分隔線（含編輯器與結果之間那條中隔線）下面。
+
+根因有兩層，都在 CSS 堆疊規則上：
+
+1. Monaco 自己的 `.context-view` 是 `position: absolute` 且**沒有 z-index**（`.context-view.fixed` 的 `all: initial` 還會把 z-index 再重設一次），所以任何帶 z-index 的 App 圖層都會蓋過它——分隔線是 `z-20`、標題列 `z-30`。
+2. 更關鍵的是 `MonacoEditor.vue` 的編輯器容器帶了 `z-[1]`：那個 z-index 會**建立 stacking context**，把整棵 Monaco DOM（含選單）鎖在裡面，此時選單給多高的 z-index 都沒用。
+
+修正：
+
+- `src/components/editor/MonacoEditor.vue`：編輯器容器移除 `z-[1]`。它原本只是為了壓在背景浮水印之上，但浮水印是 `z-index: 0`、且容器在 DOM 順序中排在它後面，靠繪製順序就足夠；移除後編輯器到 App 根節點之間不再有任何 stacking context（以 CDP 走訪祖先鏈驗證：`stacking contexts above the editor: none`）。
+- `src/assets/main.css`：Monaco 選單段落把 `.context-view`／`.context-view.fixed`／`.context-view.monaco-component` 的 `z-index` 設為 **1200**，也就是 `SqPopover`（因此 `SqMenu`）使用的選單圖層，仍低於浮動視窗（9990+）與 tooltip（11000）。
+
+驗證：合成 `contextmenu` 事件 Monaco 會忽略，因此改用 CDP 送真實輸入、並在真實頁面注入與 Monaco 同結構的 `.context-view.fixed`，對每個 App 圖層做 `elementFromPoint` 命中測試。修正前三條分隔線（含 1156×6 的編輯器↔結果中隔線）、標題列與 SQL 工具列都由被覆蓋的一方勝出；修正後**全部由選單勝出**，選單 computed `z-index` = 1200、`position: fixed`。
+
+護欄：新增 `tests/layer_order.test.ts`（3 項）——解析各圖層實際數值斷言 `splitter < header < menu < tooltip / toast` 的排序、確認 `.context-view.fixed` 有被覆寫（否則 `all: initial` 會清掉 z-index）、且編輯器容器與外殼不得再出現任何 z-index／transform／filter（就是這次的根因）。`tests/editor_background_image.test.ts` 原本釘住 `z-[1]` 的斷言改為「host 保持 positioned 但不帶 z-index」並註明原因。
+
+驗收：`npm test` 通過（含上述 3 項新護欄）、`npm run typecheck`、`npm run build` 通過。
+

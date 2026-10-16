@@ -163,8 +163,14 @@
 
 /* 頂層容器 (Context View & Container) */
 .context-view,
-.context-view.monaco-component {
+.context-view.monaco-component,
+.context-view.fixed {
   font-family: inherit !important;
+  /* Monaco ships `.context-view` with `z-index: auto`, so everything the app layers on top — the
+     splitters (z-20), the header (z-30) — paints over the editor's right-click menu. Menus belong
+     on the app's menu layer, the one SqPopover (and therefore SqMenu) already uses. The `.fixed`
+     variant needs naming separately because its own `all: initial` would reset the z-index. */
+  z-index: 1200 !important;
 }
 
 .context-view .monaco-menu-container,

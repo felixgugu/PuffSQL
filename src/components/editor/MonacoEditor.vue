@@ -14,7 +14,14 @@
       :style="backgroundImageStyle"
       aria-hidden="true"
     />
-    <div ref="editorContainer" class="relative z-[1] w-full h-full overflow-hidden" />
+    <!--
+      No z-index here on purpose. It used to carry `z-[1]` to stay above the watermark, but any
+      z-index makes this box a stacking context, which trapped Monaco's context menu (`.context-view`
+      ships as `z-index: auto`) below the app's layers — the editor's right-click menu was painted
+      under the splitters. The watermark is `z-index: 0` and this box sits after it in tree order,
+      so it still paints on top without opening a stacking context.
+    -->
+    <div ref="editorContainer" class="relative w-full h-full overflow-hidden" />
   </div>
 </template>
 

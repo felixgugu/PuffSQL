@@ -190,7 +190,13 @@ describe('SQL editor backdrop wiring', () => {
     );
     assert.match(source, /backgroundSize: `auto \$\{settingsStore\.editorBackgroundImageSize\}%`/);
     assert.match(source, /opacity: String\(settingsStore\.editorBackgroundImageOpacity\)/);
-    assert.match(source, /<div ref="editorContainer" class="relative z-\[1\] w-full h-full overflow-hidden"/);
+    // `relative` keeps Monaco's absolute children anchored to the host, but no z-index: any z-index
+    // would open a stacking context and trap Monaco's context menu (see layer_order.test.ts).
+    assert.match(
+      source,
+      /<div ref="editorContainer" class="relative w-full h-full overflow-hidden"/,
+      'the editor host stays positioned without a z-index'
+    );
   });
 
   test('the stylesheet clears both Monaco background surfaces and pins the watermark', () => {
