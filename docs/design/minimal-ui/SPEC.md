@@ -401,12 +401,13 @@ PRIMEVUE-EVALUATION.md）。裝飾性圖示加 `aria-hidden="true"`，純圖示�
   留著無作用的設定比移除更糟——使用者改了「主要色彩」卻什麼都不會發生——所以移除屬於修錯，
   不是取捨。移除內容：
   - `themeManager`：拿掉 `@primevue/themes` 的 preset／palette 機制與 `ThemePresetName`、
-    `PRIMARY_COLOR_OPTIONS`；保留並確認 `surfaceColor`（五種中性表面色盤）、`colorMode`、
-    全域字型這三個真正由我們 token 驅動的設定。
+    `PRIMARY_COLOR_OPTIONS`；保留 `colorMode`、全域字型這兩個真正由我們 token 驅動的設定。
+    表面色盤其後再收斂為單一組 `DEFAULT_SURFACE = 'neutral'`（極簡純淨）：slate／gray／zinc／
+    stone 四組色盤與外觀頁的色盤選擇器一併移除，規範中所有對比數字只需對這一組灰階負責。
   - `settingsStore`：移除 `themePreset`／`primaryColor`／`ripple` 與其 setter；`setLocale`
     不再需要 PrimeVue config。既有使用者存下來的舊值會被忽略（`loadSettings` 以預設值合併）。
   - `SettingsModal`：外觀頁移除 preset 卡、12 色主色盤與水波紋開關，只留語言、全域字型、
-    深淺模式、表面色盤與即時預覽；選取態也拿掉 `ring-1`（規範不使用 box-shadow ring）。
+    深淺模式與即時預覽；選取態也拿掉 `ring-1`（規範不使用 box-shadow ring）。
   - `main.ts`：不再 `app.use(PrimeVue)`／`ConfirmationService`／`ripple` 指令。
     `ConfirmationService` 是死碼（`useConfirm` 0 使用點），`ripple` 只影響已不存在的 PrimeVue 元件。
   - 刪除 `src/i18n/primevue/{zh-TW,en}.ts` 與 `PrimeVue v4` 的介紹文字；

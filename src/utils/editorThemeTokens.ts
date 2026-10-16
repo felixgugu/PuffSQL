@@ -4,7 +4,7 @@
  * editor background (dark: the surface palette's 900 step, light: the palette's 100 step, the
  * soft grey canvas the rest of the light theme paints).
  */
-import { SURFACE_PALETTES } from '@/services/themeManager';
+import { DEFAULT_SURFACE, SURFACE_PALETTES } from '@/services/themeManager';
 
 export interface MonacoRule {
   token: string;
@@ -41,7 +41,7 @@ export const MONACO_LIGHT_RULES: MonacoRule[] = [
  * unprefixed hex string and the theme service then falls back to `Color.red` (#FF0000).
  */
 export function buildEditorTheme(surfaceName: string, mode: 'dark' | 'light'): MonacoThemeDefinition {
-  const pal = (SURFACE_PALETTES[surfaceName] ?? SURFACE_PALETTES['slate'])!;
+  const pal = (SURFACE_PALETTES[surfaceName] ?? SURFACE_PALETTES[DEFAULT_SURFACE])!;
 
   if (mode === 'dark') {
     return {

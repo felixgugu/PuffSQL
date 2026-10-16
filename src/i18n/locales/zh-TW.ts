@@ -677,8 +677,6 @@ export default {
     colorModeDesc: '切換深色系或淺色系介面外觀',
     darkMode: '深色',
     lightMode: '淺色',
-    surfaceColor: '表面底色傾向',
-    surfaceColorDesc: '背景、卡片與對話框表面冷暖色調',
     livePreview: '主題即時預覽',
     livePreviewDesc: '當前風格即時反映',
     editorFontSize: '編輯器字型大小',

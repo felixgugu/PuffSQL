@@ -677,8 +677,6 @@ export default {
     colorModeDesc: 'Switch between Dark and Light UI color scheme',
     darkMode: 'Dark (深色)',
     lightMode: 'Light (淺色)',
-    surfaceColor: 'Surface Palette (表面底色傾向)',
-    surfaceColorDesc: 'Warm or cool base tone for backgrounds, panels, and dialogs',
     livePreview: 'Theme Live Preview (主題即時預覽)',
     livePreviewDesc: 'Reflects current theme selection instantly',
     editorFontSize: 'Font Size (編輯器字型大小)',

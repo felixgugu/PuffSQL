@@ -6,9 +6,10 @@ import { setActivePinia, createPinia } from 'pinia';
 import {
   ACCENT_COLOR,
   DEFAULT_GLOBAL_FONT_FAMILY,
+  DEFAULT_SURFACE,
+  SURFACE_PALETTES,
   THEME_ROLE_COLORS,
   GLOBAL_FONT_OPTIONS,
-  SURFACE_OPTIONS,
   themeManager,
 } from '../src/services/themeManager.ts';
 import {
@@ -16,7 +17,7 @@ import {
   EDITOR_FONT_FAMILY_OPTIONS,
   GRID_FONT_FAMILY_OPTIONS,
 } from '../src/data/fontOptions.ts';
-import { useSettingsStore } from '../src/stores/settingsStore.ts';
+import { migrateStoredSettings, useSettingsStore } from '../src/stores/settingsStore.ts';
 
 const storageData = new Map<string, string>();
 globalThis.localStorage = {
@@ -34,7 +35,7 @@ beforeEach(() => {
 });
 
 test('themeManager: constants and options are defined correctly', () => {
-  assert.equal(SURFACE_OPTIONS.length, 5);
+  assert.equal(DEFAULT_SURFACE, 'neutral', 'one surface palette ships: 極簡純淨 (neutral)');
   assert.equal(GLOBAL_FONT_OPTIONS.length, 6);
   assert.equal(GLOBAL_FONT_OPTIONS[0]?.value, DEFAULT_GLOBAL_FONT_FAMILY);
   assert.ok(GLOBAL_FONT_OPTIONS.some((option) => option.name === 'jhenghei'));
@@ -43,8 +44,7 @@ test('themeManager: constants and options are defined correctly', () => {
   assert.equal(GRID_FONT_FAMILY_OPTIONS[0]?.value, DEFAULT_GRID_FONT_FAMILY);
   assert.ok(GRID_FONT_FAMILY_OPTIONS.some((option) => option.label === 'Fira Code (預設推薦，支援連字)'));
 
-  const surfaceNames = SURFACE_OPTIONS.map((s) => s.name);
-  assert.deepEqual(surfaceNames, ['slate', 'gray', 'zinc', 'neutral', 'stone']);
+  assert.deepEqual(Object.keys(SURFACE_PALETTES), [DEFAULT_SURFACE]);
 
   // There is one accent colour, and the role table carries it for both modes.
   assert.equal(THEME_ROLE_COLORS.accent!.light, ACCENT_COLOR);
@@ -54,6 +54,7 @@ test('themeManager: methods execute gracefully in headless environment', () => {
   assert.doesNotThrow(() => {
     themeManager.applyColorMode('dark');
     themeManager.applyColorMode('light');
+    // An unknown palette name (e.g. one left over from an older install) falls back, never throws.
     themeManager.applySurfaceColor('stone');
     themeManager.applyGlobalFontFamily('"Microsoft JhengHei UI", sans-serif');
   });
@@ -90,17 +91,17 @@ test('settingsStore: appearance defaults, setters, and resetToDefaults', () => {
 
   // The minimal design is light-first; dark is the paired variant.
   assert.equal(store.colorMode, 'light');
-  assert.equal(store.surfaceColor, 'slate');
+  assert.equal(store.surfaceColor, DEFAULT_SURFACE);
   assert.equal(store.globalFontFamily, DEFAULT_GLOBAL_FONT_FAMILY);
   assert.equal(store.gridFontFamily, DEFAULT_GRID_FONT_FAMILY);
 
   store.setColorMode('dark');
-  store.setSurfaceColor('zinc');
+  store.setSurfaceColor(DEFAULT_SURFACE);
   store.setGlobalFontFamily('"Segoe UI", system-ui, sans-serif');
   store.gridFontFamily = '"JetBrains Mono", Consolas, monospace';
 
   assert.equal(store.colorMode, 'dark');
-  assert.equal(store.surfaceColor, 'zinc');
+  assert.equal(store.surfaceColor, DEFAULT_SURFACE);
   assert.equal(store.globalFontFamily, '"Segoe UI", system-ui, sans-serif');
   assert.equal(store.gridFontFamily, '"JetBrains Mono", Consolas, monospace');
 
@@ -111,7 +112,7 @@ test('settingsStore: appearance defaults, setters, and resetToDefaults', () => {
 
   store.resetToDefaults();
   assert.equal(store.colorMode, 'light');
-  assert.equal(store.surfaceColor, 'slate');
+  assert.equal(store.surfaceColor, DEFAULT_SURFACE);
   assert.equal(store.globalFontFamily, DEFAULT_GLOBAL_FONT_FAMILY);
   assert.equal(store.gridFontFamily, DEFAULT_GRID_FONT_FAMILY);
 });
@@ -126,10 +127,24 @@ test('the appearance settings that only ever drove PrimeVue are gone', () => {
   assert.doesNotMatch(source, /@primevue\/themes|usePreset|updatePrimaryPalette|updateSurfacePalette/);
 });
 
-test('themeManager: SURFACE_PALETTES provides a complete 50-950 scale for all 5 surface options', () => {
-  const surfaces = ['slate', 'gray', 'zinc', 'neutral', 'stone'];
-  for (const s of surfaces) {
-    const pal = (themeManager as any).SURFACE_PALETTES?.[s] || SURFACE_OPTIONS.find((opt) => opt.name === s);
-    assert.ok(pal, `Surface palette for ${s} should exist`);
+test('themeManager: exactly one surface palette ships, with a complete 50-950 scale', () => {
+  assert.deepEqual(Object.keys(SURFACE_PALETTES), [DEFAULT_SURFACE]);
+
+  const ramp = SURFACE_PALETTES[DEFAULT_SURFACE]!;
+  for (const tone of ['50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950']) {
+    assert.match(ramp[tone as keyof typeof ramp] ?? '', /^#[0-9a-f]{6}$/, `tone ${tone} is defined`);
   }
+
+  // The four other hues are gone from the file, not merely hidden from the picker.
+  const source = readFileSync(resolve(process.cwd(), 'src/services/themeManager.ts'), 'utf-8');
+  for (const gone of ['slate', 'gray', 'zinc', 'stone']) {
+    assert.ok(!source.includes(`'${gone}'`), `the ${gone} palette must be deleted`);
+  }
+});
+
+test('a settings file that still names a removed surface falls back to the shipped one', () => {
+  const migrated = migrateStoredSettings({ colorMode: 'dark', surfaceColor: 'zinc' });
+
+  assert.equal('surfaceColor' in migrated, false, 'the old palette name is dropped');
+  assert.equal(migrated.colorMode, 'dark', 'the rest of the settings survive');
 });

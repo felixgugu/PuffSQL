@@ -10,7 +10,7 @@ import {
   testTablePatternByRules,
 } from '@/utils/tableFilter';
 
-import { DEFAULT_GLOBAL_FONT_FAMILY, themeManager } from '@/services/themeManager';
+import { DEFAULT_GLOBAL_FONT_FAMILY, DEFAULT_SURFACE, themeManager } from '@/services/themeManager';
 import { DEFAULT_GRID_FONT_FAMILY } from '@/data/fontOptions';
 import { type SupportedLocale, DEFAULT_LOCALE, setAppLocale } from '@/i18n';
 
@@ -60,7 +60,7 @@ function clampNumber(value: unknown, min: number, max: number, fallback: number)
 const DEFAULT_SETTINGS: AppSettings = {
   // The minimal design is light-first: white canvas, light grey chrome. Dark is the paired variant.
   colorMode: 'light',
-  surfaceColor: 'slate',
+  surfaceColor: DEFAULT_SURFACE,
   globalFontFamily: DEFAULT_GLOBAL_FONT_FAMILY,
   locale: DEFAULT_LOCALE,
 
@@ -86,14 +86,7 @@ function loadSettings(): AppSettings {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed.hiddenTableRules)) {
-        parsed.hiddenTableRules = parsed.hiddenTableRules.map((r: any) => ({
-          ...r,
-          target: r.target || 'all',
-        }));
-      }
-      return { ...DEFAULT_SETTINGS, ...parsed };
+      return { ...DEFAULT_SETTINGS, ...migrateStoredSettings(JSON.parse(raw)) };
     }
   } catch (e) {
     console.warn('Failed to load app settings from localStorage:', e);
@@ -101,11 +94,34 @@ function loadSettings(): AppSettings {
   return { ...DEFAULT_SETTINGS };
 }
 
+/**
+ * Brings a persisted settings blob up to date. Exported (and pure) so the migrations can be tested
+ * without re-importing the store.
+ */
+export function migrateStoredSettings(parsed: Record<string, any>): Record<string, any> {
+  const migrated = { ...parsed };
+
+  // The app ships one surface palette (極簡純淨 / neutral); an install that saved another name
+  // simply forgets it and falls back to the default.
+  if (migrated.surfaceColor && migrated.surfaceColor !== DEFAULT_SURFACE) {
+    delete migrated.surfaceColor;
+  }
+
+  if (Array.isArray(migrated.hiddenTableRules)) {
+    migrated.hiddenTableRules = migrated.hiddenTableRules.map((rule: any) => ({
+      ...rule,
+      target: rule.target || 'all',
+    }));
+  }
+
+  return migrated;
+}
+
 export const useSettingsStore = defineStore('settings', () => {
   const initial = loadSettings();
 
   const colorMode = ref<'dark' | 'light'>(initial.colorMode || 'dark');
-  const surfaceColor = ref<string>(initial.surfaceColor || 'slate');
+  const surfaceColor = ref<string>(initial.surfaceColor || DEFAULT_SURFACE);
   const globalFontFamily = ref<string>(initial.globalFontFamily || DEFAULT_GLOBAL_FONT_FAMILY);
   const locale = ref<SupportedLocale>(initial.locale || DEFAULT_LOCALE);
 

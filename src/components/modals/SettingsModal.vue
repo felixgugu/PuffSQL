@@ -96,52 +96,7 @@
           />
         </div>
 
-        <!-- 4. Surface Palette -->
-        <div class="space-y-2.5 pb-4 border-b border-dark-800">
-          <div class="flex items-center justify-between">
-            <div>
-              <label class="font-medium text-dark-100 block">{{ $t('settingsModal.surfaceColor') }}</label>
-              <span class="text-xxs text-dark-400">{{ $t('settingsModal.surfaceColorDesc') }}</span>
-            </div>
-            <span class="text-xxs font-mono text-dark-300">{{ currentSurfaceLabel }}</span>
-          </div>
-
-          <div class="grid grid-cols-5 gap-2">
-            <button
-              v-for="surface in SURFACE_OPTIONS"
-              :key="surface.name"
-              type="button"
-              class="flex flex-col p-2 rounded border transition-all cursor-pointer text-left space-y-1.5"
-              :class="settingsStore.surfaceColor === surface.name
-                ? 'border-brand-500 bg-brand-500/15 text-dark-100'
-                : 'border-dark-750 bg-dark-900/50 hover:border-dark-600 text-dark-300 hover:text-dark-200'"
-              @click="settingsStore.setSurfaceColor(surface.name)"
-            >
-              <div class="flex items-center justify-between w-full">
-                <span class="text-xxs font-semibold truncate">{{ surface.label.split(' ')[0] }}</span>
-                <CircleCheck
-                  v-if="settingsStore.surfaceColor === surface.name"
-                  class="w-3 h-3 text-accent"
-                />
-              </div>
-              <div class="flex items-center space-x-1">
-                <div
-                  class="w-3.5 h-3.5 rounded border border-dark-600"
-                  :style="{ backgroundColor: surface.sampleDark }"
-                  title="Dark Surface"
-                />
-                <div
-                  class="w-3.5 h-3.5 rounded border border-dark-300"
-                  :style="{ backgroundColor: surface.sampleLight }"
-                  title="Light Surface"
-                />
-                <span class="text-xxs font-medium text-dark-400 truncate">{{ surface.name }}</span>
-              </div>
-            </button>
-          </div>
-        </div>
-
-        <!-- 6. Live Component Preview -->
+        <!-- 4. Live Component Preview -->
         <div class="space-y-2 p-3.5 rounded-md border border-dark-750 bg-dark-900">
           <div class="flex items-center justify-between">
             <span class="text-xs font-semibold text-dark-200 flex items-center space-x-1.5">
@@ -510,7 +465,6 @@ import SqDialog from '@/components/ui/SqDialog.vue';
 import SqButton from '@/components/ui/SqButton.vue';
 import {
   Check,
-  CircleCheck,
   Eye,
   FileCode,
   Filter,
@@ -535,7 +489,6 @@ import { SUPPORTED_LOCALES, type SupportedLocale } from '@/i18n';
 import {
   GLOBAL_FONT_OPTIONS,
   DEFAULT_GLOBAL_FONT_FAMILY,
-  SURFACE_OPTIONS,
 } from '@/services/themeManager';
 import {
   DEFAULT_EDITOR_FONT_FAMILY,
@@ -578,10 +531,6 @@ function handleLocaleChange(val: unknown) {
   }
 }
 
-const currentSurfaceLabel = computed(() => {
-  const match = SURFACE_OPTIONS.find((s) => s.name === settingsStore.surfaceColor);
-  return match ? match.label : settingsStore.surfaceColor;
-});
 
 const globalFontSelectOptions = GLOBAL_FONT_OPTIONS.map(({ label, value }) => ({
   label,

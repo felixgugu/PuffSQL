@@ -6,8 +6,8 @@
  * grid in sync with the rest of the app without any per-component theme object.
  *
  * Grid surfaces and text resolve through the app's semantic `--color-dark-*` / `--color-raised`
- * tokens instead of fixed hex values, so the grid follows every colour mode *and* every surface
- * palette (`settingsStore.surfaceColor`) exactly like the surrounding shell does. The value-dependent
+ * tokens instead of fixed hex values, so the grid follows every colour mode — and the single
+ * surface palette (極簡純淨 / neutral) the app ships — exactly like the surrounding shell does. The value-dependent
  * accents below stay literal on purpose: they are contrast-verified role colours, not surfaces.
  *
  * The configurable grid font arrives through the `--sqlight-grid-font` custom property that the

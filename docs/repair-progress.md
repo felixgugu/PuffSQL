@@ -788,3 +788,18 @@ let prefix = &trimmed[..2];        // ← 中文第 2 個位元組不是字元�
 
 驗收：`cargo test --lib` 33 項、`npm test` 707 項、`npm run typecheck`、`npm run build` 通過。
 
+## 已實作（2026-10-16）：表面底色只留「極簡純淨」
+
+需求：外觀設定裡的表面底色只留「極簡純淨」，其餘不要。
+
+已實作：
+
+1. `services/themeManager.ts`：`SURFACE_OPTIONS`（五組色盤的選項清單）與 `SurfaceOption` 介面刪除，改為單一常數 `DEFAULT_SURFACE = 'neutral'`；`SURFACE_PALETTES` 只留下 neutral 的 50–950 灰階，slate／gray／zinc／stone 四組色盤整個移除。所有取用點（`applyGlobalSurfaceVariables`、`buildThemeTokens`、`editorThemeTokens.buildEditorTheme`、`utils/monaco.ensureSqlightTheme`、`settingsStore`）的預設值與 fallback 都改指 `DEFAULT_SURFACE`。
+2. `SettingsModal.vue`：外觀頁移除「表面底色傾向」整段（標題、說明、五宮格色票與勾選態），並清掉 `SURFACE_OPTIONS`／`CircleCheck` 這兩個因此不再使用的 import 與 `currentSurfaceLabel` computed。
+3. `settingsStore.ts`：`DEFAULT_SETTINGS.surfaceColor` 改為 `DEFAULT_SURFACE`；把原本 inline 的設定遷移抽成可測試的純函式 `migrateStoredSettings()`——舊安裝存下的其他色盤名稱會被丟棄（回落預設），`hiddenTableRules.target` 的補值也一併搬進去。
+4. `assets/main.css`：靜態的 `--color-dark-*` 兩組（淺／深）改成 neutral 灰階的實際數值，讓第一屏在 runtime 套用前就是新配色；並更新兩處「mirror buildThemeTokens('slate', …)」的註解。
+5. i18n：`settingsModal.surfaceColor`／`surfaceColorDesc` 兩條字串自 zh-TW 與 en 移除；`docs/design/minimal-ui/SPEC.md` 的 P4 紀錄同步改寫（表面色盤其後收斂為單一組）。
+
+驗證：`npm test` 708 項通過（`theme_settings` 改為斷言「只出貨一組色盤」與 `migrateStoredSettings` 會丟棄舊色盤名；`theme_contrast` 的所有對比檢查現在只對 neutral 這一組跑）；`npm run typecheck`、`npm run build` 通過。以 headless 瀏覽器核對：app 啟動無例外、runtime token 已是 neutral（淺色 `--color-dark-900: 255 255 255`、`--color-dark-850: 250 250 250`、`--color-dark-500: 82 82 82`），外觀頁不再出現「表面底色」字樣或其他色盤名稱。
+
+備註：`surfaceColor` 這條設定與 `applySurfaceColor()` 仍保留在程式裡（只是永遠是 neutral）——它同時是深淺色 token 的套用途徑，拿掉它得把色盤寫死在多處；要的話可以再做一次純清理。實作過程中一度漏改 `editorThemeTokens` 的舊色盤 fallback 導致 app 啟動失敗，已補上並以「乾淨重新載入無例外」驗證。
