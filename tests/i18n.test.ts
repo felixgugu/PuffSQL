@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import zhTW from '../src/i18n/locales/zh-TW';
 import en from '../src/i18n/locales/en';
+import { missingTranslations } from './helpers/i18nKeys';
 
 function getLeafPaths(obj: Record<string, any>, prefix = ''): Record<string, string> {
   const result: Record<string, string> = {};
@@ -58,6 +59,20 @@ test('i18n: no empty strings or undefined translations', () => {
   for (const [key, val] of Object.entries(enPaths)) {
     assert.ok(val.trim().length > 0, `en key "${key}" has empty value`);
   }
+});
+
+/**
+ * Parity above only compares the dictionaries with each other; this pins them to the app, and
+ * replaces the per-feature "both locales have my new key" assertions that used to be spread across
+ * the suite — one walk over `src` now covers every feature at once.
+ */
+test('i18n: every key the app asks for exists in both dictionaries', () => {
+  const missing = missingTranslations();
+  const describe = (entries: Array<{ key: string; usedIn: string }>) =>
+    entries.map((entry) => `${entry.key} (used in ${entry.usedIn})`).join(', ');
+
+  assert.deepEqual(missing['zh-TW'], [], `missing from zh-TW: ${describe(missing['zh-TW'])}`);
+  assert.deepEqual(missing.en, [], `missing from en: ${describe(missing.en)}`);
 });
 
 test('i18n: parameter placeholders match between zh-TW and en', () => {
