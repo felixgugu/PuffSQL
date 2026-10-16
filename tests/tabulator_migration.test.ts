@@ -1,13 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readdirSync, readFileSync } from 'node:fs';
+import { readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { readSource } from './helpers/source';
 
 const root = process.cwd();
-
-function readSource(relativePath: string): string {
-  return readFileSync(resolve(root, relativePath), 'utf-8');
-}
 
 function collectFiles(dir: string, extensions: string[]): string[] {
   const out: string[] = [];

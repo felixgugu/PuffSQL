@@ -1,25 +1,20 @@
-import { test } from 'node:test';
+/**
+ * grid selection — merged from grid_selection, result_export_group:
+ * one file per component and layer instead of 2 files that all read the same sources.
+ */
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import type { Tabulator } from 'tabulator-tables';
-import {
-  formatAggregateNumber,
-  readCellValue,
-  useGridSelection,
-} from '../src/composables/useGridSelection';
-import {
-  columnIndexFromField,
-  coerceEditedValue,
-  fieldForColumnIndex,
-} from '../src/utils/tabulatorColumns';
-import {
-  clearGridRanges,
-  CLEAR_GRID_SELECTION_EVENT,
-  dispatchClearGridSelection,
-} from '../src/utils/tabulatorGrid';
-import type { CellValue, ColumnDef } from '../src/types/query';
+import { describe, test } from 'node:test';
+import { type Tabulator } from 'tabulator-tables';
+import { useGridExport } from '../src/composables/useGridExport';
+import { formatAggregateNumber, readCellValue, type UseGridSelectionReturn, useGridSelection } from '../src/composables/useGridSelection';
+import { ColumnDef, type CellValue } from '../src/types/query';
+import { coerceEditedValue, columnIndexFromField, fieldForColumnIndex } from '../src/utils/tabulatorColumns';
+import { CLEAR_GRID_SELECTION_EVENT, clearGridRanges, dispatchClearGridSelection } from '../src/utils/tabulatorGrid';
+import { readSource } from './helpers/source';
 
+describe('grid_selection', () => {
 interface ColumnStub {
   field: string;
   title: string;
@@ -412,4 +407,93 @@ test('MonacoEditor and AppMain wire editor clicking to dispatchClearGridSelectio
   const gridSelectionSrc = readFileSync(resolve(process.cwd(), 'src/composables/useGridSelection.ts'), 'utf-8');
   assert.match(gridSelectionSrc, /CLEAR_GRID_SELECTION_EVENT/, 'useGridSelection listens to CLEAR_GRID_SELECTION_EVENT');
   assert.match(gridSelectionSrc, /active\.closest\('\.monaco-editor'\)/, 'useGridSelection protects Monaco editor from Ctrl+C intercept');
+});
+});
+
+describe('result_export_group', () => {
+const columns: ColumnDef[] = [{ name: 'id', dataType: 'int', nullable: false, ordinal: 0 }];
+
+function createExportHandler(rows: unknown[][]) {
+  const toasts: Array<{ message: string }> = [];
+  const selection = {
+    getSelectionBlocks: () => [],
+    getVisualDataColIndices: () => [0],
+  } as unknown as UseGridSelectionReturn;
+
+  const handler = useGridExport({
+    getRows: () => rows as never,
+    getColumns: () => columns,
+    selection,
+    showToast: (message) => {
+      toasts.push({ message });
+    },
+  });
+
+  return { handler, toasts };
+}
+
+/**
+ * The result toolbar's copy tools are one label-only strip: no per-format icons, and every segment
+ * flashes its label for two seconds after a successful copy.
+ */
+describe('result grid copy tools', () => {
+  test('the four copy formats are one icon-free segmented strip', () => {
+    const source = readSource('src/components/results/ResultGridItem.vue');
+    const groupStart = source.indexOf('aria-label="複製查詢結果"');
+
+    assert.ok(groupStart > -1, 'the copy tools live in one named strip');
+    const group = source.slice(groupStart, source.indexOf('</SqButtonGroup>', groupStart));
+
+    for (const label of ["'Copy TSV'", "'CSV'", "'JSON'", "'MD'"]) {
+      assert.ok(group.includes(label), `${label} should be a segment`);
+    }
+    assert.doesNotMatch(group, /<template #icon>/, 'the segments are label only');
+    assert.doesNotMatch(
+      group,
+      /FileSpreadsheet|FileText|FileCode|Table2/,
+      'the four format icons are gone'
+    );
+    assert.equal(
+      (group.match(/common\.copied/g) ?? []).length,
+      4,
+      'all four segments flash the copied label'
+    );
+    assert.match(group, /min-w-\[68px\]/, 'the widest label keeps the strip from reflowing');
+    assert.doesNotMatch(source, /'Copied!'/, 'the hardcoded label is gone');
+  });
+
+  test('JSON and Markdown copies flash their segment too, then reset after two seconds', async () => {
+    navigator.clipboard = { writeText: () => Promise.resolve() } as unknown as Clipboard;
+    const { handler, toasts } = createExportHandler([[1]]);
+
+    handler.copyAsJson();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    assert.equal(handler.copiedJson.value, true, 'JSON flashes its own segment');
+    assert.equal(handler.copiedTsv.value, false, 'the other segments stay quiet');
+    assert.equal(toasts.length, 1, 'the success toast still fires');
+
+    handler.copyAsMarkdown();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    assert.equal(handler.copiedMd.value, true, 'Markdown flashes its own segment');
+
+    const source = readSource('src/composables/useGridExport.ts');
+    assert.match(
+      source,
+      /function flashCopied[\s\S]*?setTimeout\([\s\S]*?\}, 2000\);/,
+      'the flash resets after two seconds'
+    );
+    assert.match(source, /copiedJson,\s*\n\s*copiedMd,/, 'both flags are returned');
+  });
+
+  test('copying an empty result set does not flash anything', () => {
+    navigator.clipboard = { writeText: () => Promise.resolve() } as unknown as Clipboard;
+    const { handler, toasts } = createExportHandler([]);
+
+    handler.copyAsJson();
+    handler.copyAsMarkdown();
+    assert.equal(handler.copiedJson.value, false);
+    assert.equal(handler.copiedMd.value, false);
+    assert.equal(toasts.length, 2, 'both copies answer with the empty-result toast');
+  });
+});
 });

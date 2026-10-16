@@ -1,23 +1,21 @@
-import { test } from 'node:test';
+/**
+ * theme contrast — merged from theme_contrast, theme_settings, tab_category_colors:
+ * one file per component and layer instead of 3 files that all read the same sources.
+ */
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import {
-  SURFACE_PALETTES,
-  THEME_ROLE_COLORS,
-  buildThemeTokens,
-} from '../src/services/themeManager';
+import { before, beforeEach, describe, test } from 'node:test';
+import { createPinia, setActivePinia } from 'pinia';
+import { DEFAULT_GRID_FONT_FAMILY, EDITOR_FONT_FAMILY_OPTIONS, GRID_FONT_FAMILY_OPTIONS } from '../src/data/fontOptions';
+import { ACCENT_COLOR, DEFAULT_GLOBAL_FONT_FAMILY, DEFAULT_SURFACE, GLOBAL_FONT_OPTIONS, SURFACE_PALETTES, THEME_ROLE_COLORS, buildThemeTokens, themeManager } from '../src/services/themeManager';
+import { migrateStoredSettings, useSettingsStore } from '../src/stores/settingsStore';
+import { type TabType } from '../src/types/workspace';
+import { contrastRatio, mixRgb, parseHexColor, relativeLuminance, resolveConnectionLabelColor, type RgbColor } from '../src/utils/connectionColor';
 import { buildEditorTheme } from '../src/utils/editorThemeTokens';
-import { TAB_CATEGORY_THEMES } from '../src/utils/tabTheme';
-import {
-  contrastRatio,
-  mixRgb,
-  parseHexColor,
-  relativeLuminance,
-  resolveConnectionLabelColor,
-  type RgbColor,
-} from '../src/utils/connectionColor';
+import { TAB_CATEGORY_THEMES, getTabThemeStyle } from '../src/utils/tabTheme';
 
+describe('theme_contrast', () => {
 const SURFACES = Object.keys(SURFACE_PALETTES);
 const TEXT_STEPS = ['100', '200', '300', '400', '500'] as const;
 const BACKGROUND_STEPS = ['750', '800', '850', '900'] as const;
@@ -473,4 +471,320 @@ test('the stylesheet declares a colour-scheme for both modes', () => {
   const css = readFileSync(resolve(process.cwd(), 'src/assets/main.css'), 'utf-8');
   assert.match(css, /color-scheme: light/);
   assert.match(css, /color-scheme: dark/);
+});
+});
+
+describe('theme_settings', () => {
+const storageData = new Map<string, string>();
+before(() => {
+  globalThis.localStorage = {
+    getItem: (key) => storageData.get(key) ?? null,
+    setItem: (key, value) => { storageData.set(key, String(value)); },
+    removeItem: (key) => { storageData.delete(key); },
+    clear: () => storageData.clear(),
+    key: () => null,
+    length: 0,
+  };
+});
+
+beforeEach(() => {
+  storageData.clear();
+  setActivePinia(createPinia());
+});
+
+test('themeManager: constants and options are defined correctly', () => {
+  assert.equal(DEFAULT_SURFACE, 'neutral', 'one surface palette ships: 極簡純淨 (neutral)');
+  assert.equal(GLOBAL_FONT_OPTIONS.length, 6);
+  assert.equal(GLOBAL_FONT_OPTIONS[0]?.value, DEFAULT_GLOBAL_FONT_FAMILY);
+  assert.ok(GLOBAL_FONT_OPTIONS.some((option) => option.name === 'jhenghei'));
+  assert.ok(GLOBAL_FONT_OPTIONS.some((option) => option.name === 'noto-sans-tc'));
+  assert.equal(GRID_FONT_FAMILY_OPTIONS.length, EDITOR_FONT_FAMILY_OPTIONS.length + 1);
+  assert.equal(GRID_FONT_FAMILY_OPTIONS[0]?.value, DEFAULT_GRID_FONT_FAMILY);
+  assert.ok(GRID_FONT_FAMILY_OPTIONS.some((option) => option.label === 'Fira Code (預設推薦，支援連字)'));
+
+  assert.deepEqual(Object.keys(SURFACE_PALETTES), [DEFAULT_SURFACE]);
+
+  // There is one accent colour, and the role table carries it for both modes.
+  assert.equal(THEME_ROLE_COLORS.accent!.light, ACCENT_COLOR);
+});
+
+test('themeManager: methods execute gracefully in headless environment', () => {
+  assert.doesNotThrow(() => {
+    themeManager.applyColorMode('dark');
+    themeManager.applyColorMode('light');
+    // An unknown palette name (e.g. one left over from an older install) falls back, never throws.
+    themeManager.applySurfaceColor('stone');
+    themeManager.applyGlobalFontFamily('"Microsoft JhengHei UI", sans-serif');
+  });
+});
+
+test('themeManager: applyGlobalFontFamily updates the root CSS variable', () => {
+  const originalDocument = Object.getOwnPropertyDescriptor(globalThis, 'document');
+  const properties = new Map<string, string>();
+  Object.defineProperty(globalThis, 'document', {
+    configurable: true,
+    value: {
+      documentElement: {
+        style: {
+          setProperty: (key: string, value: string) => properties.set(key, value),
+        },
+      },
+    },
+  });
+
+  try {
+    themeManager.applyGlobalFontFamily('"Noto Sans TC", sans-serif');
+    assert.equal(properties.get('--app-font-sans'), '"Noto Sans TC", sans-serif');
+  } finally {
+    if (originalDocument) {
+      Object.defineProperty(globalThis, 'document', originalDocument);
+    } else {
+      delete (globalThis as any).document;
+    }
+  }
+});
+
+test('settingsStore: appearance defaults, setters, and resetToDefaults', () => {
+  const store = useSettingsStore();
+
+  // The minimal design is light-first; dark is the paired variant.
+  assert.equal(store.colorMode, 'light');
+  assert.equal(store.surfaceColor, DEFAULT_SURFACE);
+  assert.equal(store.globalFontFamily, DEFAULT_GLOBAL_FONT_FAMILY);
+  assert.equal(store.gridFontFamily, DEFAULT_GRID_FONT_FAMILY);
+
+  store.setColorMode('dark');
+  store.setSurfaceColor(DEFAULT_SURFACE);
+  store.setGlobalFontFamily('"Segoe UI", system-ui, sans-serif');
+  store.gridFontFamily = '"JetBrains Mono", Consolas, monospace';
+
+  assert.equal(store.colorMode, 'dark');
+  assert.equal(store.surfaceColor, DEFAULT_SURFACE);
+  assert.equal(store.globalFontFamily, '"Segoe UI", system-ui, sans-serif');
+  assert.equal(store.gridFontFamily, '"JetBrains Mono", Consolas, monospace');
+
+  store.saveSettings();
+  const saved = JSON.parse(storageData.get('sqlight_app_settings') || '{}');
+  assert.equal(saved.globalFontFamily, '"Segoe UI", system-ui, sans-serif');
+  assert.equal(saved.gridFontFamily, '"JetBrains Mono", Consolas, monospace');
+
+  store.resetToDefaults();
+  assert.equal(store.colorMode, 'light');
+  assert.equal(store.surfaceColor, DEFAULT_SURFACE);
+  assert.equal(store.globalFontFamily, DEFAULT_GLOBAL_FONT_FAMILY);
+  assert.equal(store.gridFontFamily, DEFAULT_GRID_FONT_FAMILY);
+});
+
+test('the appearance settings that only ever drove PrimeVue are gone', () => {
+  const store = useSettingsStore() as unknown as Record<string, unknown>;
+  for (const dead of ['themePreset', 'primaryColor', 'ripple']) {
+    assert.equal(dead in store, false, `${dead} controlled nothing once PrimeVue left`);
+  }
+
+  const source = readFileSync(resolve(process.cwd(), 'src/services/themeManager.ts'), 'utf-8');
+  assert.doesNotMatch(source, /@primevue\/themes|usePreset|updatePrimaryPalette|updateSurfacePalette/);
+});
+
+test('themeManager: exactly one surface palette ships, with a complete 50-950 scale', () => {
+  assert.deepEqual(Object.keys(SURFACE_PALETTES), [DEFAULT_SURFACE]);
+
+  const ramp = SURFACE_PALETTES[DEFAULT_SURFACE]!;
+  for (const tone of ['50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950']) {
+    assert.match(ramp[tone as keyof typeof ramp] ?? '', /^#[0-9a-f]{6}$/, `tone ${tone} is defined`);
+  }
+
+  // The four other hues are gone from the file, not merely hidden from the picker.
+  const source = readFileSync(resolve(process.cwd(), 'src/services/themeManager.ts'), 'utf-8');
+  for (const gone of ['slate', 'gray', 'zinc', 'stone']) {
+    assert.ok(!source.includes(`'${gone}'`), `the ${gone} palette must be deleted`);
+  }
+});
+
+test('a settings file that still names a removed surface falls back to the shipped one', () => {
+  const migrated = migrateStoredSettings({ colorMode: 'dark', surfaceColor: 'zinc' });
+
+  assert.equal('surfaceColor' in migrated, false, 'the old palette name is dropped');
+  assert.equal(migrated.colorMode, 'dark', 'the rest of the settings survive');
+});
+});
+
+describe('tab_category_colors', () => {
+const ALL_TAB_TYPES: TabType[] = [
+  'sql_editor',
+  'table_data',
+  'table_structure',
+  'execution_plan',
+  'er_diagram',
+];
+
+/** Reads the role name out of an `rgb(var(--color-ok))` style reference. */
+function roleOf(value: string): string {
+  const match = /var\(--color-([a-z-]+)\)/.exec(value);
+  assert.ok(match, `${value} must reference a colour token`);
+  return match[1]!;
+}
+
+test('each workspace tab type is distinct, and every accent is a role token', () => {
+  assert.equal(Object.keys(TAB_CATEGORY_THEMES).length, 5);
+
+  const accents = new Set<string>();
+  for (const type of ALL_TAB_TYPES) {
+    const theme = TAB_CATEGORY_THEMES[type];
+    assert.ok(theme, `Theme for ${type} must exist`);
+    assert.equal(theme.type, type);
+    assert.ok(theme.label, `Label for ${type} must exist`);
+
+    assert.match(theme.accent, /^rgb\(var\(--color-[a-z-]+\)\)$/, `${type} accent must be a token`);
+    assert.ok(
+      THEME_ROLE_COLORS[roleOf(theme.accent)],
+      `${type} accent must resolve in the theme role table`
+    );
+    accents.add(theme.accent);
+  }
+
+  assert.equal(accents.size, 5, 'All 5 categories must stay visually distinct');
+});
+
+test('the category palette holds no raw colour values', () => {
+  const source = readFileSync(resolve(process.cwd(), 'src/utils/tabTheme.ts'), 'utf-8');
+  // The one exception is the sentinel for a legacy saved setting.
+  const hexes = [...source.matchAll(/#[0-9a-fA-F]{3,8}/g)].map((match) => match[0]);
+  assert.deepEqual(hexes, ['#1e40af'], 'only the legacy-default sentinel may be a literal');
+  assert.doesNotMatch(source, /--p-primary-color/, 'PrimeVue theme variables are gone');
+});
+
+test('inactive tabs are neutral chrome so the accent stays the only colour signal', () => {
+  for (const type of ALL_TAB_TYPES) {
+    const style = getTabThemeStyle(type, false);
+    assert.equal(style['--tab-bg'], 'transparent');
+    assert.equal(style['--tab-border'], 'rgb(var(--color-dark-700))');
+    assert.equal(style['--tab-text'], 'rgb(var(--color-dark-500))');
+    assert.equal(style['--tab-hover-bg'], 'rgb(var(--color-dark-750))');
+    assert.equal(style['--tab-hover-text'], 'rgb(var(--color-dark-200))');
+    // The category only shows while the tab is the one you are looking at.
+    assert.equal(style['--tab-top-accent'], TAB_CATEGORY_THEMES[type].accent);
+  }
+});
+
+test('an active tab is canvas plus its own accent, never a coloured block', () => {
+  for (const type of ALL_TAB_TYPES) {
+    const style = getTabThemeStyle(type, true);
+    assert.equal(style['--tab-active-surface'], 'rgb(var(--color-dark-900))');
+    assert.equal(style['--tab-active-text'], 'rgb(var(--color-dark-100))');
+    assert.equal(style['--tab-border'], TAB_CATEGORY_THEMES[type].accent);
+    assert.equal(style['--tab-top-accent'], TAB_CATEGORY_THEMES[type].accent);
+  }
+});
+
+test('the custom SQL tab colour overrides that tab only', () => {
+  const customBg = '#4338ca';
+  const customText = '#fef08a';
+
+  const activeSqlStyle = getTabThemeStyle('sql_editor', true, customBg, customText);
+  assert.equal(activeSqlStyle['--tab-active-surface'], customBg);
+  assert.equal(activeSqlStyle['--tab-active-text'], customText);
+  assert.equal(activeSqlStyle['--tab-border'], customBg);
+
+  // Other categories are not the user's to paint, and a custom colour never reaches an inactive tab.
+  assert.equal(
+    getTabThemeStyle('table_data', true, customBg, customText)['--tab-active-surface'],
+    'rgb(var(--color-dark-900))'
+  );
+  assert.equal(
+    getTabThemeStyle('sql_editor', false, customBg, customText)['--tab-top-accent'],
+    TAB_CATEGORY_THEMES.sql_editor.accent
+  );
+
+  // A saved setting still holding the old default means "no custom colour".
+  assert.equal(
+    getTabThemeStyle('sql_editor', true, '#1e40af')['--tab-active-surface'],
+    'rgb(var(--color-dark-900))'
+  );
+});
+
+test('AppBottomPanel active result tab applies theme/connection borders (top, left, right) like editor tabs', () => {
+  const panelSrc = readFileSync(
+    resolve(process.cwd(), 'src/components/layout/AppBottomPanel.vue'),
+    'utf-8'
+  );
+
+  // Active result tab has active-tab class
+  assert.match(
+    panelSrc,
+    /queryStore\.activeResultTabId === rtab\.id\s*\?\s*'[^']*active-tab[^']*'/,
+    'active result tab must receive the active-tab class'
+  );
+
+  // Scoped CSS styles active tab top, left, right border accent and seamless bottom overlap
+  assert.match(
+    panelSrc,
+    /\.result-tab-item\.active-tab\s*\{[\s\S]*?border-top-color:\s*var\(--tab-top-accent[\s\S]*?!important/,
+    'active result tab must have border-top-color set to theme accent'
+  );
+  assert.match(
+    panelSrc,
+    /\.result-tab-item\.active-tab\s*\{[\s\S]*?border-left-color:\s*var\(--tab-top-accent[\s\S]*?!important/,
+    'active result tab must have border-left-color set to theme accent'
+  );
+  assert.match(
+    panelSrc,
+    /\.result-tab-item\.active-tab\s*\{[\s\S]*?border-right-color:\s*var\(--tab-top-accent[\s\S]*?!important/,
+    'active result tab must have border-right-color set to theme accent'
+  );
+  assert.match(
+    panelSrc,
+    /\.result-tab-item\.active-tab\s*\{[\s\S]*?border-bottom-color:\s*transparent\s*!important/,
+    'active result tab must have transparent bottom border'
+  );
+  assert.match(
+    panelSrc,
+    /\.result-tab-item\.active-tab\s*\{[\s\S]*?margin-bottom:\s*-1px/,
+    'active result tab must have margin-bottom: -1px to merge with panel'
+  );
+
+  // getResultTabStyle sets topAccent and connection color support
+  assert.match(
+    panelSrc,
+    /getResultTabTopAccent/,
+    'getResultTabTopAccent helper must calculate theme/connection top accent'
+  );
+  assert.match(
+    panelSrc,
+    /getResultTabConnectionColor/,
+    'getResultTabConnectionColor helper must support connection color override'
+  );
+  assert.match(
+    panelSrc,
+    /borderLeftColor:\s*topAccent/,
+    'getResultTabStyle must set borderLeftColor to topAccent'
+  );
+  assert.match(
+    panelSrc,
+    /borderRightColor:\s*topAccent/,
+    'getResultTabStyle must set borderRightColor to topAccent'
+  );
+});
+
+test('AppMain active workspace tab applies theme/connection borders on top, left, and right', () => {
+  const mainSrc = readFileSync(
+    resolve(process.cwd(), 'src/components/layout/AppMain.vue'),
+    'utf-8'
+  );
+
+  assert.match(
+    mainSrc,
+    /\.query-tab-item\.active-tab\s*\{[\s\S]*?border-top-color:\s*var\(--tab-top-accent\)\s*!important/,
+    'active workspace tab must have border-top-color set to theme accent'
+  );
+  assert.match(
+    mainSrc,
+    /\.query-tab-item\.active-tab\s*\{[\s\S]*?border-left-color:\s*var\(--tab-top-accent\)\s*!important/,
+    'active workspace tab must have border-left-color set to theme accent'
+  );
+  assert.match(
+    mainSrc,
+    /\.query-tab-item\.active-tab\s*\{[\s\S]*?border-right-color:\s*var\(--tab-top-accent\)\s*!important/,
+    'active workspace tab must have border-right-color set to theme accent'
+  );
+});
 });

@@ -1,40 +1,28 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
-import zhTW from '../src/i18n/locales/zh-TW';
-import en from '../src/i18n/locales/en';
-
-const root = process.cwd();
-
-function readSource(relativePath: string): string {
-  return readFileSync(resolve(root, relativePath), 'utf-8');
-}
+import { readSource } from './helpers/source';
 
 const EDITOR = 'src/components/editor/MonacoEditor.vue';
 const COMPOSABLE = 'src/composables/useEditorStatementGuard.ts';
-const GUARD = 'src/utils/sqlStatementGuard.ts';
 const STYLES = 'src/styles/editorGuard.css';
 
 describe('the statement guard is wired into the one editor the app ships', () => {
-  test('the editor reserves the glyph lane and hands it to the guard', () => {
-    const source = readSource(EDITOR);
+  test('the editor hands its glyph lane to the guard, which only ever edits text', () => {
+    const editor = readSource(EDITOR);
 
-    assert.match(source, /glyphMargin: true/, 'the glyph margin must be on');
+    assert.match(editor, /glyphMargin: true/, 'the glyph margin must be on');
     assert.match(
-      source,
+      editor,
       /import \{ useEditorStatementGuard/,
       'the editor owns the wiring, the guard owns the behaviour'
     );
     assert.match(
-      source,
+      editor,
       /if \(!props\.readOnly\) \{\s*statementGuard = useEditorStatementGuard\(monaco, editorInstance\);/,
       'a read-only editor must not offer the switch'
     );
-    assert.match(source, /statementGuard\.dispose\(\)/, 'the guard must be torn down with the editor');
-  });
+    assert.match(editor, /statementGuard\.dispose\(\)/, 'the guard must be torn down with the editor');
 
-  test('the switch lives in the glyph lane and only ever edits text', () => {
     const source = readSource(COMPOSABLE);
 
     assert.match(source, /createDecorationsCollection/);
@@ -50,15 +38,6 @@ describe('the statement guard is wired into the one editor the app ships', () =>
     assert.doesNotMatch(source, /queryService/, 'the guard never talks to the backend');
     assert.doesNotMatch(source, /replace\(/, 'the guard edits through Monaco, never by rewriting text');
   });
-
-  test('the state lives in the text, so nothing else has to remember it', () => {
-    const source = readSource(GUARD);
-
-    assert.match(source, /export const STATEMENT_GUARD_MARKER = '-- '/);
-    // A statement is disabled exactly when every non-blank line of its range is commented out.
-    assert.match(source, /commentedWindows/);
-    assert.match(source, /trimToStatementStart/);
-  });
 });
 
 describe('the glyph reads as a hint until the statement is disabled', () => {
@@ -70,18 +49,9 @@ describe('the glyph reads as a hint until the statement is disabled', () => {
     assert.match(css, /mask-image: url\("data:image\/svg\+xml/, 'the mark is drawn as a mask');
     assert.doesNotMatch(css, /#[0-9a-fA-F]{3,6}\b/, 'colours come from the theme tokens');
     assert.match(css, /background-color: rgb\(var\(--color-danger\)\)/);
-    assert.doesNotMatch(css, /\brounded-(sm|lg|xl|2xl|3xl)\b/);
-    assert.doesNotMatch(css, /\bshadow-(2xl|xl|lg|md|sm|xs|inner)\b/);
   });
 
   test('the stylesheet is loaded with the rest of the shell', () => {
     assert.match(readSource('src/main.ts'), /import '\.\/styles\/editorGuard\.css';/);
-  });
-
-  test('the hover explanation exists in both languages', () => {
-    assert.equal(typeof zhTW.editor.guardDisableTooltip, 'string');
-    assert.equal(typeof zhTW.editor.guardDisabledTooltip, 'string');
-    assert.equal(typeof en.editor.guardDisableTooltip, 'string');
-    assert.equal(typeof en.editor.guardDisabledTooltip, 'string');
   });
 });

@@ -1,14 +1,7 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { isMacUserAgent, modifierLabel, shortcutLabel } from '../src/utils/shortcutKeys';
-
-const root = process.cwd();
-
-function readSource(relativePath: string): string {
-  return readFileSync(resolve(root, relativePath), 'utf-8');
-}
+import { readSource } from './helpers/source';
 
 const MAC_UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15';
 const WINDOWS_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36';

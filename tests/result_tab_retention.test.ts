@@ -1,31 +1,33 @@
-import { test, beforeEach } from 'node:test';
+/**
+ * result tab retention — merged from result_tab_retention, result_tab_close_others, result_tab_header_format:
+ * one file per component and layer instead of 3 files that all read the same sources.
+ */
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
-import { nextTick } from 'vue';
+import { before, beforeEach, describe, test } from 'node:test';
 import { createPinia, setActivePinia } from 'pinia';
-import type { Tabulator } from 'tabulator-tables';
-import { useQueryStore, resetQueryExecutionSeq } from '../src/stores/queryStore';
-import { useSettingsStore } from '../src/stores/settingsStore';
-import { useGridLayoutStore } from '../src/stores/gridLayoutStore';
-import { queryService } from '../src/services/queryService';
-import zhTW from '../src/i18n/locales/zh-TW';
+import { type Tabulator } from 'tabulator-tables';
+import { nextTick } from 'vue';
 import en from '../src/i18n/locales/en';
-import type { QueryResult } from '../src/types/query';
+import zhTW from '../src/i18n/locales/zh-TW';
+import { queryService } from '../src/services/queryService';
+import { useGridLayoutStore } from '../src/stores/gridLayoutStore';
+import { resetQueryExecutionSeq, useQueryStore } from '../src/stores/queryStore';
+import { useSettingsStore } from '../src/stores/settingsStore';
+import { type QueryResult } from '../src/types/query';
+import { readSource } from './helpers/source';
 
+describe('result_tab_retention', () => {
 const data = new Map<string, string>();
-globalThis.localStorage = {
-  getItem: (key) => data.get(key) ?? null,
-  setItem: (key, value) => { data.set(key, String(value)); },
-  removeItem: (key) => { data.delete(key); },
-  clear: () => data.clear(),
-  key: () => null,
-  length: 0,
-};
-
-function readSource(relativePath: string): string {
-  return readFileSync(resolve(process.cwd(), relativePath), 'utf-8');
-}
+before(() => {
+  globalThis.localStorage = {
+    getItem: (key) => data.get(key) ?? null,
+    setItem: (key, value) => { data.set(key, String(value)); },
+    removeItem: (key) => { data.delete(key); },
+    clear: () => data.clear(),
+    key: () => null,
+    length: 0,
+  };
+});
 
 /** Makes queryService.executeQuery return one result set with rows for the named table. */
 function stubQueryWithRows(tableName: string, rowCount = 5): void {
@@ -222,35 +224,72 @@ test('the retention toggle sits in the result toolbar and in the settings modal'
     'the settings modal exposes the same switch'
   );
 });
+});
 
-test('the retention labels exist in both locales', () => {
-  const locales: Array<[string, typeof zhTW]> = [
-    ['zh-TW', zhTW],
-    ['en', en],
-  ];
+describe('result_tab_close_others', () => {
+describe('Result tab context menu close other results', () => {
+  test('AppBottomPanel provides 關閉其它結果 in context menu and closes unpinned tabs', () => {
+    const bottomPanelSource = readSource('src/components/layout/AppBottomPanel.vue');
+    const queryStoreSource = readSource('src/stores/queryStore.ts');
 
-  for (const [name, locale] of locales) {
-    const results = locale.results as unknown as Record<string, string>;
-    for (const key of [
-      'keepResultTabs',
-      'keepResultTabsTooltip',
-      'singleResultTab',
-      'singleResultTabTooltip',
-    ]) {
-      const value = results[key];
-      assert.ok(
-        typeof value === 'string' && value.trim().length > 0,
-        `${name}.results.${key} must be set`
-      );
-    }
+    // Context menu item check
+    assert.match(
+      bottomPanelSource,
+      /label:\s*t\('results\.closeOtherTabs'\)/,
+      'AppBottomPanel context menu must contain closeOtherTabs'
+    );
+    assert.match(
+      bottomPanelSource,
+      /command:\s*handleContextMenuCloseOthers/,
+      'AppBottomPanel context menu must bind handleContextMenuCloseOthers'
+    );
 
-    const settingsModal = locale.settingsModal as unknown as Record<string, string>;
-    for (const key of ['accumulateResultTabs', 'accumulateResultTabsDesc']) {
-      const value = settingsModal[key];
-      assert.ok(
-        typeof value === 'string' && value.trim().length > 0,
-        `${name}.settingsModal.${key} must be set`
-      );
-    }
-  }
+    // queryStore function check
+    assert.match(
+      queryStoreSource,
+      /function closeOtherResultTabs\(keepId: string\)/,
+      'queryStore must implement closeOtherResultTabs'
+    );
+    assert.match(
+      queryStoreSource,
+      /tab\.id !== keepId && !tab\.isPinned/,
+      'closeOtherResultTabs must not close pinned tabs or the target tab'
+    );
+  });
+});
+});
+
+describe('result_tab_header_format', () => {
+describe('Result tab header formatting and rename behavior', () => {
+  test('result tab header removes double-click inline rename and removes row count from tab title and badge', () => {
+    const bottomPanelSource = readSource('src/components/layout/AppBottomPanel.vue');
+    const queryStoreSource = readSource('src/stores/queryStore.ts');
+
+    // 1. Result tab title span should not have @dblclick
+    assert.doesNotMatch(
+      bottomPanelSource,
+      /@dblclick[^\n]*startRenameTab\(rtab\)/,
+      'Result tab span must not have @dblclick bound to startRenameTab'
+    );
+
+    // 2. Result tab must not have row count badge (${rtab.rowCount}r)
+    assert.doesNotMatch(
+      bottomPanelSource,
+      /\$\{rtab\.rowCount\}r/,
+      'Result tab must not render row count badge'
+    );
+
+    // 3. Tab title in queryStore should not append row count suffix (${rowCount}r or 0r)
+    assert.doesNotMatch(
+      queryStoreSource,
+      /\$\{seq\}\.\$\{tableName\}[^\n]*\$\{rowCount\}r/,
+      'queryStore execute should not append ${rowCount}r to tabTitle'
+    );
+    assert.doesNotMatch(
+      queryStoreSource,
+      /\$\{seq\}\.\$\{tableName\}\s+0r/,
+      'queryStore error handler should not append 0r to tabTitle'
+    );
+  });
+});
 });

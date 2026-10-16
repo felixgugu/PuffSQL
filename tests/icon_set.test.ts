@@ -1,22 +1,20 @@
-import { test, describe } from 'node:test';
+/**
+ * icon set — merged from icon_set, icon_codegen:
+ * one file per component and layer instead of 2 files that all read the same sources.
+ */
 import assert from 'node:assert/strict';
 import { execSync } from 'node:child_process';
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { describe, test } from 'node:test';
+import { normaliseIcon, renderComponent, renderIndex } from '../scripts/build-icons.mjs';
+import { readSource, trackedSources } from './helpers/source';
 
+describe('icon_set', () => {
 const root = process.cwd();
+
 const iconDir = 'src/components/icons';
 const sourceDir = 'docs/PuffSQL-Icons/svg';
-
-function readSource(relativePath: string): string {
-  return readFileSync(resolve(root, relativePath), 'utf-8');
-}
-
-function trackedSources(): string[] {
-  return execSync('git ls-files "src/*"', { encoding: 'utf-8' })
-    .split('\n')
-    .filter((line) => line.trim().length > 0);
-}
 
 function iconComponents(): string[] {
   return readdirSync(resolve(root, iconDir))
@@ -100,4 +98,116 @@ describe('the app icon set', () => {
       assert.match(source, /<template>\n  <svg\n/, `${file} is a single inline svg`);
     }
   });
+});
+});
+
+describe('icon_codegen', () => {
+const source = (attrs: string, inner: string) =>
+  `<svg xmlns="http://www.w3.org/2000/svg" ${attrs}>${inner}</svg>`;
+
+/**
+ * The generator is the only place that touches the icon markup, so it is unit tested with small
+ * synthetic sources: geometry survives, paint always ends up as `currentColor`, and the icons keep
+ * the app's 24 x 24 grid regardless of how the designer drew them.
+ */
+describe('icon codegen', () => {
+  test('a 24x24 source keeps its paints and loses the fixed size', () => {
+    const { attrs, inner } = normaliseIcon(
+      'Database',
+      source('width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"', '<path d="M4 6h16"/>')
+    );
+
+    assert.deepEqual(attrs, {
+      xmlns: 'http://www.w3.org/2000/svg',
+      viewBox: '0 0 24 24',
+      fill: 'none',
+      stroke: 'currentColor',
+      'stroke-width': '2',
+    });
+    assert.equal(inner, '<path d="M4 6h16"/>');
+  });
+
+  test('a larger grid is scaled into the 24x24 box instead of re-pathing', () => {
+    const { attrs, inner } = normaliseIcon(
+      'Wide',
+      source('viewBox="0 0 48 48" fill="none" stroke="currentColor"', '<circle cx="24" cy="24" r="20"/>')
+    );
+
+    assert.equal(attrs.viewBox, '0 0 24 24');
+    assert.match(inner, /^<g transform="translate\(0 0\) scale\(0\.5\)">/);
+    assert.match(inner, /<circle cx="24" cy="24" r="20"\/><\/g>$/);
+  });
+
+  test('a non-zero origin is translated before scaling', () => {
+    const { inner } = normaliseIcon(
+      'Offset',
+      source('viewBox="8 8 16 16" fill="none" stroke="currentColor"', '<rect x="10" y="10" width="4" height="4"/>')
+    );
+
+    assert.match(inner, /translate\(-12 -12\) scale\(1\.5\)/);
+  });
+
+  test('every paint becomes currentColor while geometry and keywords survive', () => {
+    const { attrs, inner } = normaliseIcon(
+      'Painted',
+      source(
+        'viewBox="0 0 24 24" fill="#ffffff" stroke="rgb(0,0,0)" stroke-width="1.5"',
+        '<path d="M4 4h16" fill="#123456" stroke="steelblue" stroke-width="3" opacity="0.5"/>'
+      )
+    );
+
+    assert.equal(attrs.fill, 'currentColor');
+    assert.equal(attrs.stroke, 'currentColor');
+    assert.equal(attrs['stroke-width'], '1.5');
+    assert.match(inner, /fill="currentColor"/);
+    assert.match(inner, /stroke="currentColor"/);
+    assert.match(inner, /stroke-width="3"/, 'numbers are not colours');
+    assert.match(inner, /opacity="0\.5"/);
+    assert.doesNotMatch(inner, /#123456|steelblue/);
+  });
+
+  test('inline style declarations are normalised too', () => {
+    const { inner } = normaliseIcon(
+      'Styled',
+      source('viewBox="0 0 24 24"', '<path d="M4 4h16" style="fill:#fff;stroke:#000;stroke-width:2"/>')
+    );
+
+    assert.match(inner, /style="fill: currentColor;stroke: currentColor;stroke-width:2"/);
+  });
+
+  test('ids and url(#…) references are namespaced per icon', () => {
+    const { inner } = normaliseIcon(
+      'Clipped',
+      source('viewBox="0 0 24 24"', '<clipPath id="cut"><rect x="0" y="0" width="24" height="24"/></clipPath><path d="M0 0h24" clip-path="url(#cut)"/>')
+    );
+
+    assert.match(inner, /id="puffsql-clipped-cut"/);
+    assert.match(inner, /url\(#puffsql-clipped-cut\)/);
+  });
+
+  test('a source without a viewBox falls back to the app grid', () => {
+    const { attrs, inner } = normaliseIcon('Bare', source('fill="none" stroke="currentColor"', '<path d="M0 0h24"/>'));
+
+    assert.equal(attrs.viewBox, '0 0 24 24');
+    assert.doesNotMatch(inner, /<g transform/, 'no scaling when the grid is already 24');
+  });
+
+  test('the component is a hand-off-free template and the index is sorted', () => {
+    const component = renderComponent('Database', normaliseIcon('Database', source('viewBox="0 0 24 24" fill="none" stroke="currentColor"', '<path d="M4 6h16"/>')));
+
+    assert.match(component, /do not edit by hand/);
+    assert.match(component, /^<template>\n  <svg\n/m);
+    assert.match(component, /viewBox="0 0 24 24"/);
+    assert.doesNotMatch(component, /<script/, 'icons carry no behaviour');
+    assert.equal(
+      renderIndex(['Alpha', 'Beta']),
+      [
+        '// Generated by scripts/build-icons.mjs from docs/PuffSQL-Icons/svg — do not edit by hand.',
+        "export { default as Alpha } from './Alpha.vue';",
+        "export { default as Beta } from './Beta.vue';",
+        '',
+      ].join('\n')
+    );
+  });
+});
 });
