@@ -703,3 +703,18 @@ failed to read plugin permissions: failed to read file
 
 備註：`[AFTER INSERT, UPDATE]` 這類較長的標籤在側邊欄預設寬度下會壓縮同一列的物件名稱（完整內容仍在列的 tooltip）；把側邊欄拉寬即可，若需要也可以改成只顯示 `[AFTER]`／`[INSTEAD OF]`，事件留在 tooltip。
 
+## 已修正（2026-10-16）：分頁一多，編輯器分頁標籤被水平捲軸切掉
+
+症狀：開啟多個 SQL 分頁後，分頁列的標籤被水平捲軸壓縮、下緣被切。
+
+根因有兩層：
+
+1. `.query-tabs-scroll` 同時設了標準屬性 `scrollbar-width: thin` 與 `::-webkit-scrollbar { height: 4px }`。Chromium（WebView2 / dev 瀏覽器）在設了標準屬性時會**忽略** webkit 偽元素規則，實際套用的是它的 "thin" 捲軸（約 8px），比預期的 4px 多吃一倍高度。
+2. 分頁列本身是 `h-9`（36px）再加 `.workspace-tab-bar { padding-top: 6px }`：36 − 6 − 1（下框線）= 29px 剛好放得下 28px 的分頁，一旦捲軸出現就只剩 21px，標籤就被 `overflow-y: hidden` 切掉。
+
+修正（`src/components/layout/AppMain.vue`）：
+
+- 分頁列 `h-9` → `h-10`（40px），`.workspace-tab-bar` 的 `padding-top` 6px → 4px：4 + 28（分頁）+ 4（捲軸）+ 1（框線）= 37 ≤ 40，捲軸出現時仍有餘裕。
+- 移除 `.query-tabs-scroll` 的 `scrollbar-width` / `scrollbar-color`，讓既有的 `::-webkit-scrollbar { height: 4px }` 生效（並在原處留下註解說明原因，避免又被加回去）。
+
+驗證：以 CDP 在真實頁面開 12 個分頁（強制水平溢出）後量測——分頁列 40px、padding-top 4px、水平捲軸 4px（`offsetHeight − clientHeight`）、分頁高 29px 且標籤完整未被切；截圖核對捲軸落在分頁下方，`Query 1.sql … DF_Orders_Status_dr…` 標籤全部可讀。`npm test` 703 項、`npm run typecheck`、`npm run build` 通過。

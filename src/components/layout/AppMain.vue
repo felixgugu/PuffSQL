@@ -5,7 +5,7 @@
       @dragover.prevent="handleBarDragOver"
       @dragleave="handleBarDragLeave"
       @drop.prevent="handleBarDrop"
-      class="workspace-tab-bar h-9 bg-dark-850 flex items-center px-1.5 space-x-1 select-none flex-shrink-0 overflow-hidden transition-colors"
+      class="workspace-tab-bar h-10 bg-dark-850 flex items-center px-1.5 space-x-1 select-none flex-shrink-0 overflow-hidden transition-colors"
       :class="[isBarDragOver ? 'bg-dark-800 ring-1 ring-inset ring-brand-500/40' : '']"
     >
       <!-- Scrollable Tabs List -->
@@ -1078,8 +1078,11 @@ defineExpose({
 .query-tabs-scroll {
   overflow-x: auto;
   overflow-y: hidden;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  /*
+   * No `scrollbar-width` / `scrollbar-color` here on purpose: Chromium honours those standard
+   * properties *instead of* the `::-webkit-scrollbar` rules below, and its "thin" bar is about 8px
+   * tall — enough to clip the tab labels once the strip overflows.
+   */
 }
 
 .query-tabs-scroll::-webkit-scrollbar {
@@ -1101,7 +1104,9 @@ defineExpose({
 }
 
 .workspace-tab-bar {
-    padding-top: 6px;
+    /* 40px strip: 4px padding + 28px tab + 4px scrollbar + 1px border, so an overflowing tab row
+       still fits without the scrollbar eating into the labels. */
+    padding-top: 4px;
     border-bottom: 1px solid rgb(var(--color-dark-600) / var(--tw-text-opacity, 1));
 }
 </style>
