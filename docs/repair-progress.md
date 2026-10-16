@@ -683,3 +683,13 @@ failed to read plugin permissions: failed to read file
 
 驗收：`npm test` 通過（含上述 3 項新護欄）、`npm run typecheck`、`npm run build` 通過。
 
+## 已修正（2026-10-16）：狀態列不再重複左上角的連線資訊
+
+症狀：視窗左下角狀態列把連線資訊又講了一次——`● 連線名稱 (host:port) | ▤ 資料庫`——而左上角標題列已經有連線與資料庫兩個選單顯示同樣的名稱。
+
+修正：`src/components/layout/AppStatusBar.vue` 移除該兩段（連線狀態燈 + 名稱 + host:port、資料庫名稱），左側只留狀態列獨有、標題列沒有顯示的 `SPID`；右側的執行狀態、Engine、版本不動。移除後 `Database` 圖示在該檔已無使用，一併移除 import。
+
+取捨：連線狀態燈（綠／紅）也一起移除，因為標題列的連線選單本來就用綠色／灰色資料庫圖示表示連線狀態；`statusBar.disconnected` 這條 i18n 字串因此不再被引用（與檔內其他既有未引用字串相同處理，保留不刪以免動到兩份語系）。
+
+驗收：`npm test` 703 項通過（`minimal_ui_primitives` 對狀態列「必須 import SqChip」的斷言仍成立，因為狀態與 SPID 仍用 SqChip）、`npm run typecheck`、`npm run build` 通過；以 headless 截圖核對：左下角只剩 `SPID: 55`，右下角為 `狀態／Engine／PuffSQL v0.2.0`。
+
