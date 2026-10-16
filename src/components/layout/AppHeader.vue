@@ -43,7 +43,7 @@
           </template>
 
           <template #option="slotProps">
-            <div class="flex items-center space-x-2 w-full py-0.5">
+            <div class="flex items-center space-x-2 w-full">
               <Database
                 class="w-3 h-3 flex-shrink-0"
                 :class="isOptionConnected(slotProps.option) ? 'text-ok' : 'text-dark-400'"
@@ -66,10 +66,6 @@
                   {{ slotProps.option.username ? `${slotProps.option.username}@` : '' }}{{ slotProps.option.host }}:{{ slotProps.option.port }}
                 </span>
               </div>
-              <Check
-                v-if="connectionStore.activeConnectionId === slotProps.option.id"
-                class="w-3 h-3 text-accent ml-auto flex-shrink-0"
-              />
             </div>
           </template>
 
@@ -238,7 +234,6 @@ import SqSelect from '@/components/ui/SqSelect.vue';
 import {
   Book,
   ChartLine,
-  Check,
   Database,
   FolderOpen,
   PanelLeft,

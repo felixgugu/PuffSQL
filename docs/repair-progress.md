@@ -737,3 +737,26 @@ failed to read plugin permissions: failed to read file
 - 結果分頁：`["3.Users","2.Users","1.Users"]` 對 `3.Users` 按中鍵後變成 `["2.Users","1.Users"]`；再對僅剩的那一個按中鍵維持 1 個（與 × 鈕一致）。
 
 護欄：新增 `tests/tab_middle_click_close.test.ts`（2 項）——兩條分頁列的中鍵處理必須指向與 × 鈕相同的 store action、捲動容器必須吞掉中鍵的 mousedown、且 `onTabPointerDown` 必須保留左鍵以外的按鍵判斷。`npm test` 705 項、`npm run typecheck`、`npm run build` 通過。
+
+## 已修正（2026-10-16）：左上角連線清單展開後擠在一起
+
+症狀：點開左上角的連線選單，選項之間互相擠壓、文字看起來連成一串；被選取的那一列還出現**兩個**勾。
+
+根因有兩層：
+
+1. `SqSelect` 的選項是**固定高度** `height: 26px`（為單行設計），但連線選單的 `#option` slot 畫兩行——名稱一行、`username@host:port` 一行——兩行內容（約 33px）直接溢出 26px 的盒子，於是壓到上下相鄰的選項。
+2. `SqSelect` 本身已經在選取項右側畫一個 `Check`，AppHeader 的 `#option` slot 又自己畫了一個，因此同一列出現兩個勾。
+
+修正：
+
+- `src/components/ui/SqSelect.vue`：`.sq-select__option` 的 `height: 26px` 改為 `min-height: 26px` 並加上 `padding: 3px 8px`。單行選項（例如資料庫清單）量起來仍是 26px 不變，兩行的 slot 則自然長高。
+- `src/components/layout/AppHeader.vue`：連線選單的 `#option` slot 移除自己畫的 `Check`（選取狀態由 primitive 擁有）與多餘的 `py-0.5`，並移除已無使用的 `Check` import。
+
+驗證：以 CDP 在真實頁面打開兩個選單量測——
+
+- 連線清單：2 個選項各 **38.5px**（兩行 + 6px 內距），選取項 **1 個勾**、另一項 0 個；`min-height: 26px`、padding 3px、選項間距 1px。
+- 資料庫清單：6 個單行選項**全部仍是 26px**（與修正前一致，無回歸）。
+- 截圖核對：名稱與 `sa@host:port` 兩行分明、右側只有一個勾、頁尾「新增連線…」以細線分隔。
+
+護欄：新增 `tests/sq_select_options.test.ts`（2 項）——選項必須用 `min-height` 而非固定 `height`、且必須保留垂直內距；連線選單的 `#option` slot 不得再畫自己的 `Check`、`Check` import 必須移除，而選取狀態由 `SqSelect` 負責。`npm test` 707 項、`npm run typecheck`、`npm run build` 通過。
+

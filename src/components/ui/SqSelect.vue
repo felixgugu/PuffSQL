@@ -323,8 +323,13 @@ watch(isOpen, async (open) => {
   justify-content: space-between;
   gap: 8px;
   width: 100%;
-  height: 26px;
-  padding: 0 8px;
+  /*
+   * 26px is the *minimum*: a plain single-line option stays exactly as tall as before, while a
+   * call-site slot that renders two lines (the connection picker shows the server under the name)
+   * grows instead of overflowing into its neighbours.
+   */
+  min-height: 26px;
+  padding: 3px 8px;
   border: 0;
   border-radius: 3px;
   background: transparent;
