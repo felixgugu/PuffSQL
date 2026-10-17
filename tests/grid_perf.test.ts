@@ -1,7 +1,3 @@
-/**
- * grid perf — merged from grid_scroll_perf, grid_perf_fixture:
- * one file per component and layer instead of 2 files that all read the same sources.
- */
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { computeFrameStats, isGridPerfDiagEnabled } from '../src/composables/useGridPerfDiag';

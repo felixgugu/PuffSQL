@@ -1,12 +1,8 @@
-/**
- * sql editor toolbar — merged from sql_editor_toolbar_actions, sql_editor_toolbar_layout:
- * one file per component and layer instead of 2 files that all read the same sources.
- */
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, test } from 'node:test';
-import { readSource } from './helpers/source';
+import { readSource, repoRoot } from './helpers/source';
 
 describe('sql_editor_toolbar_actions', () => {
 describe('SQL editor toolbar actions', () => {
@@ -94,7 +90,6 @@ describe('SQL editor toolbar actions', () => {
 });
 
 describe('sql_editor_toolbar_layout', () => {
-const root = process.cwd();
 
 /**
  * The SQL editor owns a toolbar row of its own, directly above Monaco. The window title bar keeps
@@ -255,7 +250,7 @@ describe('SQL editor toolbar placement', () => {
 
   test('the retired toolbar-actions component is gone', () => {
     assert.equal(
-      existsSync(resolve(root, 'src/components/layout/SqlEditorToolbarActions.vue')),
+      existsSync(resolve(repoRoot, 'src/components/layout/SqlEditorToolbarActions.vue')),
       false,
       'the clipboard cluster was merged into SqlEditorToolbar'
     );

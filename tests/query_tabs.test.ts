@@ -1,10 +1,4 @@
-/**
- * query tabs — merged from workspace_tab_rename, tab_cursor_persistence:
- * one file per component and layer instead of 2 files that all read the same sources.
- */
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { before, beforeEach, describe, test } from 'node:test';
 import { createPinia, setActivePinia } from 'pinia';
 import { useWorkspaceStore } from '../src/stores/workspaceStore';
@@ -53,7 +47,6 @@ test('workspaceStore: updateTabCursorPosition updates tab cursor and persists to
   assert.ok(tab);
   assert.deepEqual(tab.cursorPosition, { lineNumber: 3, column: 7 });
 
-  // Verify persistence in localStorage
   const rawSaved = storage.get('sqlight_workspace_tabs');
   assert.ok(rawSaved);
   const parsed = JSON.parse(rawSaved);
@@ -88,13 +81,11 @@ test('workspaceStore: closeTab and closeOtherTabs clean up cached editor view st
   store.saveEditorViewState(tabId2, { state: 2 });
   store.saveEditorViewState(tabId3, { state: 3 });
 
-  // Close tab 1 -> only tab 1's viewState is deleted
   store.closeTab(tabId1);
   assert.equal(store.getEditorViewState(tabId1), null);
   assert.deepEqual(store.getEditorViewState(tabId2), { state: 2 });
   assert.deepEqual(store.getEditorViewState(tabId3), { state: 3 });
 
-  // Close other tabs keeping tab 2 -> tab 3 is deleted, tab 2 remains
   store.closeOtherTabs(tabId2);
   assert.equal(store.getEditorViewState(tabId3), null);
   assert.deepEqual(store.getEditorViewState(tabId2), { state: 2 });
@@ -114,10 +105,9 @@ test('workspaceStore: duplicateSqlTab preserves original tab cursorPosition', ()
 });
 
 test('MonacoEditor and AppMain: template and lifecycle wire tab-id and initial-cursor correctly', () => {
-  const appMainSrc = readFileSync(resolve(process.cwd(), 'src/components/layout/AppMain.vue'), 'utf-8');
-  const monacoSrc = readFileSync(resolve(process.cwd(), 'src/components/editor/MonacoEditor.vue'), 'utf-8');
+  const appMainSrc = readSource('src/components/layout/AppMain.vue');
+  const monacoSrc = readSource('src/components/editor/MonacoEditor.vue');
 
-  // AppMain wires tabId and initialCursor to MonacoEditor
   assert.match(
     appMainSrc,
     /:tab-id="workspaceStore\.activeTab\.id"/,
@@ -129,14 +119,12 @@ test('MonacoEditor and AppMain: template and lifecycle wire tab-id and initial-c
     'AppMain must pass :initial-cursor to MonacoEditor'
   );
 
-  // AppMain focusEditor allows optional line/col parameters without overriding
   assert.match(
     appMainSrc,
     /function focusEditor\(line\?:\s*number,\s*col\?:\s*number\)/,
     'AppMain focusEditor must have optional line and col parameters'
   );
 
-  // MonacoEditor defineProps accepts tabId and initialCursor
   assert.match(
     monacoSrc,
     /tabId\?:\s*string;/,
@@ -148,7 +136,6 @@ test('MonacoEditor and AppMain: template and lifecycle wire tab-id and initial-c
     'MonacoEditor props must accept optional initialCursor'
   );
 
-  // MonacoEditor restores viewState or initialCursor on mount
   assert.match(
     monacoSrc,
     /editorInstance\.restoreViewState\(savedViewState\)/,
@@ -160,7 +147,6 @@ test('MonacoEditor and AppMain: template and lifecycle wire tab-id and initial-c
     'MonacoEditor must restore initialCursor position if present'
   );
 
-  // MonacoEditor listens to onDidChangeCursorPosition to update store
   assert.match(
     monacoSrc,
     /editorInstance\.onDidChangeCursorPosition/,
@@ -172,7 +158,6 @@ test('MonacoEditor and AppMain: template and lifecycle wire tab-id and initial-c
     'MonacoEditor must update workspaceStore tab cursor position'
   );
 
-  // MonacoEditor saves viewState onBeforeUnmount
   assert.match(
     monacoSrc,
     /workspaceStore\.saveEditorViewState\(props\.tabId,\s*viewState\)/,

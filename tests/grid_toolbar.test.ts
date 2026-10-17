@@ -1,10 +1,4 @@
-/**
- * grid toolbar — merged from grid_layout, result_grid_empty_toolbar:
- * one file per component and layer instead of 2 files that all read the same sources.
- */
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { describe, test } from 'node:test';
 import { createPinia, setActivePinia } from 'pinia';
 import { type Tabulator } from 'tabulator-tables';
@@ -174,26 +168,21 @@ test('multiple result sets default to hiding toolbars until explicitly toggled',
 
   assert.equal(store.isToolbarHidden('tab-m', multiDefault), true);
 
-  // Toggling flips from default-hidden (true) to visible (false)
   assert.equal(store.toggleToolbarHidden('tab-m', multiDefault), false);
   assert.equal(store.isToolbarHidden('tab-m', multiDefault), false);
 
-  // Toggling again flips from visible (false) back to hidden (true)
   assert.equal(store.toggleToolbarHidden('tab-m', multiDefault), true);
   assert.equal(store.isToolbarHidden('tab-m', multiDefault), true);
 
-  // Clearing the tab resets the preference back to defaultHidden
   store.clearTab('tab-m');
   assert.equal(store.isToolbarHidden('tab-m', multiDefault), true);
 });
 
 test('a single grid opens with its toolbar visible, several grids open hidden', () => {
-  // Exactly one DataGrid (one SELECT): toolbar on.
   assert.equal(defaultToolbarHiddenForCount(1), false);
   // No result set (a statement that only produced messages): the empty placeholder grid keeps its
   // toolbar too, matching the earlier "empty result keeps the toolbar" decision.
   assert.equal(defaultToolbarHiddenForCount(0), false);
-  // Two or more stacked DataGrids: toolbar off.
   assert.equal(defaultToolbarHiddenForCount(2), true);
   assert.equal(defaultToolbarHiddenForCount(3), true);
 
@@ -261,10 +250,7 @@ test('the hide-toolbar toggle sits in AppBottomPanel and reaches every grid pane
 });
 
 test('result grids wire layout restore and capture into the Tabulator lifecycle', () => {
-  const item = readFileSync(
-    resolve(process.cwd(), 'src/components/results/ResultGridItem.vue'),
-    'utf-8'
-  );
+  const item = readSource('src/components/results/ResultGridItem.vue');
   assert.match(item, /gridLayoutStore\.restore\(layoutKey\.value/, 'grid ready must restore the layout');
   assert.match(item, /table\.on\('columnResized', scheduleLayoutCapture\)/);
   assert.match(item, /table\.on\('columnMoved', handleColumnMoved\)/);
@@ -273,11 +259,11 @@ test('result grids wire layout restore and capture into the Tabulator lifecycle'
   assert.match(item, /captureLayoutNow\(\);/, 'unmount must snapshot the final layout');
   assert.match(item, /tabId\?: string \| null;/, 'result grid item must accept an explicit tab id');
 
-  const grid = readFileSync(resolve(process.cwd(), 'src/components/results/ResultGrid.vue'), 'utf-8');
+  const grid = readSource('src/components/results/ResultGrid.vue');
   assert.match(grid, /:key="itemKey\(/);
   assert.match(grid, /:tab-id="tabId"/, 'parent must pass an explicit tab id');
 
-  const panel = readFileSync(resolve(process.cwd(), 'src/components/layout/AppBottomPanel.vue'), 'utf-8');
+  const panel = readSource('src/components/layout/AppBottomPanel.vue');
   assert.match(panel, /:tab-id="queryStore\.activeResultTabId"/);
 });
 
@@ -373,27 +359,22 @@ describe('ResultGrid toolbar persistence and empty state row validation', () => 
       },
     });
 
-    // Test TSV copy
     exportHandler.copyAsTsv();
     assert.equal(toasts.length, 1);
     assert.match(toasts[0]!.message, /查無資料可供複製/);
 
-    // Test CSV copy
     exportHandler.copyAsCsv();
     assert.equal(toasts.length, 2);
     assert.match(toasts[1]!.message, /查無資料可供複製/);
 
-    // Test JSON copy
     exportHandler.copyAsJson();
     assert.equal(toasts.length, 3);
     assert.match(toasts[2]!.message, /查無資料可供複製/);
 
-    // Test Markdown copy
     exportHandler.copyAsMarkdown();
     assert.equal(toasts.length, 4);
     assert.match(toasts[3]!.message, /查無資料可供複製/);
 
-    // Test copy selected cells
     exportHandler.copySelectedCells();
     assert.equal(toasts.length, 5);
     assert.match(toasts[4]!.message, /查無資料可供選取與複製/);

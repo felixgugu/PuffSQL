@@ -35,12 +35,10 @@ test('sqlFolderStore: adds and persists monitored folder', async () => {
   assert.equal(store.monitoredFolders[0]?.name, 'SQL_Scripts');
   assert.equal(store.monitoredFolders[0]?.path, 'C:/MyProjects/SQL_Scripts');
 
-  // Verify stored in localStorage
   const raw = storageMap.get('sqlight_monitored_sql_folders');
   assert.ok(raw);
   assert.ok(raw.includes('SQL_Scripts'));
 
-  // Duplicate path should not be added again
   const duplicateAdded = await store.addFolder('C:/MyProjects/SQL_Scripts');
   assert.equal(duplicateAdded, false);
   assert.equal(store.monitoredFolders.length, 1);
@@ -102,10 +100,8 @@ test('sqlFolderService & workspace: direct in-place save overwrites file without
   const targetPath = 'C:/MyScripts/SQL/01_Init_Tables.sql';
   const newContent = 'SELECT 1 AS [Modified];';
 
-  // Perform write
   await sqlFolderService.writeFile(targetPath, newContent);
 
-  // Read back
   const readBack = await sqlFolderService.readFile(targetPath);
   assert.equal(readBack, newContent);
 });
@@ -114,7 +110,6 @@ test('sqlFolderStore: unmonitorItem excludes item from tree and restoreExcludedP
   const store = useSqlFolderStore();
   await store.addFolder('C:/MyScripts/SQL');
 
-  // Verify initial tree has 01_Init_Tables.sql
   const tree = store.folderTrees['C:/MyScripts/SQL'];
   assert.ok(tree);
   assert.ok(tree.children?.some((c) => c.name === '01_Init_Tables.sql'));
@@ -123,12 +118,10 @@ test('sqlFolderStore: unmonitorItem excludes item from tree and restoreExcludedP
   store.unmonitorItem('C:/MyScripts/SQL/01_Init_Tables.sql', '01_Init_Tables.sql', false);
   assert.equal(store.excludedPaths.length, 1);
 
-  // File should be filtered out from folderTrees
   const filteredTree = store.folderTrees['C:/MyScripts/SQL'];
   assert.ok(filteredTree);
   assert.equal(filteredTree.children?.some((c) => c.name === '01_Init_Tables.sql'), false);
 
-  // Restore excluded paths
   store.restoreExcludedPaths();
   assert.equal(store.excludedPaths.length, 0);
   const restoredTree = store.folderTrees['C:/MyScripts/SQL'];
@@ -144,7 +137,6 @@ test('sqlFolderStore & workspaceStore: renameItem renames file and updates open 
   const newName = '01_Core_Tables.sql';
   const newPath = 'C:/MyScripts/SQL/01_Core_Tables.sql';
 
-  // Open file in workspace
   await folderStore.openFile({
     name: '01_Init_Tables.sql',
     path: oldPath,
@@ -156,11 +148,9 @@ test('sqlFolderStore & workspaceStore: renameItem renames file and updates open 
   assert.equal(tab.title, '01_Init_Tables.sql');
   assert.equal(tab.filePath, oldPath);
 
-  // Rename the file
   const success = await folderStore.renameItem(oldPath, newName, false);
   assert.equal(success, true);
 
-  // Verify tab title and filePath were synchronized
   assert.equal(tab.title, '01_Core_Tables.sql');
   assert.equal(tab.filePath, newPath);
 });
@@ -171,7 +161,6 @@ test('workspaceStore: syncRenamedFolder updates filePaths of all tabs under rena
   workspaceStore.addSqlTab('SELECT 1', 'file1.sql', undefined, undefined, 'C:/MyScripts/SQL/Migrations/01.sql');
   workspaceStore.addSqlTab('SELECT 2', 'file2.sql', undefined, undefined, 'C:/MyScripts/SQL/Procedures/proc.sql');
 
-  // Rename Migrations folder
   workspaceStore.syncRenamedFolder('C:/MyScripts/SQL/Migrations', 'C:/MyScripts/SQL/V1_Migrations');
 
   const tab1 = workspaceStore.tabs.find((t) => t.title === 'file1.sql') as SqlEditorTab;
@@ -188,7 +177,6 @@ test('workspaceStore: renameTab on tab with filePath renames physical file on di
   const oldPath = 'C:/MyScripts/SQL/02_Seed_Data.sql';
   await folderStore.addFolder('C:/MyScripts/SQL');
 
-  // Open file in tab
   await folderStore.openFile({
     name: '02_Seed_Data.sql',
     path: oldPath,
@@ -200,15 +188,14 @@ test('workspaceStore: renameTab on tab with filePath renames physical file on di
   assert.equal(tab.title, '02_Seed_Data.sql');
   assert.equal(tab.filePath, oldPath);
 
-  // Rename the tab directly from tab header (e.g. entering "02_Seed_Production" without .sql)
+  // Renamed from the tab header, so no file extension is typed.
   const success = await workspaceStore.renameTab(tab.id, '02_Seed_Production');
   assert.equal(success, true);
 
-  // Tab title should have .sql appended automatically, and filePath updated
   assert.equal(tab.title, '02_Seed_Production.sql');
   assert.equal(tab.filePath, 'C:/MyScripts/SQL/02_Seed_Production.sql');
 
-  // Also verify that unlinked tab rename still works normally without disk file
+  // An unlinked (scratch) tab renames without touching disk.
   const unlinkedTabId = workspaceStore.addSqlTab('SELECT 1', 'Scratch.sql');
   await workspaceStore.renameTab(unlinkedTabId, 'NewScratch');
   const unlinkedTab = workspaceStore.tabs.find((t) => t.id === unlinkedTabId);
@@ -221,21 +208,16 @@ test('workspaceStore: autoSaveSqlFiles automatically saves modified tabs with fi
   const file1Path = 'C:/MyScripts/SQL/auto1.sql';
   const file2Path = 'C:/MyScripts/SQL/auto2.sql';
 
-  // 1. Tab with filePath and dirty changes
   const tab1Id = workspaceStore.addSqlTab('SELECT 100;', 'auto1.sql', undefined, undefined, file1Path);
   workspaceStore.updateTabContent(tab1Id, 'SELECT 100 -- modified;');
 
-  // 2. Tab with filePath but not dirty
   const tab2Id = workspaceStore.addSqlTab('SELECT 200;', 'auto2.sql', undefined, undefined, file2Path);
 
-  // 3. Scratch tab without filePath, but dirty
   const tab3Id = workspaceStore.addSqlTab('SELECT 300;', 'Scratch.sql');
   workspaceStore.updateTabContent(tab3Id, 'SELECT 300 -- modified;');
 
-  // Execute autoSaveSqlFiles
   const savedCount = await workspaceStore.autoSaveSqlFiles();
 
-  // Only tab1 should be auto-saved
   assert.equal(savedCount, 1);
 
   const tab1 = workspaceStore.tabs.find((t) => t.id === tab1Id) as SqlEditorTab;
@@ -246,11 +228,9 @@ test('workspaceStore: autoSaveSqlFiles automatically saves modified tabs with fi
   assert.equal(tab2.isDirty, false);
   assert.equal(tab3.isDirty, true);
 
-  // Verify file1 content written to storage
   const content = await sqlFolderService.readFile(file1Path);
   assert.equal(content, 'SELECT 100 -- modified;');
 
-  // Clean up timer
   workspaceStore.stopAutoSaveTimer();
 });
 

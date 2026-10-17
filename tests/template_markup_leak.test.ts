@@ -1,16 +1,6 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { execSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
-
-const root = process.cwd();
-
-function vueSources(): string[] {
-  return execSync('git ls-files "src/*"', { encoding: 'utf-8' })
-    .split('\n')
-    .filter((line) => line.trim().endsWith('.vue'));
-}
+import { readSource, trackedSources } from './helpers/source';
 
 /** The SFC `<template>` block, with its 1-based starting line, so messages point at the file. */
 function templateBlock(source: string): { text: string; firstLine: number } {
@@ -26,20 +16,17 @@ const attributeLike = /^(v-[\w.:-]+|@[\w.:-]+|:[\w.-]+|[\w-]+=)/;
 
 /**
  * Markup that leaked out of a tag renders as literal text — `/ >` next to a search box, a stray
- * `class="…"` in a toolbar. It happens when an element is rewritten (a self-closing `<Button />`
- * becoming `<SqButton>…</SqButton>`) and the tail of the old tag is left behind: the leftovers are
- * valid *content*, so neither the template compiler, `vue-tsc` nor the build failure path sees
- * them, and the only symptom is a screenshot like the one that started this guard.
+ * `class="…"` in a toolbar. It happens when a tag is rewritten and the tail of the old one is left
+ * behind: the leftovers are valid *content*, so no compiler or build step reports them.
  *
- * The rule needs one bit of context to stay quiet: a `/>` or an attribute belongs to the previous
- * line only when that line already closed something (`…>`), because a legitimately wrapped tag
- * puts attributes after `<Component`, never after `>`.
+ * A `/>` or an attribute belongs to the previous line only when that line already closed something
+ * (`…>`), because a wrapped tag puts attributes after `<Component`, never after `>`.
  */
 function leakedMarkup(): string[] {
   const offenders: string[] = [];
 
-  for (const file of vueSources()) {
-    const { text, firstLine } = templateBlock(readFileSync(resolve(root, file), 'utf-8'));
+  for (const file of trackedSources().filter((path) => path.endsWith('.vue'))) {
+    const { text, firstLine } = templateBlock(readSource(file));
     const lines = text.split(/\r?\n/);
 
     lines.forEach((line, index) => {

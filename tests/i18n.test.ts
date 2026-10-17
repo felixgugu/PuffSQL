@@ -1,4 +1,4 @@
-import test from 'node:test';
+import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import zhTW from '../src/i18n/locales/zh-TW';
 import en from '../src/i18n/locales/en';
@@ -61,11 +61,7 @@ test('i18n: no empty strings or undefined translations', () => {
   }
 });
 
-/**
- * Parity above only compares the dictionaries with each other; this pins them to the app, and
- * replaces the per-feature "both locales have my new key" assertions that used to be spread across
- * the suite — one walk over `src` now covers every feature at once.
- */
+/** Parity above only compares the dictionaries with each other; this pins them to the app. */
 test('i18n: every key the app asks for exists in both dictionaries', () => {
   const missing = missingTranslations();
   const describe = (entries: Array<{ key: string; usedIn: string }>) =>

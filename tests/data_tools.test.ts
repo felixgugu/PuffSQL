@@ -1,10 +1,4 @@
-/**
- * data tools — merged from data_view, table_filter, tsv_import:
- * one file per component and layer instead of 3 files that all read the same sources.
- */
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { describe, test } from 'node:test';
 import { formatCellForExport } from '../src/composables/useColumnAutoWidth';
 import { type CellValue, type ColumnDef, type ResultSet } from '../src/types/query';
@@ -13,6 +7,7 @@ import { detectSpecialType, filterDataViewFields, formatDataViewFields, formatRo
 import { exportRowAsJson, exportRowsAsMarkdown } from '../src/utils/exportFormatters';
 import { DEFAULT_OBJECT_FILTER_PRESETS, DEFAULT_TABLE_FILTER_PRESETS, isDatabaseHiddenByRules, isTableHiddenByRules, testFilterPatternByRules, testTablePatternByRules, type FilterRule, validateRegexPattern } from '../src/utils/tableFilter';
 import { MAX_SOURCE_BYTES, buildTableUniqueKeysSql, formatColumnType, parseTsv, parseUniqueKeys, planImportColumns, validateCell, validateImportRows } from '../src/utils/tsvImport';
+import { readSource } from './helpers/source';
 
 describe('data_view', () => {
 describe('Data View: Field Formatting & Type Detection', () => {
@@ -94,7 +89,6 @@ describe('Data View: Real-time Filtering', () => {
 
   test('matches by column name (case-insensitive)', () => {
     const filtered = filterDataViewFields(fields, 'USER');
-    // user_id, username
     assert.equal(filtered.length, 2);
     assert.equal(filtered[0]?.name, 'user_id');
     assert.equal(filtered[1]?.name, 'username');
@@ -102,13 +96,11 @@ describe('Data View: Real-time Filtering', () => {
 
   test('matches by column value (case-insensitive)', () => {
     const filtered = filterDataViewFields(fields, 'dba');
-    // bio has 'Senior Developer & DBA'
     assert.equal(filtered.length, 1);
     assert.equal(filtered[0]?.name, 'bio');
   });
 
   test('matches both column name and column value', () => {
-    // 'admin' matches role column value 'Admin'
     const filtered = filterDataViewFields(fields, 'admin');
     assert.equal(filtered.length, 1);
     assert.equal(filtered[0]?.name, 'role');
@@ -203,11 +195,9 @@ describe('Table & Database Filter Utility', () => {
     assert.equal(validateRegexPattern('^__EFMigrationsHistory$').isValid, true);
     assert.equal(validateRegexPattern('^(master|model|msdb|tempdb)$').isValid, true);
 
-    // Empty strings
     assert.equal(validateRegexPattern('').isValid, false);
     assert.equal(validateRegexPattern('   ').isValid, false);
 
-    // Invalid syntax
     assert.equal(validateRegexPattern('[').isValid, false);
     assert.equal(validateRegexPattern('(').isValid, false);
     assert.equal(validateRegexPattern('*foo').isValid, false);
@@ -255,15 +245,11 @@ describe('Table & Database Filter Utility', () => {
 
   test('isDatabaseHiddenByRules filters databases correctly and isolates scope', () => {
     const rules: FilterRule[] = [
-      // Database-only rule
       { id: '1', pattern: '^(master|model|msdb|tempdb)$', target: 'database', enabled: true },
-      // Table-only rule
       { id: '2', pattern: '^bak_', target: 'table', enabled: true },
-      // All rule
       { id: '3', pattern: '.*_archive$', target: 'all', enabled: true },
     ];
 
-    // Database matches
     assert.equal(isDatabaseHiddenByRules(rules, 'master'), true);
     assert.equal(isDatabaseHiddenByRules(rules, 'tempdb'), true);
     assert.equal(isDatabaseHiddenByRules(rules, 'TEMPDB'), true); // case-insensitive
@@ -301,7 +287,6 @@ describe('Table & Database Filter Utility', () => {
       { id: '2', pattern: '^tmp_', target: 'table', enabled: true },
     ];
 
-    // Testing database
     const resDb = testFilterPatternByRules(rules, 'sys_catalog', 'database');
     assert.equal(resDb.isHidden, true);
     assert.equal(resDb.matchedPattern, '^sys_');
@@ -311,7 +296,6 @@ describe('Table & Database Filter Utility', () => {
     const resDbAsTable = testFilterPatternByRules(rules, 'sys_catalog', 'table');
     assert.equal(resDbAsTable.isHidden, false);
 
-    // Testing table
     const resTbl = testFilterPatternByRules(rules, 'tmp_users', 'table');
     assert.equal(resTbl.isHidden, true);
     assert.equal(resTbl.matchedPattern, '^tmp_');
@@ -330,18 +314,15 @@ describe('Table & Database Filter Utility', () => {
     assert.equal(isTableHiddenByRules(rules, 'new_pattern_users'), false);
     assert.equal(isDatabaseHiddenByRules(rules, 'old_pattern_db'), false);
 
-    // Modify pattern to new_pattern_
     const rule = rules.find((r) => r.id === 'rule_1')!;
     rule.pattern = '^new_pattern_';
     assert.equal(isTableHiddenByRules(rules, 'old_pattern_users'), false);
     assert.equal(isTableHiddenByRules(rules, 'new_pattern_users'), true);
 
-    // Modify target to database
     rule.target = 'database';
     assert.equal(isTableHiddenByRules(rules, 'new_pattern_users'), false);
     assert.equal(isDatabaseHiddenByRules(rules, 'new_pattern_db'), true);
 
-    // Modify target to all
     rule.target = 'all';
     assert.equal(isTableHiddenByRules(rules, 'new_pattern_users'), true);
     assert.equal(isDatabaseHiddenByRules(rules, 'new_pattern_db'), true);
@@ -648,7 +629,7 @@ test('unique key SQL escapes identifiers and source size cap stays documented', 
 });
 
 test('import entry points are wired for the Explorer table menu only', () => {
-  const sidebar = readFileSync(resolve(process.cwd(), 'src/components/layout/AppSidebar.vue'), 'utf-8');
+  const sidebar = readSource('src/components/layout/AppSidebar.vue');
   const importEntry = sidebar.indexOf("t('sidebar.importTsv')");
   const ddlEntry = sidebar.indexOf("t('sidebar.scriptCreate')");
   const viewBlock = sidebar.indexOf('if (isView || isProc || isFunc) {');
@@ -659,14 +640,14 @@ test('import entry points are wired for the Explorer table menu only', () => {
   );
   assert.match(sidebar, /async function handleTsvImport\(\)/, 'sidebar must open the wizard');
 
-  const app = readFileSync(resolve(process.cwd(), 'src/App.vue'), 'utf-8');
+  const app = readSource('src/App.vue');
   assert.match(app, /<TsvImportModal \/>/, 'wizard must be mounted globally');
 
-  const api = readFileSync(resolve(process.cwd(), 'src/services/api.ts'), 'utf-8');
+  const api = readSource('src/services/api.ts');
   assert.match(api, /get_table_import_capabilities/);
   assert.match(api, /import_table_rows/);
 
-  const service = readFileSync(resolve(process.cwd(), 'src/services/tsvImportService.ts'), 'utf-8');
+  const service = readSource('src/services/tsvImportService.ts');
   assert.match(service, /'sqlight:import-progress'/, 'progress event name must match the Rust emitter');
 });
 });

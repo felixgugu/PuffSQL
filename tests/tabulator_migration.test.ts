@@ -2,13 +2,11 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { readSource } from './helpers/source';
-
-const root = process.cwd();
+import { readSource, repoRoot } from './helpers/source';
 
 function collectFiles(dir: string, extensions: string[]): string[] {
   const out: string[] = [];
-  for (const entry of readdirSync(resolve(root, dir), { withFileTypes: true })) {
+  for (const entry of readdirSync(resolve(repoRoot, dir), { withFileTypes: true })) {
     const relative = `${dir}/${entry.name}`;
     if (entry.isDirectory()) {
       out.push(...collectFiles(relative, extensions));

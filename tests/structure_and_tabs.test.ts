@@ -46,28 +46,23 @@ test('addTableStructureTab appends a tab at the end and switches active tab', ()
 test('newly added tabs are placed sequentially (oldest -> newest, appended to the right)', () => {
   const store = useWorkspaceStore();
 
-  // Initial tab exists
   assert.ok(store.tabs.length >= 1);
   const originalFirstId = store.tabs[0].id;
 
-  // 1. Add new SQL tab
   store.addSqlTab('SELECT 1;', 'Query 10.sql');
   assert.equal(store.tabs[store.tabs.length - 1].title, 'Query 10.sql');
   assert.equal(store.activeTabId, store.tabs[store.tabs.length - 1].id);
   assert.equal(store.tabs[0].id, originalFirstId);
 
-  // 2. Add another SQL tab
   store.addSqlTab('SELECT 2;', 'Query 11.sql');
   assert.equal(store.tabs[store.tabs.length - 1].title, 'Query 11.sql');
   assert.equal(store.tabs[store.tabs.length - 2].title, 'Query 10.sql');
   assert.equal(store.activeTabId, store.tabs[store.tabs.length - 1].id);
 
-  // 3. Add Table Data tab
   store.addTableDataTab('sales', 'Customers', 'conn-1', 'TestDB');
   assert.equal(store.tabs[store.tabs.length - 1].title, 'sales.Customers (Data)');
   assert.equal(store.activeTabId, store.tabs[store.tabs.length - 1].id);
 
-  // 4. Add Execution Plan tab
   store.addExecutionPlanTab('<ShowPlanXML />', 'SELECT 1;', 'Plan Alpha');
   assert.equal(store.tabs[store.tabs.length - 1].title, 'Plan Alpha');
   assert.equal(store.activeTabId, store.tabs[store.tabs.length - 1].id);
@@ -95,21 +90,18 @@ test('queryExecutionSeq increments sequentially and titles follow $SEQ.$Tabname'
     } as QueryResult;
   };
 
-  // First query
   await store.execute('conn-1', 'master', 'SELECT * FROM Customers;');
   assert.equal(store.resultTabs.length, 1);
   assert.equal(store.resultTabs[0]?.title, '1.Customers');
   assert.equal(store.resultTabs[0]?.seq, 1);
   assert.equal(store.resultTabs[0]?.rowCount, 50);
 
-  // Second query
   await store.execute('conn-1', 'master', 'SELECT * FROM Orders;');
   assert.equal(store.resultTabs.length, 2);
   assert.equal(store.resultTabs[0]?.title, '2.Orders');
   assert.equal(store.resultTabs[0]?.seq, 2);
   assert.equal(store.resultTabs[0]?.rowCount, 12);
 
-  // Third query fails with error -> should not create a new result tab
   queryService.executeQuery = async () => {
     throw new Error('Table does not exist');
   };
@@ -117,7 +109,6 @@ test('queryExecutionSeq increments sequentially and titles follow $SEQ.$Tabname'
   assert.equal(store.resultTabs.length, 2);
   assert.equal(store.executionError, 'Table does not exist');
 
-  // Fourth query succeeds but returns 0 rows (no data) -> should not create a new result tab
   queryService.executeQuery = async () => ({
     resultSets: [
       {
@@ -133,7 +124,6 @@ test('queryExecutionSeq increments sequentially and titles follow $SEQ.$Tabname'
   await store.execute('conn-1', 'master', 'SELECT * FROM Customers WHERE 1 = 0;');
   assert.equal(store.resultTabs.length, 2);
 
-  // Fifth query has 0 resultSets (e.g. DDL / DML) -> should not create a new result tab
   queryService.executeQuery = async () => ({
     resultSets: [],
     messages: [{ level: 'info', message: '(1 row affected)', timestamp: new Date().toISOString() }],
@@ -149,7 +139,6 @@ test('queryStore aggregates rowCount across multiple resultSets and adds [N sets
   // These assertions cover the accumulate path, which is now opt-in (off by default).
   useSettingsStore().accumulateResultTabs = true;
 
-  // Multi-query with 2 result sets (18 and 27 rows)
   queryService.executeQuery = async () => {
     return {
       resultSets: [
@@ -175,7 +164,6 @@ test('queryStore aggregates rowCount across multiple resultSets and adds [N sets
   assert.equal(store.resultTabs[0]?.rowCount, 45); // 18 + 27
   assert.equal(store.resultTabs[0]?.title, '1.tblLoginData [2 sets]');
 
-  // Multi-query with 3 result sets (18, 27, 30 rows)
   queryService.executeQuery = async () => {
     return {
       resultSets: [
@@ -318,17 +306,14 @@ test('refreshTabResultSet re-runs query SQL and updates tab in-place for single 
     } as QueryResult;
   };
 
-  // Initial execution
   await store.execute('conn-1', 'master', 'SELECT * FROM Customers;');
   assert.equal(store.resultTabs.length, 1);
   const tabId = store.resultTabs[0]!.id;
   assert.equal(store.resultTabs[0]!.rowCount, 10);
 
-  // Refresh
   const refreshRes = await store.refreshTabResultSet(tabId, 0);
   assert.equal(refreshRes.success, true);
   assert.equal(refreshRes.rowCount, 25);
-  // Still 1 tab (updated in-place!)
   assert.equal(store.resultTabs.length, 1);
   assert.equal(store.resultTabs[0]!.id, tabId);
   assert.equal(store.resultTabs[0]!.rowCount, 25);
@@ -355,7 +340,6 @@ test('refreshTabResultSet re-runs specific statement and updates target result s
       } as QueryResult;
     }
 
-    // Initial batch returning both sets
     return {
       resultSets: [
         {
@@ -392,7 +376,6 @@ test('refreshTabResultSet re-runs specific statement and updates target result s
   assert.equal(refreshRes.success, true);
   assert.equal(refreshRes.rowCount, 40);
 
-  // Check that Grid #0 is still 18 rows, and Grid #1 is now 40 rows, total = 58!
   assert.equal(store.resultTabs.length, 1);
   assert.equal(store.resultTabs[0]!.result.resultSets[0]!.rowCount, 18);
   assert.equal(store.resultTabs[0]!.result.resultSets[1]!.rowCount, 40);
@@ -414,16 +397,13 @@ test('duplicateSqlTab duplicates an SQL tab with all its content, connection, an
   const initialCount = store.tabs.length;
   const originalIdx = store.tabs.findIndex((t) => t.id === originalTabId);
 
-  // Execute duplicate
   const newTabId = store.duplicateSqlTab(originalTabId);
   assert.ok(newTabId);
   assert.notEqual(newTabId, originalTabId);
   assert.equal(store.tabs.length, initialCount + 1);
 
-  // New tab is active
   assert.equal(store.activeTabId, newTabId);
 
-  // New tab should be inserted right next to original tab
   const newIdx = store.tabs.findIndex((t) => t.id === newTabId);
   assert.equal(newIdx, originalIdx + 1);
 
@@ -437,13 +417,11 @@ test('duplicateSqlTab duplicates an SQL tab with all its content, connection, an
   assert.equal((newTab as any).filePath, undefined);
   assert.equal(newTab.isDirty, true);
 
-  // Duplicate again should yield (Copy 2)
   const thirdTabId = store.duplicateSqlTab(originalTabId);
   assert.ok(thirdTabId);
   const thirdTab = store.tabs.find((t) => t.id === thirdTabId);
   assert.equal(thirdTab?.title, 'UsersReport (Copy 2).sql');
 
-  // Duplicating non-existent or non-sql tab returns null
   assert.equal(store.duplicateSqlTab('non-existent-id'), null);
 });
 

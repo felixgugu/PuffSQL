@@ -1,7 +1,3 @@
-/**
- * ddl generators — merged from ddl_generator, alter_table_generator, object_script_generator, schema_export:
- * one file per component and layer instead of 4 files that all read the same sources.
- */
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { type ColumnDef } from '../src/types/query';
@@ -10,6 +6,7 @@ import { generateAddColumnSql, generateAllAlterTableTemplateSql, generateAlterCo
 import { generateCreateTableDdl } from '../src/utils/ddlGenerator';
 import { formatKeyColumns, generateConstraintCreateScript, generateConstraintDropScript, generateIndexCreateScript, generateIndexDropScript, generateIndexRebuildScript, generateIndexReorganizeScript, generateTriggerCreateScript, generateTriggerDropScript, indexBadgeType, qualifiedName } from '../src/utils/objectScriptGenerator';
 import { combineResultSetsToCsv, escapeCsvValue, formatByteSize, getIndexesAndKeysSql, getProgrammabilityHashSql, getTablesAndColumnsSql, resultSetToCsv } from '../src/utils/schemaExport';
+import { readSource } from './helpers/source';
 
 describe('ddl_generator', () => {
 function column(overrides: Partial<ColumnItem> = {}): ColumnItem {
@@ -390,25 +387,17 @@ describe('alterTableGenerator', () => {
     assert.ok(sql.includes('DROP COLUMN [Email];'), 'Template should include DROP');
   });
 
-  test('TableStructureViewer.vue integration for ALTER TABLE context menu', async () => {
-    const fs = await import('node:fs');
-    const path = await import('node:path');
-    const viewerCode = fs.readFileSync(
-      path.join(process.cwd(), 'src/components/editor/TableStructureViewer.vue'),
-      'utf-8'
-    );
+  test('TableStructureViewer.vue integration for ALTER TABLE context menu', () => {
+    const viewerCode = readSource('src/components/editor/TableStructureViewer.vue');
 
-    // Verify imports and methods exist in TableStructureViewer.vue
     assert.ok(viewerCode.includes('generateAlterColumnSql'), 'Should import generateAlterColumnSql');
     assert.ok(viewerCode.includes('generateDropColumnSql'), 'Should import generateDropColumnSql');
     assert.ok(viewerCode.includes('generateAddColumnSql'), 'Should import generateAddColumnSql');
     assert.ok(viewerCode.includes('generateAllAlterTableTemplateSql'), 'Should import generateAllAlterTableTemplateSql');
 
-    // Verify context menu actions exist
     assert.ok(viewerCode.includes('handleAlterColumnScript'), 'Should define handleAlterColumnScript');
     assert.ok(viewerCode.includes('handleCopyAlterColumnScript'), 'Should define handleCopyAlterColumnScript');
 
-    // Verify template labels exist
     assert.ok(viewerCode.includes('ALTER COLUMN'), 'Template should contain ALTER COLUMN action');
     assert.ok(viewerCode.includes('ADD COLUMN'), 'Template should contain ADD COLUMN action');
     assert.ok(viewerCode.includes('DROP COLUMN'), 'Template should contain DROP COLUMN action');
@@ -670,7 +659,6 @@ test('resultSetToCsv converts tabular data into CSV with UTF-8 BOM', () => {
   ];
 
   const csv = resultSetToCsv(columns, rows);
-  // Must start with UTF-8 BOM
   assert.ok(csv.startsWith('\uFEFF'));
   assert.match(csv, /Schema,Table,Column/);
   assert.match(csv, /dbo,Users,"User, Name"/);

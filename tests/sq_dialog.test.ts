@@ -1,7 +1,3 @@
-/**
- * sq dialog — merged from sq_dialog, dialog_window, dialog_theme_and_size:
- * one file per component and layer instead of 3 files that all read the same sources.
- */
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { FOCUSABLE_SELECTOR, nextTrapIndex } from '../src/utils/focusTrap';

@@ -1,7 +1,3 @@
-/**
- * ai — merged from ai_diagnostics, aiProvider, curlAi, markdown_render:
- * one file per component and layer instead of 4 files that all read the same sources.
- */
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { aiRegistry } from '../src/services/ai/aiRegistry';
@@ -96,7 +92,6 @@ describe('AI Diagnostics & Plan Tuning Prompt Builder', () => {
 
       const insights = extractPlanInsights(sampleXml);
 
-      // Missing Indexes
       assert.equal(insights.missingIndexes.length, 1);
       const mi = insights.missingIndexes[0];
       assert.equal(mi.table, '[Orders]');
@@ -106,13 +101,11 @@ describe('AI Diagnostics & Plan Tuning Prompt Builder', () => {
       assert.deepEqual(mi.inequalityColumns, ['[OrderDate]']);
       assert.deepEqual(mi.includeColumns, ['[ShipCity]', '[Freight]']);
 
-      // Warnings
       assert.equal(insights.warnings.length, 3);
       assert.ok(insights.warnings.some((w) => w.includes('SpillToTempDb')));
       assert.ok(insights.warnings.some((w) => w.includes('PlanAffectingConvert')));
       assert.ok(insights.warnings.some((w) => w.includes('UnmatchedIndexes')));
 
-      // Top Operators (sorted descending by cost)
       assert.ok(insights.topOperators.length >= 2);
       assert.equal(insights.topOperators[0].physicalOp, 'Clustered Index Scan');
       assert.equal(insights.topOperators[0].cost, 0.7523);
@@ -268,7 +261,6 @@ describe('AI Provider Architecture & Registry', () => {
 
   it('should format endpoint correctly without trailing slashes', () => {
     const provider = new MiniMaxProvider();
-    // Use prototype access to verify formatEndpoint logic
     const formatFn = (provider as any).formatEndpoint.bind(provider);
     assert.equal(formatFn('https://api.minimax.chat/v1/'), 'https://api.minimax.chat/v1/chat/completions');
     assert.equal(formatFn('https://api.minimax.chat/v1'), 'https://api.minimax.chat/v1/chat/completions');
@@ -338,7 +330,6 @@ describe('Curl Parser & AI Engine', () => {
     const parsed = parseCurlCommand(DEFAULT_CURL_TEMPLATE);
     assert.equal(parsed.url, 'https://api.minimax.io/v1/chat/completions');
     assert.ok(parsed.dataRaw.length > 0);
-    // Must be directly parseable as JSON without syntax error
     const json = JSON.parse(parsed.dataRaw);
     assert.equal(json.model, 'MiniMax-M3');
     assert.equal(json.messages[0].content, '<content>');
@@ -376,7 +367,6 @@ describe('Curl Parser & AI Engine', () => {
       apiKey: '',
       curlTemplate: DEFAULT_CURL_TEMPLATE,
     });
-    // Should return failure without crashing
     assert.equal(typeof res.latencyMs, 'number');
     assert.equal(res.success, false);
   });
@@ -394,7 +384,6 @@ describe('Curl Parser & AI Engine', () => {
     const openedPath = await aiLoggerService.openAiLogFile();
     assert.equal(openedPath.endsWith('ai.log'), true);
 
-    // Verify logging a request does not throw
     await assert.doesNotReject(async () => {
       await aiLoggerService.logAiRequest(
         'https://api.openai.com/v1/chat/completions',
@@ -402,7 +391,6 @@ describe('Curl Parser & AI Engine', () => {
       );
     });
 
-    // Verify logging a response does not throw
     await assert.doesNotReject(async () => {
       await aiLoggerService.logAiResponse(
         'https://api.openai.com/v1/chat/completions',
@@ -418,11 +406,9 @@ describe('Curl Parser & AI Engine', () => {
     const { DEFAULT_QUICK_PROMPTS } = await import('../src/types/ai.ts');
     assert.equal(DEFAULT_QUICK_PROMPTS.length, 4);
 
-    // Option labels should not contain emojis/icons
     for (const prompt of DEFAULT_QUICK_PROMPTS) {
       assert.ok(prompt.label.length > 0);
       assert.ok(prompt.prompt.length > 0);
-      // Emojis regex check: ensure labels are clean Chinese text without emoji prefixes
       assert.equal(/[\u{1F300}-\u{1F9FF}]/u.test(prompt.label), false);
     }
 
@@ -431,24 +417,20 @@ describe('Curl Parser & AI Engine', () => {
     const { useAiChatStore } = await import('../src/stores/aiChatStore.ts');
     const store = useAiChatStore();
 
-    // 1. Add a custom prompt
     store.addQuickPrompt('自訂提示詞', '請幫我重構此 SQL');
     assert.equal(store.quickPrompts.length, 5);
     const added = store.quickPrompts.find((p) => p.label === '自訂提示詞');
     assert.ok(added);
     assert.equal(added.prompt, '請幫我重構此 SQL');
 
-    // 2. Update prompt
     store.updateQuickPrompt(added.id, '已更新提示詞', '更新後的內容');
     const updated = store.quickPrompts.find((p) => p.id === added.id);
     assert.equal(updated?.label, '已更新提示詞');
     assert.equal(updated?.prompt, '更新後的內容');
 
-    // 3. Delete prompt
     store.deleteQuickPrompt(added.id);
     assert.equal(store.quickPrompts.some((p) => p.id === added.id), false);
 
-    // 4. Reset to defaults
     store.resetQuickPrompts();
     assert.equal(store.quickPrompts.length, 4);
     assert.equal(store.quickPrompts[0]?.label, '查詢最佳化');

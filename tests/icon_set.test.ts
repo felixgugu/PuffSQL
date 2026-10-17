@@ -1,23 +1,17 @@
-/**
- * icon set — merged from icon_set, icon_codegen:
- * one file per component and layer instead of 2 files that all read the same sources.
- */
 import assert from 'node:assert/strict';
 import { execSync } from 'node:child_process';
 import { existsSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, test } from 'node:test';
 import { normaliseIcon, renderComponent, renderIndex } from '../scripts/build-icons.mjs';
-import { readSource, trackedSources } from './helpers/source';
+import { readSource, repoRoot, trackedSources } from './helpers/source';
 
 describe('icon_set', () => {
-const root = process.cwd();
-
 const iconDir = 'src/components/icons';
 const sourceDir = 'docs/PuffSQL-Icons/svg';
 
 function iconComponents(): string[] {
-  return readdirSync(resolve(root, iconDir))
+  return readdirSync(resolve(repoRoot, iconDir))
     .filter((name) => name.endsWith('.vue'))
     .sort();
 }
@@ -67,7 +61,7 @@ describe('the app icon set', () => {
   });
 
   test('the generated components match the sources one for one', () => {
-    const sources = readdirSync(resolve(root, sourceDir))
+    const sources = readdirSync(resolve(repoRoot, sourceDir))
       .filter((name) => name.toLowerCase().endsWith('.svg'))
       .map((name) => name.replace(/\.svg$/i, ''))
       .sort();
@@ -76,11 +70,11 @@ describe('the app icon set', () => {
       .sort();
 
     assert.deepEqual(generated, sources, 'each SVG has exactly one component');
-    assert.ok(existsSync(resolve(root, `${iconDir}/index.ts`)), 'the index is committed alongside them');
+    assert.ok(existsSync(resolve(repoRoot, `${iconDir}/index.ts`)), 'the index is committed alongside them');
   });
 
   test('the checked-in components are in sync with the sources', () => {
-    execSync('node scripts/build-icons.mjs --check', { cwd: root, stdio: 'pipe' });
+    execSync('node scripts/build-icons.mjs --check', { cwd: repoRoot, stdio: 'pipe' });
   });
 
   test('every component stays on the app grid, uncoloured and unsized', () => {

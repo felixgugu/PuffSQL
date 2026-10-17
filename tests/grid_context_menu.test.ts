@@ -1,7 +1,3 @@
-/**
- * grid context menu — merged from grid_context_menu_actions, grid_context_menu_column_name, grid_double_click_copy:
- * one file per component and layer instead of 3 files that all read the same sources.
- */
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { countOccurrences, readSource } from './helpers/source';

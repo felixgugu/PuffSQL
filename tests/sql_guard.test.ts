@@ -1,7 +1,3 @@
-/**
- * sql guard — merged from sql_guard, sql_statement_guard:
- * one file per component and layer instead of 2 files that all read the same sources.
- */
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { detectDangerousSqlStatements, stripCommentsAndLiterals } from '../src/utils/sqlGuard';

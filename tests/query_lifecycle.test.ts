@@ -1,7 +1,3 @@
-/**
- * query lifecycle — merged from connection, connection_duplicate, cancel_query, messages_and_history, showplan, stats_analyzer, execution_plan_xml:
- * one file per component and layer instead of 7 files that all read the same sources.
- */
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -19,6 +15,9 @@ import { generateDuplicateConnectionName } from '../src/utils/connectionNameHelp
 import { savePlanToFile } from '../src/utils/fileStorage';
 import { extractShowPlanXml, formatXml } from '../src/utils/planXmlParser';
 import { buildExecutionStats, formatBytes, formatPageSize, parseStatisticsMessages, wrapQueryWithPerfTelemetry } from '../src/utils/statsParser';
+import { readSource } from './helpers/source';
+
+const PLAN_VIEWER = 'src/components/editor/ExecutionPlanViewer.vue';
 
 describe('connection', () => {
 const data = new Map<string, string>();
@@ -258,11 +257,9 @@ test('cancelQuery invokes queryService.cancelQuery with active connection and re
     cancelledReqId = reqId;
   };
 
-  // When not executing, cancelQuery does nothing
   await store.cancelQuery();
   assert.equal(cancelledConnId, null);
 
-  // Simulate long running query
   let resolveQuery: (res: any) => void;
   const queryPromise = new Promise((resolve) => {
     resolveQuery = resolve;
@@ -279,14 +276,12 @@ test('cancelQuery invokes queryService.cancelQuery with active connection and re
   assert.equal(store.isCancelling, false);
   assert.ok(store.currentRequestId);
 
-  // Trigger cancel
   await store.cancelQuery();
 
   assert.equal(store.isCancelling, true);
   assert.equal(cancelledConnId, 'conn-42');
   assert.equal(cancelledReqId, store.currentRequestId);
 
-  // Now resolve the mock query with a cancelled error
   resolveQuery!(Promise.reject(new Error('Query cancelled by user')));
   const result = await execPromise;
 
@@ -307,10 +302,8 @@ test('cancelled query records status as cancelled in history and does not add er
   const result = await store.execute('conn-1', 'master', 'SELECT * FROM BigCartesianProduct');
 
   assert.equal(result, null);
-  // No error result tab was added
   assert.equal(store.resultTabs.length, initialTabCount);
 
-  // History contains cancelled entry
   assert.equal(store.history.length, 1);
   const histItem = store.history[0];
   assert.equal(histItem?.status, 'cancelled');
@@ -342,13 +335,11 @@ test('subsequent query executes normally and independently after a cancelled que
     };
   };
 
-  // 1. First query is cancelled
   const firstRes = await store.execute('conn-1', 'master', 'SELECT * FROM HeavyLoop');
   assert.equal(firstRes, null);
   assert.equal(store.history[0]?.status, 'cancelled');
   assert.equal(store.resultTabs.length, 0);
 
-  // 2. Second query succeeds
   const secondRes = await store.execute('conn-1', 'master', 'SELECT 100 AS Val');
   assert.ok(secondRes);
   assert.equal(secondRes.resultSets.length, 1);
@@ -362,7 +353,6 @@ test('queryService exposes cancelQuery and getConnectionSpid methods', async () 
   assert.equal(typeof queryService.cancelQuery, 'function');
   assert.equal(typeof queryService.getConnectionSpid, 'function');
 
-  // Test browser fallback mock response
   const spid = await queryService.getConnectionSpid('conn-mock');
   assert.equal(spid, 55);
 
@@ -409,7 +399,6 @@ SELECT 1 AS Done;`;
   assert.equal(capturedDb, 'master');
   assert.equal(capturedSql, script);
 
-  // Results combined in store
   assert.equal(res.resultSets.length, 1);
   assert.equal(res.resultSets[0]?.rows[0]?.[0], 1);
   assert.equal(res.messages.length, 1);
@@ -478,21 +467,17 @@ test('sessionMessages accumulates query after query and keeps newest in front wi
     return res;
   };
 
-  // Run first query
   await store.execute('conn-1', 'db1', 'SELECT 1;');
   assert.equal(store.sessionMessages.length, 1);
   assert.equal(store.sessionMessages[0].seq, 1);
   assert.equal(store.sessionMessages[0].message, 'Query 1 completed. 1 row affected.');
 
-  // Run second query
   await store.execute('conn-1', 'db1', 'SELECT 2;');
   assert.equal(store.sessionMessages.length, 2);
-  // Newest at index 0
   assert.equal(store.sessionMessages[0].seq, 2);
   assert.equal(store.sessionMessages[0].message, 'Query 2 completed. 1 row affected.');
   assert.equal(store.sessionMessages[1].seq, 1);
 
-  // Run third query with multiple messages
   queryService.executeQuery = async () => ({
     resultSets: [],
     messages: [
@@ -505,7 +490,6 @@ test('sessionMessages accumulates query after query and keeps newest in front wi
 
   await store.execute('conn-1', 'db1', 'EXEC test;');
   assert.equal(store.sessionMessages.length, 4);
-  // Sequence numbers should be 4, 3, 2, 1 with newest at index 0
   assert.equal(store.sessionMessages[0].seq, 4);
   assert.equal(store.sessionMessages[0].message, 'Second msg from query 3');
   assert.equal(store.sessionMessages[1].seq, 3);
@@ -566,7 +550,6 @@ test('clearMessages empties sessionMessages and clearHistory empties history', a
 test('query cancellation and errors also accumulate into both sessionMessages and history', async () => {
   const store = useQueryStore();
 
-  // Test error
   queryService.executeQuery = async () => {
     throw new Error('Invalid object name dbo.NonExistentTable');
   };
@@ -582,7 +565,6 @@ test('query cancellation and errors also accumulate into both sessionMessages an
   assert.equal(store.history[0].status, 'error');
   assert.equal(store.history[0].seq, 1);
 
-  // Test cancelled
   queryService.executeQuery = async () => {
     throw new Error('Query was cancelled by user');
   };
@@ -612,26 +594,21 @@ test('history and messages expand/collapse set behavior preserves individual and
   const item1Key = 'hist-1';
   const item2Key = 'hist-2';
 
-  // Initially collapsed (not in set)
   assert.equal(expandedKeys.has(item1Key), false);
   assert.equal(expandedKeys.has(item2Key), false);
 
-  // Toggle expand item1
   toggleExpand(item1Key);
   assert.equal(expandedKeys.has(item1Key), true);
   assert.equal(expandedKeys.has(item2Key), false);
 
-  // Toggle collapse item1
   toggleExpand(item1Key);
   assert.equal(expandedKeys.has(item1Key), false);
 
-  // Batch expand all
   const allKeys = [item1Key, item2Key, 'hist-3'];
   allKeys.forEach((k) => expandedKeys.add(k));
   assert.equal(expandedKeys.size, 3);
   assert.equal(allKeys.every((k) => expandedKeys.has(k)), true);
 
-  // Batch collapse all
   expandedKeys.clear();
   assert.equal(expandedKeys.size, 0);
 });
@@ -672,7 +649,6 @@ test('isShowplanEnabled and isStatsEnabled default to false', () => {
 test('toggleShowplanEnabled and toggleStatsEnabled enforce mutual exclusivity', () => {
   const store = useQueryStore();
 
-  // Enable stats
   store.toggleStatsEnabled();
   assert.equal(store.isStatsEnabled, true);
   assert.equal(store.isShowplanEnabled, false);
@@ -735,7 +711,6 @@ test('execute with isShowplanEnabled wraps query in SET SHOWPLAN_ALL ON and OFF 
       };
     }
 
-    // Return mock showplan table
     return {
       resultSets: [
         {
@@ -770,7 +745,6 @@ test('execute with isShowplanEnabled wraps query in SET SHOWPLAN_ALL ON and OFF 
   assert.equal(executedCommands[1], 'SELECT * FROM Customers WHERE Country = ?');
   assert.equal(executedCommands[2], 'SET SHOWPLAN_ALL OFF;');
 
-  // Tab was created with [Plan] in title
   const activeTab = store.activeResultTab;
   assert.ok(activeTab);
   assert.equal(activeTab.isShowplan, true);
@@ -796,7 +770,6 @@ test('execute with isShowplanEnabled guarantees SET SHOWPLAN_ALL OFF even if use
       return { resultSets: [], messages: [], affectedRows: 0, executionTimeMs: 1 };
     }
 
-    // Simulate query error (e.g. invalid syntax)
     throw new Error('Msg 208: Invalid object name NonExistentTable');
   };
 
@@ -853,13 +826,11 @@ test('parseStatisticsMessages accurately parses STATISTICS IO and STATISTICS TIM
 
   const parsed = parseStatisticsMessages(sampleMessages);
 
-  // CPU and Elapsed times
   assert.equal(parsed.cpuTimeMs, 48);
   assert.equal(parsed.elapsedTimeMs, 62);
   assert.equal(parsed.compileCpuTimeMs, 3);
   assert.equal(parsed.compileElapsedTimeMs, 5);
 
-  // Table Stats
   assert.equal(parsed.tableStats.length, 3);
 
   // Sorted by logical reads descending -> Orders (1250) should be first
@@ -932,10 +903,8 @@ test('wrapQueryWithPerfTelemetry properly surrounds query with telemetry and sta
 
 test('queryStore defaults isStatsEnabled to false and strips telemetry result sets when enabled', async () => {
   const store = useQueryStore();
-  // Verify default is false as requested by user
   assert.equal(store.isStatsEnabled, false);
 
-  // Enable performance analysis
   store.isStatsEnabled = true;
 
   queryService.executeQuery = async (_connId, _db, sql) => {
@@ -943,13 +912,11 @@ test('queryStore defaults isStatsEnabled to false and strips telemetry result se
 
     return {
       resultSets: [
-        // User's genuine query result
         {
           columns: [{ name: 'Id', dataType: 'int', nullable: false, ordinal: 0 }],
           rows: [[1], [2]],
           rowCount: 2,
         },
-        // Telemetry payload 1
         {
           columns: [
             { name: '__sqlight_tag__', dataType: 'varchar', nullable: false, ordinal: 0 },
@@ -962,7 +929,6 @@ test('queryStore defaults isStatsEnabled to false and strips telemetry result se
           rows: [['__SQLIGHT_PERF_SUMMARY__', 35, 12, 420, 0, 0]],
           rowCount: 1,
         },
-        // Telemetry payload 2
         {
           columns: [
             { name: '__sqlight_tag__', dataType: 'varchar', nullable: false, ordinal: 0 },
@@ -994,7 +960,6 @@ test('queryStore defaults isStatsEnabled to false and strips telemetry result se
   assert.equal(res.resultSets.length, 1);
   assert.equal(res.resultSets[0]?.columns[0]?.name, 'Id');
 
-  // activeExecutionStats should be populated
   assert.ok(store.activeExecutionStats);
   assert.equal(store.activeExecutionStats.totalLogicalReads, 420);
   assert.equal(store.activeExecutionStats.cpuTimeMs, 12);
@@ -1029,31 +994,26 @@ test('isActualPlanEnabled defaults to false', () => {
 test('3-way mutual exclusivity between Stats, Showplan, and Actual Plan via toggles', () => {
   const store = useQueryStore();
 
-  // 1. Enable Stats
   store.toggleStatsEnabled();
   assert.equal(store.isStatsEnabled, true);
   assert.equal(store.isShowplanEnabled, false);
   assert.equal(store.isActualPlanEnabled, false);
 
-  // 2. Enable Showplan -> disables Stats & Actual Plan
   store.toggleShowplanEnabled();
   assert.equal(store.isStatsEnabled, false);
   assert.equal(store.isShowplanEnabled, true);
   assert.equal(store.isActualPlanEnabled, false);
 
-  // 3. Enable Actual Plan -> disables Stats & Showplan
   store.toggleActualPlanEnabled();
   assert.equal(store.isStatsEnabled, false);
   assert.equal(store.isShowplanEnabled, false);
   assert.equal(store.isActualPlanEnabled, true);
 
-  // 4. Enable Stats again -> disables Actual Plan & Showplan
   store.toggleStatsEnabled();
   assert.equal(store.isStatsEnabled, true);
   assert.equal(store.isShowplanEnabled, false);
   assert.equal(store.isActualPlanEnabled, false);
 
-  // 5. Toggle off Stats -> all false
   store.toggleStatsEnabled();
   assert.equal(store.isStatsEnabled, false);
   assert.equal(store.isShowplanEnabled, false);
@@ -1110,7 +1070,6 @@ test('extractShowPlanXml extracts XML and leaves query data result sets intact',
 
   const { cleanedResultSets, planXml } = extractShowPlanXml(mockResult);
 
-  // XML extracted
   assert.ok(planXml);
   assert.ok(planXml.includes('<ShowPlanXML'));
   assert.ok(planXml.includes('SELECT * FROM Users'));
@@ -1167,7 +1126,6 @@ test('execute with isActualPlanEnabled wraps in SET STATISTICS XML ON and OFF, e
       return { resultSets: [], messages: [], affectedRows: 0, executionTimeMs: 1 };
     }
 
-    // Return mock data query result with showplan XML appended
     return {
       resultSets: [
         {
@@ -1196,13 +1154,11 @@ test('execute with isActualPlanEnabled wraps in SET STATISTICS XML ON and OFF, e
   assert.equal(executedCommands[1], 'SELECT COUNT(*) AS Count FROM Products');
   assert.equal(executedCommands[2], 'SET STATISTICS XML OFF;');
 
-  // Check that execution plan tab was created in workspace
   const activeWorkspaceTab = workspaceStore.activeTab;
   assert.ok(activeWorkspaceTab);
   assert.equal(activeWorkspaceTab.type, 'execution_plan');
   assert.equal((activeWorkspaceTab as any).planXml, sampleXml);
 
-  // Check that bottom panel result tab has clean data rows without the raw XML column
   const activeResultTab = queryStore.activeResultTab;
   assert.ok(activeResultTab);
   assert.equal(activeResultTab.result.resultSets.length, 1);
@@ -1239,12 +1195,10 @@ test('execute with isActualPlanEnabled guarantees SET STATISTICS XML OFF even wh
 });
 
 test('scripts/patch-qp.mjs runs cleanly, is idempotent, and ensures qp.js is patched', () => {
-  // Execute patch script
   const scriptPath = path.resolve('scripts/patch-qp.mjs');
   const output = execFileSync(process.execPath, [scriptPath], { encoding: 'utf8' });
   assert.ok(output !== undefined);
 
-  // Check qp.js content
   const qpPath = path.resolve('node_modules/html-query-plan/dist/qp.js');
   if (fs.existsSync(qpPath)) {
     const qpContent = fs.readFileSync(qpPath, 'utf8');
@@ -1253,7 +1207,6 @@ test('scripts/patch-qp.mjs runs cleanly, is idempotent, and ensures qp.js is pat
     assert.ok(qpContent.includes('return factory.call(root, root, root.document)'));
   }
 
-  // Check qp.min.js content
   const qpMinPath = path.resolve('node_modules/html-query-plan/dist/qp.min.js');
   if (fs.existsSync(qpMinPath)) {
     const qpMinContent = fs.readFileSync(qpMinPath, 'utf8');
@@ -1342,12 +1295,8 @@ test('savePlanToFile returns { saved: false } when user cancels save dialog', as
 });
 
 test('ExecutionPlanViewer.vue includes tooltip autoscroll, word-break, and layout rules', () => {
-  const vueFile = fs.readFileSync(
-    path.join(process.cwd(), 'src/components/editor/ExecutionPlanViewer.vue'),
-    'utf-8'
-  );
+  const vueFile = readSource(PLAN_VIEWER);
 
-  // Check critical CSS properties in .qp-tt
   assert.ok(vueFile.includes('max-height: min(520px, 75vh) !important;'), 'Should have max-height constraint');
   assert.ok(vueFile.includes('overflow-y: auto !important;'), 'Should enable vertical auto scroll');
   assert.ok(vueFile.includes('overflow-wrap: anywhere !important;'), 'Should break overflowing words/identifiers');
@@ -1356,7 +1305,6 @@ test('ExecutionPlanViewer.vue includes tooltip autoscroll, word-break, and layou
   assert.ok(vueFile.includes('scrollbar-width: thin;'), 'Should style scrollbar for modern browsers');
   assert.ok(vueFile.includes('.qp-tt::-webkit-scrollbar'), 'Should provide custom webkit scrollbar');
 
-  // Check native tooltip manager logic
   assert.ok(vueFile.includes('showNodeOrLineTooltip'), 'Should define showNodeOrLineTooltip');
   assert.ok(vueFile.includes('dismissTooltip()'), 'Should call dismissTooltip on unmount');
 });
@@ -1392,30 +1340,21 @@ test('tooltip viewport edge clamping calculation keeps tooltip safely in viewpor
 });
 
 test('patch-qp.mjs configures qp.js for persistent tooltips without immediate mouseout hide', () => {
-  const qpJs = fs.readFileSync(
-    path.join(process.cwd(), 'node_modules/html-query-plan/dist/qp.js'),
-    'utf-8'
-  );
+  const qpJs = readSource('node_modules/html-query-plan/dist/qp.js');
 
-  // Verify onMouseout does not destroy tooltip
   assert.ok(
     !/window\.clearTimeout\(timeoutId\);[\r\n\s]+timeoutId\s*=\s*null;[\r\n\s]+hideTooltip\(\);/.test(qpJs),
     'onMouseout should not call hideTooltip'
   );
-  // Verify showTooltip clears timeoutId
   assert.ok(
     /function showTooltip\(node,\s*tooltip\)\s*\{[\r\n\s]+hideTooltip\(\);[\r\n\s]+timeoutId\s*=\s*null;/.test(qpJs),
     'showTooltip should reset timeoutId'
   );
-  // Verify hideTooltip exposes QP_hideTooltip
   assert.ok(qpJs.includes('window.QP_hideTooltip = hideTooltip;'), 'hideTooltip should export window.QP_hideTooltip');
 });
 
 test('ExecutionPlanViewer.vue implements click-outside dismissal, Escape key, and close button', () => {
-  const vueFile = fs.readFileSync(
-    path.join(process.cwd(), 'src/components/editor/ExecutionPlanViewer.vue'),
-    'utf-8'
-  );
+  const vueFile = readSource(PLAN_VIEWER);
 
   assert.ok(vueFile.includes('dismissTooltip'), 'Should define dismissTooltip');
   assert.ok(vueFile.includes('handleDocumentPointerDown'), 'Should handle pointerdown on document');
@@ -1426,15 +1365,10 @@ test('ExecutionPlanViewer.vue implements click-outside dismissal, Escape key, an
 });
 
 test('ExecutionPlanViewer.vue uses native Vue event delegation with jsTooltips: false', () => {
-  const vueFile = fs.readFileSync(
-    path.join(process.cwd(), 'src/components/editor/ExecutionPlanViewer.vue'),
-    'utf-8'
-  );
+  const vueFile = readSource(PLAN_VIEWER);
 
-  // Verifies showPlan disables buggy third-party jsTooltips
   assert.ok(vueFile.includes('{ jsTooltips: false }'), 'showPlan should be called with { jsTooltips: false }');
 
-  // Verifies native event handlers and templates
   assert.ok(vueFile.includes('handleContainerMouseOver'), 'Should implement container mouseover delegation');
   assert.ok(vueFile.includes('handleContainerMouseOut'), 'Should implement container mouseout debounce handling');
   assert.ok(vueFile.includes('showNodeOrLineTooltip'), 'Should define showNodeOrLineTooltip');
@@ -1447,42 +1381,31 @@ test('ExecutionPlanViewer.vue uses native Vue event delegation with jsTooltips: 
 });
 
 test('ExecutionPlanViewer.vue enables mouse text selection and one-click copy inside tooltips', () => {
-  const vueFile = fs.readFileSync(
-    path.join(process.cwd(), 'src/components/editor/ExecutionPlanViewer.vue'),
-    'utf-8'
-  );
+  const vueFile = readSource(PLAN_VIEWER);
 
-  // Verifies user-select: text is explicitly enabled to override global main.css user-select: none
   assert.ok(vueFile.includes('user-select: text !important;'), 'Should allow mouse text selection in tooltip');
   assert.ok(vueFile.includes('-webkit-user-select: text !important;'), 'Should allow webkit mouse text selection');
   assert.ok(vueFile.includes('cursor: text;'), 'Should display I-beam text cursor for content');
   assert.ok(vueFile.includes('::selection'), 'Should define custom selection highlight color');
 
-  // Verifies one-click copy button
   assert.ok(vueFile.includes('qp-tt-copy-btn'), 'Should inject and style one-click copy button');
   assert.ok(vueFile.includes('navigator.clipboard.writeText'), 'Should write clean tooltip text to clipboard on copy');
   assert.ok(vueFile.includes('qp-tt-actions'), 'Should group copy and close buttons in header');
 });
 
 test('ExecutionPlanViewer.vue provides dark and classic themes with SVG polyline styling', () => {
-  const vueFile = fs.readFileSync(
-    path.join(process.cwd(), 'src/components/editor/ExecutionPlanViewer.vue'),
-    'utf-8'
-  );
+  const vueFile = readSource(PLAN_VIEWER);
 
-  // Theme reactive state and persistence
   assert.ok(vueFile.includes('sqlight_plan_theme'), 'Should persist user theme preference');
   assert.ok(vueFile.includes('planTheme'), 'Should define reactive planTheme state');
   assert.ok(vueFile.includes('togglePlanTheme'), 'Should implement togglePlanTheme handler');
 
-  // Dark theme styles
   assert.ok(vueFile.includes('.plan-render-canvas.theme-dark'), 'Should define dark theme canvas style');
   assert.ok(vueFile.includes('.plan-scroll-dark'), 'Should define dark blueprint dot-grid scroll area');
   assert.ok(vueFile.includes('.theme-dark div.qp-node'), 'Should style operator node cards in dark theme');
   assert.ok(vueFile.includes('#252532'), 'Should use dark card surface for nodes');
   assert.ok(vueFile.includes('#38bdf8'), 'Should use sky blue for Cost percentage in dark theme');
 
-  // SVG Polyline arrow customization
   assert.ok(
     vueFile.includes('.plan-render-canvas.theme-dark .qp-root svg polyline'),
     'Should customize SVG polyline arrows in dark theme'
@@ -1500,7 +1423,6 @@ test('ExecutionPlanViewer.vue provides dark and classic themes with SVG polyline
     'Should highlight SVG arrow on hover'
   );
 
-  // Classic theme styles
   assert.ok(vueFile.includes('.plan-render-canvas.theme-classic'), 'Should define classic light theme canvas');
   assert.ok(vueFile.includes('#FFFFCC'), 'Should support classic yellow operator node in classic mode');
 });

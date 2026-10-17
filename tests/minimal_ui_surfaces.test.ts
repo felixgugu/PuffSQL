@@ -1,17 +1,10 @@
-/**
- * minimal ui surfaces — merged from minimal_ui_surfaces, minimal_ui_primitives:
- * one file per component and layer instead of 2 files that all read the same sources.
- */
 import assert from 'node:assert/strict';
-import { execSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, test } from 'node:test';
-import { readCode, readSource, trackedSources } from './helpers/source';
+import { readCode, readSource, repoRoot, trackedSources } from './helpers/source';
 
 describe('minimal_ui_surfaces', () => {
-const root = process.cwd();
-
 /**
  * The ER canvas and the execution-plan canvas draw *content*: a note or a table box is an object
  * on a diagram, and its shadow is what separates it from the diagram behind it. Everything else
@@ -162,7 +155,7 @@ describe('the PrimeVue dependency is gone', () => {
   });
 
   test('package.json no longer declares it', () => {
-    const pkg = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf-8')) as {
+    const pkg = JSON.parse(readSource('package.json')) as {
       dependencies?: Record<string, string>;
       devDependencies?: Record<string, string>;
     };
@@ -280,8 +273,6 @@ const PATTERN_FILES = new Set([
 });
 
 describe('minimal_ui_primitives', () => {
-const root = process.cwd();
-
 describe('minimal UI primitives (src/components/ui)', () => {
   test('SqChip fixes one size, one radius and one border, and only the tone varies', () => {
     const source = readSource('src/components/ui/SqChip.vue');
@@ -372,15 +363,10 @@ describe('minimal UI primitives (src/components/ui)', () => {
   test('no icon font survives anywhere in src', () => {
     // The PrimeIcons class names and their lookup table are gone: every icon in the app is a
     // generated SVG component, so a `pi pi-*` in a template would simply render nothing.
-    const files = execSync('git ls-files "src/*"', { encoding: 'utf-8' })
-      .split('\n')
-      .filter((line) => line.trim().length > 0);
-
-    for (const file of files) {
-      if (!existsSync(resolve(root, file))) continue;
+    for (const file of trackedSources()) {
       assert.doesNotMatch(readSource(file), /pi pi-/, `${file} still names a PrimeIcon`);
     }
-    assert.equal(existsSync(resolve(root, 'src/components/ui/piIcons.ts')), false, 'the map is deleted');
+    assert.equal(existsSync(resolve(repoRoot, 'src/components/ui/piIcons.ts')), false, 'the map is deleted');
   });
 
   test('SqSelect keeps the combobox/listbox contract and the footer slot', () => {

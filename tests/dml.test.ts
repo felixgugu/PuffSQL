@@ -1,7 +1,3 @@
-/**
- * dml — merged from dml, inline_editing, drag_drop_table:
- * one file per component and layer instead of 3 files that all read the same sources.
- */
 import assert from 'node:assert/strict';
 import { before, beforeEach, describe, test } from 'node:test';
 import { createPinia, setActivePinia } from 'pinia';
@@ -154,7 +150,6 @@ test('checkTableEditability: missing PK column in projection cannot be edited', 
     rowCount: 5,
   };
 
-  // Missing 'id' in projected columns
   const columns: ColumnDef[] = [
     { name: 'username', dataType: 'nvarchar', nullable: false, ordinal: 0 },
     { name: 'email', dataType: 'nvarchar', nullable: true, ordinal: 1 },
@@ -349,7 +344,6 @@ test('dropping table on existing empty SQL tab replaces content; non-empty appen
 
   const newSql = 'SELECT * FROM Sales.Invoices;\n';
 
-  // 1. When empty, replace
   sqlTab.query = '   ';
   if (!sqlTab.query.trim()) {
     sqlTab.query = newSql;
@@ -359,7 +353,6 @@ test('dropping table on existing empty SQL tab replaces content; non-empty appen
   }
   assert.equal(sqlTab.query, newSql);
 
-  // 2. When non-empty, append with double newline
   const secondSql = 'SELECT * FROM Sales.Customers;\n';
   if (!sqlTab.query.trim()) {
     sqlTab.query = secondSql;

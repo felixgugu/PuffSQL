@@ -1,10 +1,4 @@
-/**
- * theme contrast — merged from theme_contrast, theme_settings, tab_category_colors:
- * one file per component and layer instead of 3 files that all read the same sources.
- */
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { before, beforeEach, describe, test } from 'node:test';
 import { createPinia, setActivePinia } from 'pinia';
 import { DEFAULT_GRID_FONT_FAMILY, EDITOR_FONT_FAMILY_OPTIONS, GRID_FONT_FAMILY_OPTIONS } from '../src/data/fontOptions';
@@ -14,6 +8,7 @@ import { type TabType } from '../src/types/workspace';
 import { contrastRatio, mixRgb, parseHexColor, relativeLuminance, resolveConnectionLabelColor, type RgbColor } from '../src/utils/connectionColor';
 import { buildEditorTheme } from '../src/utils/editorThemeTokens';
 import { TAB_CATEGORY_THEMES, getTabThemeStyle } from '../src/utils/tabTheme';
+import { readSource } from './helpers/source';
 
 describe('theme_contrast', () => {
 const SURFACES = Object.keys(SURFACE_PALETTES);
@@ -100,27 +95,25 @@ test('the light theme paints a white canvas with grey chrome, panels and hover r
 });
 
 test('every floating surface resolves through the raised token instead of hardcoded white', () => {
-  const read = (relPath: string) => readFileSync(resolve(process.cwd(), relPath), 'utf-8');
-
   // SqPopover is the single source of the raised surface: menus, selects and every context menu
   // are built on it, so one assertion covers them all.
   assert.match(
-    read('src/components/ui/SqPopover.vue'),
+    readSource('src/components/ui/SqPopover.vue'),
     /background-color: rgb\(var\(--color-raised\)\)/,
     'popovers, menus, selects and context menus all sit on SqPopover'
   );
   assert.match(
-    read('src/components/ui/SqDialog.vue'),
+    readSource('src/components/ui/SqDialog.vue'),
     /background-color: rgb\(var\(--color-raised\)\)/,
     'a dialog is a floating layer too and uses the same surface'
   );
   assert.match(
-    read('src/components/layout/AppSidebar.vue'),
+    readSource('src/components/layout/AppSidebar.vue'),
     /bg-raised/,
     'the sidebar dropdown uses the same surface'
   );
 
-  const css = read('src/assets/main.css');
+  const css = readSource('src/assets/main.css');
   assert.doesNotMatch(
     css,
     /html:not\(\.dark\)[^{]*\{[^}]*background-color: #ffffff/,
@@ -209,7 +202,7 @@ test('role accent colours stay readable on their own 15-25% status chip tints', 
 });
 
 test('role colour definitions stay in sync between themeManager and the stylesheet', () => {
-  const css = readFileSync(resolve(process.cwd(), 'src/assets/main.css'), 'utf-8');
+  const css = readSource('src/assets/main.css');
   const darkBlock = /html\.dark,\s*\n\s*\.dark \{([\s\S]*?)\n {2}\}/.exec(css)?.[1] ?? '';
   const rootBlock = /:root \{([\s\S]*?)\n {2}\}/.exec(css)?.[1] ?? '';
 
@@ -311,7 +304,7 @@ test('connection labels stay readable in light mode without touching the stored 
 const GRID_THEME_CSS = 'src/styles/tabulatorTheme.css';
 
 function readGridTheme(): string {
-  return readFileSync(resolve(process.cwd(), GRID_THEME_CSS), 'utf-8');
+  return readSource(GRID_THEME_CSS);
 }
 
 function readGridBlock(css: string, mode: 'dark' | 'light'): string {
@@ -460,15 +453,102 @@ test('tabulator value styling keeps its contrast on every surface palette', () =
   );
 });
 
+test('the grid selection palette is declared per mode and consumed through its variables', () => {
+  const css = readGridTheme();
+
+  const dark = readGridBlock(css, 'dark');
+  assert.match(dark, /--sq-grid-range-fill: rgba\(140, 184, 218, 0\.20\)/, 'dark selection area tint');
+  assert.match(dark, /--sq-grid-range-active-fill: rgba\(140, 184, 218, 0\.38\)/, 'dark active cell tint');
+  assert.match(dark, /--sq-grid-range-border: #8cb8da/, 'dark selection border');
+  assert.match(dark, /--sq-grid-range-handle: #8cb8da/, 'dark drag handle');
+  assert.match(dark, /--sq-grid-range-text: #ffffff/, 'dark selection text');
+
+  const light = readGridBlock(css, 'light');
+  assert.match(light, /--sq-grid-range-fill: rgba\(42, 103, 145, 0\.08\)/, 'light selection area tint');
+  assert.match(light, /--sq-grid-range-border: #2a6791/, 'light selection border');
+  assert.match(light, /--sq-grid-range-handle: #2a6791/, 'light drag handle');
+
+  // The rules that consume the variables are mode independent.
+  const cellRule =
+    /\.tabulator-row \.tabulator-cell\.tabulator-range-selected \{([\s\S]*?)\n\}/.exec(css)?.[1] ?? '';
+  assert.match(cellRule, /background-color: var\(--sq-grid-range-fill\)/);
+  assert.match(cellRule, /color: var\(--sq-grid-range-text\)/);
+
+  const outlineRule =
+    /\.tabulator-range-overlay \.tabulator-range \{([\s\S]*?)\n\}/.exec(css)?.[1] ?? '';
+  assert.match(outlineRule, /border: var\(--sq-grid-range-border-width\) solid var\(--sq-grid-range-border\)/);
+
+  const activeRule = /\.tabulator-range-cell-active \{([\s\S]*?)\n\}/.exec(css)?.[1] ?? '';
+  assert.match(activeRule, /background-color: var\(--sq-grid-range-active-fill\)/);
+  assert.match(activeRule, /border: 2px solid var\(--sq-grid-range-border\)/);
+
+  const handleRule =
+    /\.tabulator-range\.tabulator-range-active::after \{([\s\S]*?)\n\}/.exec(css)?.[1] ?? '';
+  assert.match(handleRule, /width: 4px;/, 'the drag handle is a 4x4 square');
+  assert.match(handleRule, /height: 4px;/);
+  assert.match(handleRule, /border-radius: 0;/);
+  assert.match(handleRule, /background-color: var\(--sq-grid-range-handle\)/);
+});
+
+test('the light grid palette keeps its sort affordance and value accents', () => {
+  const css = readGridTheme();
+  const light = readGridBlock(css, 'light');
+
+  // The sort arrow is the only sort affordance, and the token test above measures its contrast.
+  assert.match(light, /--sq-grid-sort-icon: #64748b/);
+  assert.match(light, /--sq-grid-sort-icon-hover: #1e293b/);
+
+  // Structural rules that ride the palette instead of restating a colour.
+  assert.match(
+    css,
+    /\.tabulator \.tabulator-header,\s*\n\.tabulator \.tabulator-footer \{\s*\n\s*border-color: var\(--sq-grid-border\)/,
+    'the header must keep the 1px structural line'
+  );
+  assert.match(css, /\.tabulator-row:hover \{\s*\n\s*background-color: var\(--sq-grid-row-hover\)/);
+
+  // Accents that read as neon on white get solid, contrast-safe replacements.
+  assert.match(light, /--sq-grid-pk-accent: #b45309/);
+  assert.match(light, /--sq-grid-identity-accent: #0e7490/);
+  assert.match(light, /--sq-grid-type-accent: #0369a1/);
+  assert.match(light, /--sq-grid-fulltype-accent: #047857/);
+});
+
+test('boolean values render as theme aware pills', () => {
+  const columns = readSource('src/utils/tabulatorColumns.ts');
+  assert.match(columns, /sqlight-bool-badge \$\{value \? 'sqlight-bool-true' : 'sqlight-bool-false'\}/);
+
+  const css = readGridTheme();
+  const truePill = /html:not\(\.dark\) \.sqlight-bool-badge\.sqlight-bool-true \{([\s\S]*?)\n\}/.exec(css)?.[1] ?? '';
+  assert.match(truePill, /border: 1px solid #a7f3d0/);
+  assert.match(truePill, /background-color: #ecfdf5/);
+  assert.match(truePill, /color: #059669/);
+
+  const falsePill = /html:not\(\.dark\) \.sqlight-bool-badge\.sqlight-bool-false \{([\s\S]*?)\n\}/.exec(css)?.[1] ?? '';
+  assert.match(falsePill, /background-color: #e2e8f0/);
+  assert.match(falsePill, /color: #475569/);
+
+  // The structure viewer badges get the same treatment.
+  for (const [selector, background, text] of [
+    ['\\.sqlight-badge-pk', '#fffbeb', '#b45309'],
+    ['\\.sqlight-badge-yes', '#ecfdf5', '#059669'],
+    ['\\.sqlight-badge-no', '#e2e8f0', '#475569'],
+    ['\\.sqlight-badge-identity', '#ecfeff', '#0e7490'],
+  ] as const) {
+    const rule = new RegExp(`html:not\\(\\.dark\\) ${selector} \\{([\\s\\S]*?)\\n\\}`, 'g').exec(css)?.[1] ?? '';
+    assert.match(rule, new RegExp(`background-color: ${background}`), `${selector} background`);
+    assert.match(rule, new RegExp(`color: ${text}`), `${selector} text colour`);
+  }
+});
+
 test('index.html resolves the persisted colour mode before first paint', () => {
-  const html = readFileSync(resolve(process.cwd(), 'index.html'), 'utf-8');
+  const html = readSource('index.html');
   assert.match(html, /sqlight_app_settings/);
   assert.match(html, /classList\.toggle\('dark'/);
   assert.match(html, /style\.colorScheme/);
 });
 
 test('the stylesheet declares a colour-scheme for both modes', () => {
-  const css = readFileSync(resolve(process.cwd(), 'src/assets/main.css'), 'utf-8');
+  const css = readSource('src/assets/main.css');
   assert.match(css, /color-scheme: light/);
   assert.match(css, /color-scheme: dark/);
 });
@@ -581,7 +661,7 @@ test('the appearance settings that only ever drove PrimeVue are gone', () => {
     assert.equal(dead in store, false, `${dead} controlled nothing once PrimeVue left`);
   }
 
-  const source = readFileSync(resolve(process.cwd(), 'src/services/themeManager.ts'), 'utf-8');
+  const source = readSource('src/services/themeManager.ts');
   assert.doesNotMatch(source, /@primevue\/themes|usePreset|updatePrimaryPalette|updateSurfacePalette/);
 });
 
@@ -594,7 +674,7 @@ test('themeManager: exactly one surface palette ships, with a complete 50-950 sc
   }
 
   // The four other hues are gone from the file, not merely hidden from the picker.
-  const source = readFileSync(resolve(process.cwd(), 'src/services/themeManager.ts'), 'utf-8');
+  const source = readSource('src/services/themeManager.ts');
   for (const gone of ['slate', 'gray', 'zinc', 'stone']) {
     assert.ok(!source.includes(`'${gone}'`), `the ${gone} palette must be deleted`);
   }
@@ -646,7 +726,7 @@ test('each workspace tab type is distinct, and every accent is a role token', ()
 });
 
 test('the category palette holds no raw colour values', () => {
-  const source = readFileSync(resolve(process.cwd(), 'src/utils/tabTheme.ts'), 'utf-8');
+  const source = readSource('src/utils/tabTheme.ts');
   // The one exception is the sentinel for a legacy saved setting.
   const hexes = [...source.matchAll(/#[0-9a-fA-F]{3,8}/g)].map((match) => match[0]);
   assert.deepEqual(hexes, ['#1e40af'], 'only the legacy-default sentinel may be a literal');
@@ -702,89 +782,43 @@ test('the custom SQL tab colour overrides that tab only', () => {
   );
 });
 
-test('AppBottomPanel active result tab applies theme/connection borders (top, left, right) like editor tabs', () => {
-  const panelSrc = readFileSync(
-    resolve(process.cwd(), 'src/components/layout/AppBottomPanel.vue'),
-    'utf-8'
-  );
+test('the active tab wears its accent on the top, left and right border in both tab strips', () => {
+  // One contract for the editor strip and the result strip: only the active tab takes the
+  // theme/connection accent, it takes it on three sides, and its bottom merges into the panel.
+  for (const [file, item] of [
+    ['src/components/layout/AppMain.vue', 'query-tab-item'],
+    ['src/components/layout/AppBottomPanel.vue', 'result-tab-item'],
+  ] as const) {
+    const source = readSource(file);
+    for (const side of ['top', 'left', 'right']) {
+      assert.match(
+        source,
+        new RegExp(`\\.${item}\\.active-tab\\s*\\{[\\s\\S]*?border-${side}-color:\\s*var\\(--tab-top-accent[\\s\\S]*?!important`),
+        `${item}: the active tab must take the accent on its ${side} border`
+      );
+    }
+  }
 
-  // Active result tab has active-tab class
+  const panelSrc = readSource('src/components/layout/AppBottomPanel.vue');
   assert.match(
     panelSrc,
     /queryStore\.activeResultTabId === rtab\.id\s*\?\s*'[^']*active-tab[^']*'/,
-    'active result tab must receive the active-tab class'
+    'the active result tab must receive the active-tab class'
   );
-
-  // Scoped CSS styles active tab top, left, right border accent and seamless bottom overlap
-  assert.match(
-    panelSrc,
-    /\.result-tab-item\.active-tab\s*\{[\s\S]*?border-top-color:\s*var\(--tab-top-accent[\s\S]*?!important/,
-    'active result tab must have border-top-color set to theme accent'
-  );
-  assert.match(
-    panelSrc,
-    /\.result-tab-item\.active-tab\s*\{[\s\S]*?border-left-color:\s*var\(--tab-top-accent[\s\S]*?!important/,
-    'active result tab must have border-left-color set to theme accent'
-  );
-  assert.match(
-    panelSrc,
-    /\.result-tab-item\.active-tab\s*\{[\s\S]*?border-right-color:\s*var\(--tab-top-accent[\s\S]*?!important/,
-    'active result tab must have border-right-color set to theme accent'
-  );
+  // The result strip additionally merges its active tab into the panel below it.
   assert.match(
     panelSrc,
     /\.result-tab-item\.active-tab\s*\{[\s\S]*?border-bottom-color:\s*transparent\s*!important/,
-    'active result tab must have transparent bottom border'
+    'the bottom border must go transparent so the tab merges into the panel'
   );
   assert.match(
     panelSrc,
     /\.result-tab-item\.active-tab\s*\{[\s\S]*?margin-bottom:\s*-1px/,
-    'active result tab must have margin-bottom: -1px to merge with panel'
+    'the tab must overlap the panel by 1px'
   );
-
-  // getResultTabStyle sets topAccent and connection color support
-  assert.match(
-    panelSrc,
-    /getResultTabTopAccent/,
-    'getResultTabTopAccent helper must calculate theme/connection top accent'
-  );
-  assert.match(
-    panelSrc,
-    /getResultTabConnectionColor/,
-    'getResultTabConnectionColor helper must support connection color override'
-  );
-  assert.match(
-    panelSrc,
-    /borderLeftColor:\s*topAccent/,
-    'getResultTabStyle must set borderLeftColor to topAccent'
-  );
-  assert.match(
-    panelSrc,
-    /borderRightColor:\s*topAccent/,
-    'getResultTabStyle must set borderRightColor to topAccent'
-  );
-});
-
-test('AppMain active workspace tab applies theme/connection borders on top, left, and right', () => {
-  const mainSrc = readFileSync(
-    resolve(process.cwd(), 'src/components/layout/AppMain.vue'),
-    'utf-8'
-  );
-
-  assert.match(
-    mainSrc,
-    /\.query-tab-item\.active-tab\s*\{[\s\S]*?border-top-color:\s*var\(--tab-top-accent\)\s*!important/,
-    'active workspace tab must have border-top-color set to theme accent'
-  );
-  assert.match(
-    mainSrc,
-    /\.query-tab-item\.active-tab\s*\{[\s\S]*?border-left-color:\s*var\(--tab-top-accent\)\s*!important/,
-    'active workspace tab must have border-left-color set to theme accent'
-  );
-  assert.match(
-    mainSrc,
-    /\.query-tab-item\.active-tab\s*\{[\s\S]*?border-right-color:\s*var\(--tab-top-accent\)\s*!important/,
-    'active workspace tab must have border-right-color set to theme accent'
-  );
+  assert.match(panelSrc, /getResultTabTopAccent/, 'the theme/connection accent is resolved by a helper');
+  assert.match(panelSrc, /getResultTabConnectionColor/, 'a connection colour overrides the theme accent');
+  assert.match(panelSrc, /borderLeftColor:\s*topAccent/);
+  assert.match(panelSrc, /borderRightColor:\s*topAccent/);
 });
 });

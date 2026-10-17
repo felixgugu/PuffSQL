@@ -5,7 +5,6 @@ import { BUILTIN_SQL_TEMPLATES } from '../src/data/sqlTemplates';
 import { useSqlTemplateStore } from '../src/stores/sqlTemplateStore';
 import { templateService } from '../src/services/templateService';
 
-// Setup Pinia for store tests
 beforeEach(() => {
   setActivePinia(createPinia());
 });
@@ -75,43 +74,35 @@ test('sqlTemplateStore: keyword search matches across title, tags, description, 
   const store = useSqlTemplateStore();
   store.activeCategory = 'all';
 
-  // 1. Search by title keyword '分頁'
   store.searchQuery = '分頁';
   assert.ok(store.filteredTemplates.length > 0);
   assert.ok(store.filteredTemplates.some((t) => t.id === 'basic-pagination'));
 
-  // 2. Search by keyword 'pivot'
   store.searchQuery = 'pivot';
   assert.ok(store.filteredTemplates.length > 0);
   assert.ok(store.filteredTemplates.some((t) => t.id === 'adv-dynamic-pivot'));
 
-  // 3. Search by keyword '遞迴'
   store.searchQuery = '遞迴';
   assert.ok(store.filteredTemplates.length >= 2);
   assert.ok(store.filteredTemplates.some((t) => t.id === 'cte-recursive-hierarchy'));
 
-  // 4. Search by keyword 'merge'
   store.searchQuery = 'merge';
   assert.ok(store.filteredTemplates.length > 0);
   assert.ok(store.filteredTemplates.some((t) => t.id === 'basic-merge-upsert'));
 
-  // 5. Search by tag 'json'
   store.searchQuery = 'json';
   assert.ok(store.filteredTemplates.length > 0);
   assert.ok(store.filteredTemplates.some((t) => t.id === 'adv-json-parsing-generating'));
 
-  // 6. Search by keyword '變數'
   store.searchQuery = '變數';
   assert.ok(store.filteredTemplates.length >= 4);
   assert.ok(store.filteredTemplates.some((t) => t.id === 'basic-declare-variables'));
   assert.ok(store.filteredTemplates.some((t) => t.id === 'basic-table-variable'));
 
-  // 7. Search by keyword 'temp table'
   store.searchQuery = 'temp table';
   assert.ok(store.filteredTemplates.length > 0);
   assert.ok(store.filteredTemplates.some((t) => t.id === 'basic-temp-table'));
 
-  // 8. Search by keyword 'scope_identity'
   store.searchQuery = 'scope_identity';
   assert.ok(store.filteredTemplates.length > 0);
   assert.ok(store.filteredTemplates.some((t) => t.id === 'basic-system-variables'));
@@ -152,13 +143,11 @@ test('sqlTemplateStore: custom template file CRUD operations and persistence', a
     return 'G:\\PuffSQL\\sql_custom_templates.json';
   };
 
-  // 1. Initial load
   await store.loadTemplates(true);
   assert.equal(store.customFilePath, 'G:\\PuffSQL\\sql_custom_templates.json');
   assert.equal(store.customTemplates.length, 1);
   assert.equal(store.allTemplates.length, BUILTIN_SQL_TEMPLATES.length + 1);
 
-  // 2. Add custom template
   const newTpl = await store.addCustomTemplate({
     title: '新業務統計 (Monthly Stats)',
     category: 'custom',
@@ -173,7 +162,6 @@ test('sqlTemplateStore: custom template file CRUD operations and persistence', a
   assert.equal(savedTemplates.length, 2);
   assert.equal(savedTemplates[1].title, '新業務統計 (Monthly Stats)');
 
-  // 3. Update custom template
   await store.updateCustomTemplate(newTpl.id, {
     title: '已修改之業務統計 (Updated Monthly Stats)',
   });
@@ -181,7 +169,6 @@ test('sqlTemplateStore: custom template file CRUD operations and persistence', a
   assert.equal(updated?.title, '已修改之業務統計 (Updated Monthly Stats)');
   assert.equal(savedTemplates.find((t) => t.id === newTpl.id)?.title, '已修改之業務統計 (Updated Monthly Stats)');
 
-  // 4. Delete custom template
   await store.deleteCustomTemplate('external-custom-1');
   assert.equal(store.customTemplates.length, 1);
   assert.equal(store.customTemplates[0].id, newTpl.id);

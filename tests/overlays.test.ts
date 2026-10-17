@@ -1,9 +1,4 @@
-/**
- * overlays — merged from popover_placement, tooltip_directive, toast_queue, layer_order:
- * one file per component and layer instead of 4 files that all read the same sources.
- */
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { beforeEach, describe, test } from 'node:test';
 import { createPinia, setActivePinia } from 'pinia';
@@ -76,10 +71,7 @@ describe('popover placement', () => {
   });
 
   test('SqPopover delegates its placement to the tested helper', () => {
-    const source = readFileSync(
-      resolve(process.cwd(), 'src/components/ui/SqPopover.vue'),
-      'utf-8'
-    );
+    const source = readSource('src/components/ui/SqPopover.vue');
 
     assert.match(source, /import \{ placePanel \} from '@\/utils\/popoverPlacement'/, 'uses the helper');
     assert.match(source, /placePanel\(\{/, 'computes the position through the helper');
@@ -90,7 +82,7 @@ describe('popover placement', () => {
   });
 
   test('SqMenu owns the keyboard contract for menu items', () => {
-    const source = readFileSync(resolve(process.cwd(), 'src/components/ui/SqMenu.vue'), 'utf-8');
+    const source = readSource('src/components/ui/SqMenu.vue');
 
     assert.match(source, /role="menu"/, 'the panel is a menu');
     assert.match(source, /role="menuitem"/, 'items are menuitems');
@@ -121,7 +113,7 @@ describe('popover placement', () => {
   });
 
   test('SqMenu takes icons as components, not as icon-font class names', () => {
-    const source = readFileSync(resolve(process.cwd(), 'src/components/ui/SqMenu.vue'), 'utf-8');
+    const source = readSource('src/components/ui/SqMenu.vue');
 
     assert.match(source, /icon\?: Component;/, 'the item model carries a component');
     assert.match(source, /<component :is="item\.icon"/, 'the item renders that component');
@@ -353,7 +345,6 @@ describe('the toast surface', () => {
 });
 
 describe('layer_order', () => {
-const root = process.cwd();
 
 /** Reads the first `z-N` / `z-index: N` value out of a source file. */
 function zIndexOf(source: string, pattern: RegExp): number | null {

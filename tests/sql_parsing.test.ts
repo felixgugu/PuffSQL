@@ -1,7 +1,3 @@
-/**
- * sql parsing — merged from statements, sql_completion_context, locate_table:
- * one file per component and layer instead of 3 files that all read the same sources.
- */
 import assert from 'node:assert/strict';
 import { before, beforeEach, describe, test } from 'node:test';
 import { createPinia, setActivePinia } from 'pinia';
@@ -107,7 +103,6 @@ SELECT * FROM #temp;
   assert.equal(meta[2]?.startLine, 10);
   assert.equal(meta[2]?.repeatCount, 1);
 
-  // splitSqlBatches should expand the 3 repetitions
   const expanded = splitSqlBatches(script);
   assert.equal(expanded.length, 5); // 1 + 3 + 1
   assert.equal(expanded[0], '-- Line 2 comment\nUSE master;');
@@ -121,8 +116,7 @@ SELECT * FROM #temp;
 describe('sql_completion_context', () => {
 // Mock localStorage for the node environment (connectionStore reads cached state)
 const storageData = new Map<string, string>();
-// A hook, not a conditional install: every member of this file gets its own store back before its
-// tests run, instead of whichever mock happened to be installed first at load time.
+// A hook, not a conditional install: every member gets its own store back.
 before(() => {
   (globalThis as any).localStorage = {
     getItem: (key: string) => storageData.get(key) || null,
@@ -131,10 +125,6 @@ before(() => {
     clear: () => storageData.clear(),
   };
 });
-
-// ---------------------------------------------------------------------------
-// getCursorContext: keyword context detection
-// ---------------------------------------------------------------------------
 
 const TABLE_CASES = [
   'SELECT * FROM ',
@@ -226,10 +216,6 @@ test('getCursorContext: empty prefix falls back to general', () => {
   assert.equal(getCursorContext('  ').contextType, 'general');
   assert.equal(getCursorContext('').contextType, 'general');
 });
-
-// ---------------------------------------------------------------------------
-// Provider integration: FROM/JOIN must never suggest column names
-// ---------------------------------------------------------------------------
 
 const FIXTURE_TABLES = [
   {

@@ -1,7 +1,3 @@
-/**
- * er diagram — merged from er_theme, er_export_storage, er_tab_isolation, er_viewport_persistence, er_table_node, er_text_node:
- * one file per component and layer instead of 6 files that all read the same sources.
- */
 import assert from 'node:assert/strict';
 import { before, beforeEach, describe, test } from 'node:test';
 import { createPinia, setActivePinia } from 'pinia';
@@ -42,7 +38,6 @@ test('erTheme can be toggled to light and is persisted in localStorage', () => {
   settingsStore.erTheme = 'light';
   assert.equal(settingsStore.erTheme, 'light');
 
-  // Trigger auto-persistence check
   settingsStore.saveSettings();
   const savedRaw = localStorage.getItem('sqlight_app_settings');
   assert.ok(savedRaw);
@@ -72,7 +67,6 @@ test('ER tab snapshot includes theme metadata and restores properly', () => {
 
   const tabId = workspaceStore.activeTabId;
 
-  // Simulate snapshot captured during onBeforeUnmount with light theme
   const mockSnapshot = {
     exportedAt: new Date().toISOString(),
     graph: { cells: [] },
@@ -88,7 +82,6 @@ test('ER tab snapshot includes theme metadata and restores properly', () => {
   assert.ok(currentTab.initialData);
   assert.equal(currentTab.initialData.theme, 'light');
 
-  // Simulate restore logic
   if (currentTab.initialData.theme) {
     settingsStore.erTheme = currentTab.initialData.theme;
   }
@@ -267,7 +260,6 @@ test('opening ER diagrams for different tables creates independent tabs', () => 
   const store = useWorkspaceStore();
   const initialCount = store.tabs.length;
 
-  // 1. Open ER tab for Customers
   store.addErDiagramTab({
     rootSchema: 'dbo',
     rootTable: 'Customers',
@@ -282,7 +274,6 @@ test('opening ER diagrams for different tables creates independent tabs', () => 
   assert.equal(tab1.title, 'ER: Customers');
   assert.equal(store.activeTabId, tab1.id);
 
-  // 2. Open ER tab for Orders (different table)
   store.addErDiagramTab({
     rootSchema: 'dbo',
     rootTable: 'Orders',
@@ -298,7 +289,6 @@ test('opening ER diagrams for different tables creates independent tabs', () => 
   assert.notEqual(tab2.id, tab1.id);
   assert.equal(store.activeTabId, tab2.id);
 
-  // 3. Opening Customers again should activate tab1 without duplicate
   store.addErDiagramTab({
     rootSchema: 'dbo',
     rootTable: 'Customers',
@@ -329,7 +319,6 @@ test('ER tabs maintain completely isolated snapshots when updated via updateTabD
   });
   const tab2Id = store.activeTabId;
 
-  // Save distinct snapshots for each tab (simulating onBeforeUnmount)
   const snapshot1 = { graph: { cells: [{ id: 'node-dbo.Customers' }] } };
   const snapshot2 = { graph: { cells: [{ id: 'node-dbo.Orders' }] } };
 
@@ -375,7 +364,6 @@ test('ER tab snapshot preserves camera viewport zoom and pan translation', () =>
 
   const tabId = store.activeTabId;
 
-  // Simulate snapshot captured during onBeforeUnmount
   const mockSnapshot = {
     exportedAt: new Date().toISOString(),
     graph: { cells: [{ id: 'node-dbo.Products' }] },
@@ -393,7 +381,6 @@ test('ER tab snapshot preserves camera viewport zoom and pan translation', () =>
 });
 
 test('restore logic restores zoomTo and translate when viewport coordinates are present', () => {
-  // Mock Graph methods to verify restore behavior
   let zoomToCalledWith: number | null = null;
   let translateCalledWith: { tx: number; ty: number } | null = null;
   let zoomToFitCalled = false;
@@ -419,7 +406,6 @@ test('restore logic restores zoomTo and translate when viewport coordinates are 
     translation: { tx: 250, ty: 120 },
   };
 
-  // Execute restore logic as implemented in ErDiagramViewer
   if (
     typeof initialDataWithViewport.zoom === 'number' &&
     initialDataWithViewport.translation &&
@@ -545,11 +531,9 @@ test('Solution B: View Mode respects customHeight with connected columns safety 
 
   assert.equal(minSafeH, 82);
 
-  // Case 1: user drags customHeight to 140px (greater than minSafeH) -> allows 140px
   const target1 = Math.max(minSafeH, 140);
   assert.equal(target1, 140);
 
-  // Case 2: user attempts to drag customHeight to 50px (smaller than minSafeH) -> clamped to minSafeH 82px
   const target2 = Math.max(minSafeH, 50);
   assert.equal(target2, 82);
 });
@@ -559,13 +543,11 @@ test('Resize handler locks width at 260px and respects minSafeH', () => {
   const startH = 200;
   const minSafeH = 120;
 
-  // Dragging downwards
   const dyDown = 60;
   const newHDown = Math.max(minSafeH, Math.round(startH + dyDown));
   assert.equal(startW, 260); // Width strictly locked
   assert.equal(newHDown, 260);
 
-  // Dragging upwards beyond safe lower bound
   const dyUp = -150;
   const newHUp = Math.max(minSafeH, Math.round(startH + dyUp));
   assert.equal(startW, 260); // Width strictly locked
@@ -649,17 +631,14 @@ test('Simulated node.setData preserves text and color when isEditMode changes', 
     isEditMode: false, // 檢視模式
   };
 
-  // 1. 切換為編輯模式 (ON)
   currentData = { ...currentData, isEditMode: true };
   assert.equal(currentData.isEditMode, true);
   assert.equal(currentData.color, 'rose');
   assert.equal(currentData.text, '重要備忘事項：訂單狀態不得直接修改');
 
-  // 2. 編輯模式下變更顏色為科技藍
   currentData = { ...currentData, color: 'blue' };
   assert.equal(currentData.color, 'blue');
 
-  // 3. 切換回檢視模式 (OFF)
   currentData = { ...currentData, isEditMode: false };
   assert.equal(currentData.isEditMode, false);
   assert.equal(currentData.color, 'blue');

@@ -1,11 +1,7 @@
 /**
- * Shared source-scanning helpers for the contract tests.
- *
- * Every guard test used to carry its own copy of `readSource` — 40 identical copies, in three
- * spellings — plus its own comment-stripping and `git ls-files` plumbing. They live here once, so a
- * change to how the suite reads the tree happens in one place. `scripts/test.mjs` only treats
- * `tests/*.test.ts` as entry points, so this module is bundled into whichever tests import it and
- * never runs on its own.
+ * Shared source-scanning helpers for the contract tests, so a change to how the suite reads the
+ * tree happens in one place. `scripts/test.mjs` only treats `tests/*.test.ts` as entry points, so
+ * this module is bundled into whichever tests import it and never runs on its own.
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -32,8 +28,8 @@ export function readCode(relativePath: string, options: ReadCodeOptions = {}): s
 }
 
 /**
- * Every tracked source file the cross-file guards scan. `git ls-files` still lists a file deleted in
- * the working tree until it is staged, so the result is narrowed to files that actually exist.
+ * Every tracked source file the cross-file guards scan. `git ls-files` still lists a file deleted
+ * in the working tree until it is staged, so the result is narrowed to files that exist.
  */
 export function trackedSources(): string[] {
   return execSync('git ls-files "src/*"', { encoding: 'utf-8' })

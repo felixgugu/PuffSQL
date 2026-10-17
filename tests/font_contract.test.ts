@@ -1,18 +1,10 @@
-/**
- * font contract — merged from grid_font_settings, global_font_scope, font_family:
- * one file per component and layer instead of 3 files that all read the same sources.
- */
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { describe, test } from 'node:test';
 import { SYSTEM_MONOSPACE_FONT_FAMILY } from '../src/data/fontOptions';
 import { CUSTOM_FONT_VALUE, isPresetFontFamily, normalizeFontFamily } from '../src/utils/fontFamily';
 import { readSource } from './helpers/source';
 
 describe('grid_font_settings', () => {
-const root = process.cwd();
-
 /** Assembled so this regression test does not itself trip the "no AG Grid references" scan. */
 const LEGACY_FONT_VARIABLE = ['--', 'ag', '-font-family'].join('');
 const LEGACY_ROOT_CLASS = ['.', 'ag', '-styled-root'].join('');
@@ -60,8 +52,6 @@ test('the global stylesheet no longer carries AG Grid typography overrides', () 
 });
 
 describe('global_font_scope', () => {
-const root = process.cwd();
-
 function sliceBetween(source: string, start: string, end: string): string {
   const from = source.indexOf(start);
   assert.notEqual(from, -1, `missing marker: ${start}`);
@@ -278,10 +268,7 @@ describe('Font family picker utilities', () => {
   });
 
   test('SettingsModal uses the FontFamilyPicker for all three font settings', () => {
-    const source = readFileSync(
-      resolve(process.cwd(), 'src/components/modals/SettingsModal.vue'),
-      'utf-8'
-    );
+    const source = readSource('src/components/modals/SettingsModal.vue');
     const usages = source.match(/<FontFamilyPicker/g) || [];
     assert.equal(usages.length, 3);
     assert.match(source, /import FontFamilyPicker from '@\/components\/common\/FontFamilyPicker\.vue';/);

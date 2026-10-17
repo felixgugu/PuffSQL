@@ -1,7 +1,3 @@
-/**
- * result tab retention — merged from result_tab_retention, result_tab_close_others, result_tab_header_format:
- * one file per component and layer instead of 3 files that all read the same sources.
- */
 import assert from 'node:assert/strict';
 import { before, beforeEach, describe, test } from 'node:test';
 import { createPinia, setActivePinia } from 'pinia';
@@ -88,7 +84,6 @@ test('with accumulation off, a new query closes the previous unpinned result tab
   assert.equal(store.resultTabs.length, 1);
   const firstTabId = store.resultTabs[0]!.id;
 
-  // Remember a layout for the tab that is about to be evicted.
   const firstKey = gridLayout.layoutKey(firstTabId, 0);
   gridLayout.capture(firstKey, fakeGridTable());
   assert.equal(gridLayout.has(firstKey), true);
@@ -121,7 +116,6 @@ test('with accumulation off, pinned tabs survive alongside the newest result tab
   assert.equal(store.resultTabs[1]!.isPinned, false);
   assert.equal(store.activeResultTabId, store.resultTabs[1]!.id);
 
-  // A third query still keeps the pin and replaces the previous unpinned tab.
   const previousUnpinnedId = store.resultTabs[1]!.id;
   stubQueryWithRows('Products', 3);
   await store.execute('conn-1', 'master', 'SELECT * FROM Products;');
@@ -166,7 +160,6 @@ test('switching accumulation off prunes to pinned plus the tab being viewed', as
   await store.execute('conn-1', 'master', 'SELECT * FROM Products;');
   assert.equal(store.resultTabs.length, 3);
 
-  // Pin the oldest tab, then look at another one before switching the mode off.
   const pinnedTabId = store.resultTabs[2]!.id;
   store.togglePinTab(pinnedTabId);
   const viewedTabId = store.resultTabs.find((tab) => !tab.isPinned)!.id;
@@ -232,7 +225,6 @@ describe('Result tab context menu close other results', () => {
     const bottomPanelSource = readSource('src/components/layout/AppBottomPanel.vue');
     const queryStoreSource = readSource('src/stores/queryStore.ts');
 
-    // Context menu item check
     assert.match(
       bottomPanelSource,
       /label:\s*t\('results\.closeOtherTabs'\)/,
@@ -244,7 +236,6 @@ describe('Result tab context menu close other results', () => {
       'AppBottomPanel context menu must bind handleContextMenuCloseOthers'
     );
 
-    // queryStore function check
     assert.match(
       queryStoreSource,
       /function closeOtherResultTabs\(keepId: string\)/,
@@ -265,21 +256,18 @@ describe('Result tab header formatting and rename behavior', () => {
     const bottomPanelSource = readSource('src/components/layout/AppBottomPanel.vue');
     const queryStoreSource = readSource('src/stores/queryStore.ts');
 
-    // 1. Result tab title span should not have @dblclick
     assert.doesNotMatch(
       bottomPanelSource,
       /@dblclick[^\n]*startRenameTab\(rtab\)/,
       'Result tab span must not have @dblclick bound to startRenameTab'
     );
 
-    // 2. Result tab must not have row count badge (${rtab.rowCount}r)
     assert.doesNotMatch(
       bottomPanelSource,
       /\$\{rtab\.rowCount\}r/,
       'Result tab must not render row count badge'
     );
 
-    // 3. Tab title in queryStore should not append row count suffix (${rowCount}r or 0r)
     assert.doesNotMatch(
       queryStoreSource,
       /\$\{seq\}\.\$\{tableName\}[^\n]*\$\{rowCount\}r/,

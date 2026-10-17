@@ -1,7 +1,3 @@
-/**
- * ui controls — merged from sq_button_group, sq_select_options:
- * one file per component and layer instead of 2 files that all read the same sources.
- */
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { readCode, readSource } from './helpers/source';
@@ -25,11 +21,6 @@ describe('SqButtonGroup primitive', () => {
     );
     assert.doesNotMatch(source, /#[0-9a-fA-F]{6}/, 'no hardcoded colours');
     assert.doesNotMatch(source, /primevue/, 'the primitive must not depend on PrimeVue');
-    assert.doesNotMatch(
-      source,
-      /\brounded-(sm|lg|xl|2xl|3xl)\b/,
-      'the radius is a CSS value, never a Tailwind step the guardrails ban'
-    );
   });
 
   test('the group never clips its children, so focus rings survive', () => {

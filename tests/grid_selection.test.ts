@@ -1,10 +1,4 @@
-/**
- * grid selection — merged from grid_selection, result_export_group:
- * one file per component and layer instead of 2 files that all read the same sources.
- */
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { describe, test } from 'node:test';
 import { type Tabulator } from 'tabulator-tables';
 import { useGridExport } from '../src/composables/useGridExport';
@@ -223,122 +217,6 @@ test('clearGridRanges uses the module teardown and falls back to the public API'
   clearGridRanges(null);
 });
 
-function readTheme(): string {
-  return readFileSync(resolve(process.cwd(), 'src/styles/tabulatorTheme.css'), 'utf-8');
-}
-
-function themeBlock(css: string, selector: string): string {
-  return new RegExp(`${selector} \\{([\\s\\S]*?)\\n\\}`).exec(css)?.[1] ?? '';
-}
-
-test('dark theme selection palette matches the agreed colours', () => {
-  const css = readTheme();
-  const darkBlock = themeBlock(css, 'html\\.dark \\.tabulator');
-
-  assert.match(darkBlock, /--sq-grid-range-fill: rgba\(140, 184, 218, 0\.20\)/, 'selection area tint');
-  assert.match(
-    darkBlock,
-    /--sq-grid-range-active-fill: rgba\(140, 184, 218, 0\.38\)/,
-    'active cell tint'
-  );
-  assert.match(darkBlock, /--sq-grid-range-border: #8cb8da/, 'selection border colour');
-  assert.match(darkBlock, /--sq-grid-range-handle: #8cb8da/, 'drag handle colour');
-  assert.match(darkBlock, /--sq-grid-range-text: #ffffff/, 'selection text colour');
-
-  const cellRule =
-    /\.tabulator-row \.tabulator-cell\.tabulator-range-selected \{([\s\S]*?)\n\}/.exec(css)?.[1] ?? '';
-  assert.match(cellRule, /background-color: var\(--sq-grid-range-fill\)/);
-  assert.match(cellRule, /color: var\(--sq-grid-range-text\)/);
-
-  const outlineRule =
-    /\.tabulator-range-overlay \.tabulator-range \{([\s\S]*?)\n\}/.exec(css)?.[1] ?? '';
-  assert.match(
-    outlineRule,
-    /border: var\(--sq-grid-range-border-width\) solid var\(--sq-grid-range-border\)/
-  );
-
-  const activeRule = /\.tabulator-range-cell-active \{([\s\S]*?)\n\}/.exec(css)?.[1] ?? '';
-  assert.match(activeRule, /background-color: var\(--sq-grid-range-active-fill\)/);
-  assert.match(activeRule, /border: 2px solid var\(--sq-grid-range-border\)/);
-
-  const handleRule =
-    /\.tabulator-range\.tabulator-range-active::after \{([\s\S]*?)\n\}/.exec(css)?.[1] ?? '';
-  assert.match(handleRule, /width: 4px;/, 'the drag handle is a 4x4 square');
-  assert.match(handleRule, /height: 4px;/);
-  assert.match(handleRule, /border-radius: 0;/);
-  assert.match(handleRule, /background-color: var\(--sq-grid-range-handle\)/);
-});
-
-test('light theme palette keeps the header anchored and the accents readable', () => {
-  const css = readTheme();
-  const lightBlock = themeBlock(css, 'html:not\\(\\.dark\\) \\.tabulator');
-
-  // Header: the chrome surface, muted text, readable sort arrows and a stronger bottom line.
-  assert.match(lightBlock, /--sq-grid-header-bg: rgb\(var\(--color-dark-850\)\)/);
-  assert.match(lightBlock, /--sq-grid-header-text: rgb\(var\(--color-dark-500\)\)/);
-  // The sort arrow is the only sort affordance, so it must clear 3:1 on the light header.
-  assert.match(lightBlock, /--sq-grid-sort-icon: #64748b/);
-  assert.match(lightBlock, /--sq-grid-sort-icon-hover: #1e293b/);
-  assert.match(lightBlock, /--sq-grid-border: rgb\(var\(--color-dark-700\)\)/);
-  assert.match(
-    css,
-    /\.tabulator \.tabulator-header,\s*\n\.tabulator \.tabulator-footer \{\s*\n\s*border-color: var\(--sq-grid-border\)/,
-    'the header must keep the 1px structural line'
-  );
-
-  // Rows: the soft grey canvas surface, soft separators, a hover tint and softer-than-black text.
-  // These resolve through the shell's tokens, so the grid keeps following the surface palette.
-  assert.match(lightBlock, /--sq-grid-bg: rgb\(var\(--color-dark-900\)\)/);
-  assert.match(lightBlock, /--sq-grid-fg: rgb\(var\(--color-dark-300\)\)/);
-  // Row lines ride the hairline step and hover rows the hover step: with a near-white light panel
-  // the previous panel-step mapping made a hovered even row indistinguishable from its stripe.
-  assert.match(lightBlock, /--sq-grid-line: rgb\(var\(--color-dark-700\)\)/);
-  assert.match(lightBlock, /--sq-grid-row-hover: rgb\(var\(--color-dark-750\)\)/);
-  assert.match(lightBlock, /--sq-grid-row-stripe: rgb\(var\(--color-dark-850\)\)/);
-  assert.match(css, /\.tabulator-row:hover \{\s*\n\s*background-color: var\(--sq-grid-row-hover\)/);
-
-  // Selection: a barely-there wash with a bright focus border and handle.
-  assert.match(lightBlock, /--sq-grid-range-fill: rgba\(42, 103, 145, 0\.08\)/);
-  assert.match(lightBlock, /--sq-grid-range-border: #2a6791/);
-  assert.match(lightBlock, /--sq-grid-range-handle: #2a6791/);
-
-  // Accents that read as neon on white get solid, contrast-safe replacements.
-  assert.match(lightBlock, /--sq-grid-pk-accent: #b45309/);
-  assert.match(lightBlock, /--sq-grid-identity-accent: #0e7490/);
-  assert.match(lightBlock, /--sq-grid-type-accent: #0369a1/);
-  assert.match(lightBlock, /--sq-grid-fulltype-accent: #047857/);
-});
-
-test('boolean values render as theme aware pills', () => {
-  const columns = readFileSync(
-    resolve(process.cwd(), 'src/utils/tabulatorColumns.ts'),
-    'utf-8'
-  );
-  assert.match(columns, /sqlight-bool-badge \$\{value \? 'sqlight-bool-true' : 'sqlight-bool-false'\}/);
-
-  const css = readTheme();
-  const truePill = /html:not\(\.dark\) \.sqlight-bool-badge\.sqlight-bool-true \{([\s\S]*?)\n\}/.exec(css)?.[1] ?? '';
-  assert.match(truePill, /border: 1px solid #a7f3d0/);
-  assert.match(truePill, /background-color: #ecfdf5/);
-  assert.match(truePill, /color: #059669/);
-
-  const falsePill = /html:not\(\.dark\) \.sqlight-bool-badge\.sqlight-bool-false \{([\s\S]*?)\n\}/.exec(css)?.[1] ?? '';
-  assert.match(falsePill, /background-color: #e2e8f0/);
-  assert.match(falsePill, /color: #475569/);
-
-  // The structure viewer badges get the same treatment.
-  for (const [selector, background, text] of [
-    ['\\.sqlight-badge-pk', '#fffbeb', '#b45309'],
-    ['\\.sqlight-badge-yes', '#ecfdf5', '#059669'],
-    ['\\.sqlight-badge-no', '#e2e8f0', '#475569'],
-    ['\\.sqlight-badge-identity', '#ecfeff', '#0e7490'],
-  ] as const) {
-    const rule = new RegExp(`html:not\\(\\.dark\\) ${selector} \\{([\\s\\S]*?)\\n\\}`, 'g').exec(css)?.[1] ?? '';
-    assert.match(rule, new RegExp(`background-color: ${background}`), `${selector} background`);
-    assert.match(rule, new RegExp(`color: ${text}`), `${selector} text colour`);
-  }
-});
-
 test('dispatchClearGridSelection dispatches CLEAR_GRID_SELECTION_EVENT', () => {
   assert.equal(CLEAR_GRID_SELECTION_EVENT, 'sqlight:clear-grid-selection');
 
@@ -395,16 +273,16 @@ test('clearCellSelection resets selection state and removes grid ranges', () => 
 });
 
 test('MonacoEditor and AppMain wire editor clicking to dispatchClearGridSelection', () => {
-  const monacoSrc = readFileSync(resolve(process.cwd(), 'src/components/editor/MonacoEditor.vue'), 'utf-8');
+  const monacoSrc = readSource('src/components/editor/MonacoEditor.vue');
   assert.match(monacoSrc, /dispatchClearGridSelection\(\)/, 'MonacoEditor must call dispatchClearGridSelection');
   assert.match(monacoSrc, /editorContainer\.value\.addEventListener\('mousedown'/, 'MonacoEditor attaches mousedown on editorContainer');
   assert.match(monacoSrc, /editorInstance\.onMouseDown/, 'MonacoEditor calls onMouseDown');
   assert.match(monacoSrc, /editorInstance\.onDidFocusEditorText/, 'MonacoEditor calls onDidFocusEditorText');
 
-  const appMainSrc = readFileSync(resolve(process.cwd(), 'src/components/layout/AppMain.vue'), 'utf-8');
+  const appMainSrc = readSource('src/components/layout/AppMain.vue');
   assert.match(appMainSrc, /@mousedown="dispatchClearGridSelection"/, 'AppMain binds mousedown on editor wrapper');
 
-  const gridSelectionSrc = readFileSync(resolve(process.cwd(), 'src/composables/useGridSelection.ts'), 'utf-8');
+  const gridSelectionSrc = readSource('src/composables/useGridSelection.ts');
   assert.match(gridSelectionSrc, /CLEAR_GRID_SELECTION_EVENT/, 'useGridSelection listens to CLEAR_GRID_SELECTION_EVENT');
   assert.match(gridSelectionSrc, /active\.closest\('\.monaco-editor'\)/, 'useGridSelection protects Monaco editor from Ctrl+C intercept');
 });

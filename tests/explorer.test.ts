@@ -1,7 +1,3 @@
-/**
- * explorer — merged from explorer_filter_history, explorer_node_copy, explorer_tree_state:
- * one file per component and layer instead of 3 files that all read the same sources.
- */
 import assert from 'node:assert/strict';
 import { beforeEach, describe, test } from 'node:test';
 import { collapseAllTreeNodes, type ExplorerTreeState } from '../src/utils/explorerTreeState';
@@ -87,7 +83,6 @@ describe('filterHistory utility', () => {
 
   test('addFilterHistoryItem: deduplicates case-insensitively and promotes to front (LRU)', () => {
     let history = ['Orders', 'Users', 'Products'];
-    // Adding 'users' (different case) should remove 'Users' from middle and put 'users' at front
     history = addFilterHistoryItem(history, 'users');
     assert.deepEqual(history, ['users', 'Orders', 'Products']);
   });
@@ -100,7 +95,6 @@ describe('filterHistory utility', () => {
 
     assert.equal(history.length, MAX_FILTER_HISTORY_ITEMS);
     assert.equal(history.length, 30);
-    // The most recent one should be at the front
     assert.equal(history[0], 'Filter_35');
     // The 30th item should be Filter_6 (Filter_1..Filter_5 were pushed out)
     assert.equal(history[29], 'Filter_6');
@@ -127,35 +121,25 @@ describe('filterHistory utility', () => {
     assert.deepEqual(loadFilterHistory(mockStorage), []);
   });
 
-  test('AppSidebar.vue template and script integration for ComboBox and clear button', async () => {
-    const fs = await import('node:fs');
-    const path = await import('node:path');
-    const sidebarCode = fs.readFileSync(
-      path.join(process.cwd(), 'src/components/layout/AppSidebar.vue'),
-      'utf-8'
-    );
+  test('AppSidebar.vue template and script integration for ComboBox and clear button', () => {
+    const sidebarCode = readSource('src/components/layout/AppSidebar.vue');
 
-    // Clear button (X)
     assert.ok(sidebarCode.includes('clearFilter'), 'AppSidebar should define clearFilter handler');
     assert.ok(sidebarCode.includes('v-if="filterQuery"'), 'AppSidebar should conditionally render clear button');
 
-    // ComboBox toggle button and dropdown
     assert.ok(sidebarCode.includes('toggleHistoryDropdown'), 'AppSidebar should define toggleHistoryDropdown');
     assert.ok(sidebarCode.includes('isHistoryDropdownOpen'), 'AppSidebar should track dropdown open state');
     assert.ok(sidebarCode.includes('filterHistory'), 'AppSidebar should have reactive filterHistory list');
 
-    // ComboBox item actions
     assert.ok(sidebarCode.includes('selectHistoryItem'), 'AppSidebar should support selecting history items');
     assert.ok(sidebarCode.includes('handleRemoveHistoryItem'), 'AppSidebar should support deleting single history item');
     assert.ok(sidebarCode.includes('handleClearAllHistory'), 'AppSidebar should support clearing all history');
 
-    // Keyboard navigation
     assert.ok(sidebarCode.includes('handleKeyDown'), 'AppSidebar should handle Down Arrow navigation');
     assert.ok(sidebarCode.includes('handleKeyUp'), 'AppSidebar should handle Up Arrow navigation');
     assert.ok(sidebarCode.includes('handleKeyEnter'), 'AppSidebar should handle Enter commit/selection');
     assert.ok(sidebarCode.includes('handleKeyEsc'), 'AppSidebar should handle Escape to close or clear');
 
-    // Outside click & debounce watcher
     assert.ok(sidebarCode.includes('handleDocumentPointerDown'), 'AppSidebar should handle outside pointerdown');
     assert.ok(sidebarCode.includes('debounceRecordTimer'), 'AppSidebar should debounce recording user input');
   });
@@ -285,23 +269,19 @@ describe('explorerTreeState utility', () => {
 
     collapseAllTreeNodes(state);
 
-    // Verify connections collapsed
     assert.deepEqual(state.expandedConns, {
       'conn-1': false,
       'conn-2': false,
     });
 
-    // Verify databases collapsed
     assert.deepEqual(state.expandedDbs, {
       'conn-1:dbA': false,
       'conn-1:dbB': false,
       'conn-2:dbC': false,
     });
 
-    // Verify folders reset
     assert.deepEqual(state.expandedFolders, {});
 
-    // Verify tables collapsed
     assert.deepEqual(state.expandedTables, {
       'conn-1:dbA:dbo.Users': false,
       'conn-1:dbA:dbo.Orders': false,
@@ -328,11 +308,9 @@ describe('explorerTreeState utility', () => {
 
     collapseAllTreeNodes(state, { collapseConnections: false });
 
-    // Connections should remain true
     assert.equal(state.expandedConns['conn-1'], true);
     assert.equal(state.expandedConns['conn-2'], true);
 
-    // Databases, folders, and tables should be collapsed
     assert.equal(state.expandedDbs['conn-1:dbA'], false);
     assert.deepEqual(state.expandedFolders, {});
     assert.equal(state.expandedTables['conn-1:dbA:dbo.Users'], false);

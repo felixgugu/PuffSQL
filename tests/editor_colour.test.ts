@@ -1,12 +1,5 @@
-/**
- * editor colour — merged from result_message_flash, editor_completion_settings, editor_background_image:
- * one file per component and layer instead of 3 files that all read the same sources.
- */
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
-import path from 'node:path';
 import { before, beforeEach, describe, test } from 'node:test';
-import { fileURLToPath } from 'node:url';
 import { createPinia, setActivePinia } from 'pinia';
 import { EDITOR_BACKGROUND_ACCEPTED_TYPES, EDITOR_BACKGROUND_MAX_DATA_URL_BYTES, EDITOR_BACKGROUND_MAX_DIMENSION, dataUrlByteSize, fitWithin, isAcceptedImageType } from '../src/services/editorBackgroundService';
 import { queryService } from '../src/services/queryService';
@@ -129,14 +122,8 @@ describe('message log transient flash', () => {
 });
 
 describe('editor_completion_settings', () => {
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const rootDir = path.resolve(__dirname, '..');
-
-// Mock localStorage for node environment
 const storageData = new Map<string, string>();
-// A hook, not a conditional install: every member of this file gets its own store back before its
-// tests run, instead of whichever mock happened to be installed first at load time.
+// A hook, not a conditional install: every member gets its own store back.
 before(() => {
   (globalThis as any).localStorage = {
     getItem: (key: string) => storageData.get(key) || null,
@@ -154,28 +141,22 @@ beforeEach(() => {
 test('settingsStore: editorAutoCompletion defaults to true, toggles, saves and resets', () => {
   const store = useSettingsStore();
 
-  // 1. Initial default is true
   assert.equal(store.editorAutoCompletion, true);
 
-  // 2. Toggle to false
   store.editorAutoCompletion = false;
   assert.equal(store.editorAutoCompletion, false);
 
-  // 3. Save settings
   store.saveSettings();
   const saved = JSON.parse(storageData.get('sqlight_app_settings') || '{}');
   assert.equal(saved.editorAutoCompletion, false);
 
-  // 4. Reset to defaults restores to true
   store.resetToDefaults();
   assert.equal(store.editorAutoCompletion, true);
 });
 
 test('SettingsModal.vue: contains editorAutoCompletion toggle switch in Editor tab', () => {
-  const settingsModalPath = path.join(rootDir, 'src/components/modals/SettingsModal.vue');
-  const content = fs.readFileSync(settingsModalPath, 'utf8');
+  const content = readSource('src/components/modals/SettingsModal.vue');
 
-  // Verify the switch bound to settingsStore.editorAutoCompletion exists (SqSwitch since P4d)
   assert.match(
     content,
     /SqSwitch\s+v-model="settingsStore\.editorAutoCompletion"/,
@@ -184,10 +165,8 @@ test('SettingsModal.vue: contains editorAutoCompletion toggle switch in Editor t
 });
 
 test('SettingsModal.vue: displays Ctrl+Shift+A for completion shortcut in Keyboard Shortcuts', () => {
-  const settingsModalPath = path.join(rootDir, 'src/components/modals/SettingsModal.vue');
-  const content = fs.readFileSync(settingsModalPath, 'utf8');
+  const content = readSource('src/components/modals/SettingsModal.vue');
 
-  // Verify shortcut display updated to Ctrl+Shift+A
   assert.match(
     content,
     /Ctrl\+Shift\+A/,
@@ -201,24 +180,20 @@ test('SettingsModal.vue: displays Ctrl+Shift+A for completion shortcut in Keyboa
 });
 
 test('MonacoEditor.vue: registers Ctrl+Shift+A keybinding and syncs editorAutoCompletion', () => {
-  const monacoEditorPath = path.join(rootDir, 'src/components/editor/MonacoEditor.vue');
-  const content = fs.readFileSync(monacoEditorPath, 'utf8');
+  const content = readSource('src/components/editor/MonacoEditor.vue');
 
-  // Verify Ctrl+Shift+A command is registered
   assert.match(
     content,
     /monaco\.KeyMod\.CtrlCmd\s*\|\s*monaco\.KeyMod\.Shift\s*\|\s*monaco\.KeyCode\.KeyA/,
     'MonacoEditor must bind CtrlCmd + Shift + KeyA'
   );
 
-  // Verify editorAutoCompletion is synced in watch
   assert.match(
     content,
     /settingsStore\.editorAutoCompletion/,
     'MonacoEditor must watch and apply settingsStore.editorAutoCompletion'
   );
 
-  // Verify triggerSuggest is exposed
   assert.match(
     content,
     /triggerSuggest,/,

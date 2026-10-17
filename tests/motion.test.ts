@@ -1,7 +1,3 @@
-/**
- * motion — merged from spring, splitter, motion_accessibility, window_geometry:
- * one file per component and layer instead of 4 files that all read the same sources.
- */
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { useSplitter } from '../src/composables/useSplitter';
@@ -216,7 +212,6 @@ test('Double-click toggle maximize calculation logic', () => {
   let currentSize = 240;
   let preMaximized = 240;
 
-  // 1. Toggle when normal -> should maximize to 980px
   if (currentSize >= maxH - 40) {
     currentSize = Math.max(100, preMaximized || 240);
   } else {
@@ -226,7 +221,6 @@ test('Double-click toggle maximize calculation logic', () => {
   assert.equal(currentSize, 980);
   assert.equal(preMaximized, 240);
 
-  // 2. Toggle when maximized -> should restore to 240px
   if (currentSize >= maxH - 40) {
     currentSize = Math.max(100, preMaximized || 240);
   } else {

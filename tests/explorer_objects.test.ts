@@ -1,7 +1,3 @@
-/**
- * explorer objects — merged from table_objects, quick_finder:
- * one file per component and layer instead of 2 files that all read the same sources.
- */
 import assert from 'node:assert/strict';
 import { before, beforeEach, describe, test } from 'node:test';
 import { createPinia, setActivePinia } from 'pinia';
@@ -121,40 +117,33 @@ beforeEach(() => {
 });
 
 test('fuzzyMatch accurately identifies exact, prefix, CamelCase, and subsequence matches', () => {
-  // 1. Exact match
   const exact = fuzzyMatch('Employees', 'Employees');
   assert.equal(exact.matched, true);
   assert.equal(exact.score, 1000);
   assert.equal(exact.indices.length, 'Employees'.length);
 
-  // 2. Case-insensitive exact match
   const caseExact = fuzzyMatch('employees', 'Employees');
   assert.equal(caseExact.matched, true);
   assert.equal(caseExact.score, 1000);
 
-  // 3. Prefix match
   const prefix = fuzzyMatch('Emp', 'Employees');
   assert.equal(prefix.matched, true);
   assert.ok(prefix.score >= 600, `Prefix score should be >= 600, got ${prefix.score}`);
   assert.deepEqual(prefix.indices, [0, 1, 2]);
 
-  // 4. CamelCase abbreviation match (e.g. ULL -> UserLoginLogs)
   const camel = fuzzyMatch('ULL', 'UserLoginLogs');
   assert.equal(camel.matched, true);
   assert.deepEqual(camel.indices, [0, 4, 9]);
 
-  // 5. Subsequence fuzzy match (uslog -> UserLoginLogs)
   const subseq = fuzzyMatch('uslog', 'UserLoginLogs');
   assert.equal(subseq.matched, true);
   assert.ok(subseq.indices.length === 5);
 
-  // 6. Non-match
   const noMatch = fuzzyMatch('xyz', 'UserLoginLogs');
   assert.equal(noMatch.matched, false);
   assert.equal(noMatch.score, 0);
   assert.equal(noMatch.indices.length, 0);
 
-  // 7. Empty query matches everything
   const empty = fuzzyMatch('', 'AnyObject');
   assert.equal(empty.matched, true);
   assert.equal(empty.score, 0);
@@ -162,7 +151,6 @@ test('fuzzyMatch accurately identifies exact, prefix, CamelCase, and subsequence
 
 test('highlightMatchedChunks correctly segments text into highlighted and plain chunks', () => {
   const target = 'UserLoginLogs';
-  // Indices for 'U', 'L', 'L': 0, 4, 9
   const chunks = highlightMatchedChunks(target, [0, 4, 9]);
 
   const reconstructed = chunks.map((c) => c.text).join('');
@@ -208,22 +196,18 @@ test('filterAndRankQuickObjects ranks higher-relevance matches first and handles
     { id: '6', schema: 'dbo', name: 'Customers', type: 'table', database: 'AppDb', connId: 'c1' },
   ];
 
-  // 1. Query 'Orders' -> exact match 'Orders' should rank top
   const results = filterAndRankQuickObjects(testItems, 'Orders', 'all');
   assert.ok(results.length >= 4);
   assert.equal(results[0]?.item.name, 'Orders');
 
-  // 2. Type filter 'procedure' -> only returns procedures
   const procResults = filterAndRankQuickObjects(testItems, 'Orders', 'procedure');
   assert.equal(procResults.length, 1);
   assert.equal(procResults[0]?.item.name, 'usp_ProcessOrders');
 
-  // 3. Prefix shortcut in query string 'v: Orders' -> only returns views
   const viewResults = filterAndRankQuickObjects(testItems, 'v: Orders', 'all');
   assert.equal(viewResults.length, 1);
   assert.equal(viewResults[0]?.item.name, 'vw_Orders');
 
-  // 4. Schema-qualified search 'sales.OrdersArchive'
   const salesResults = filterAndRankQuickObjects(testItems, 'sales.Orders', 'all');
   assert.ok(salesResults.length > 0);
   assert.equal(salesResults[0]?.item.name, 'OrdersArchive');
